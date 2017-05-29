@@ -1,4 +1,5 @@
-# [Akili](http://akilijs.com)
+# [Akili](http://akilijs.com) [![npm version](https://badge.fury.io/js/akili.svg)](https://badge.fury.io/js/akili)
+
 Akili is a component-based javascript framework. 
 It includes a powerful system of components, router, functions to make ajax requests and some useful utils.
 
