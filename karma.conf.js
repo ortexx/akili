@@ -56,7 +56,7 @@ module.exports = function(config) {
     },
     coverageIstanbulReporter: {
       reports: ['html'],
-      dir : 'dist/coverage/'
+      dir : 'coverage/'
     },
     singleRun: true,
     colors: true,
