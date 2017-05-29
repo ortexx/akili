@@ -52,5 +52,4 @@ Documentation [here](http://akilijs.com/docs/getting-started).
 ## License
 Akili is [MIT licensed](/LICENSE).
 
-
  
