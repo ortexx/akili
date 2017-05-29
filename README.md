@@ -1,4 +1,4 @@
-# [Akili](http://akilijs.com) [![npm version](https://badge.fury.io/js/akili.svg)](https://badge.fury.io/js/akili) [![Build Status](https://travis-ci.org/ortexx/akili.svg?branch=master)](https://travis-ci.org/ortexx/akili) [![Coverage Status](https://coveralls.io/repos/github/ortexx/akili/badge.svg?branch=master)](https://coveralls.io/github/ortexx/akili?branch=master)
+# [Akili](http://akilijs.com) [beta] [![npm version](https://badge.fury.io/js/akili.svg)](https://badge.fury.io/js/akili) [![Build Status](https://travis-ci.org/ortexx/akili.svg?branch=master)](https://travis-ci.org/ortexx/akili) [![Coverage Status](https://coveralls.io/repos/github/ortexx/akili/badge.svg?branch=master)](https://coveralls.io/github/ortexx/akili?branch=master)
 
 Akili is a component-based javascript framework. 
 It includes a powerful system of components, router, functions to make ajax requests and some useful utils.
