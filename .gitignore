@@ -1,0 +1,12 @@
+/node_modules
+/dist
+
+*.log
+*.bat
+*.git
+*.suo
+*.sln
+*.swp
+*.swo
+.vscode
+.idea
