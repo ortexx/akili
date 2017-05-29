@@ -55,7 +55,7 @@ module.exports = function(config) {
       }
     },
     coverageIstanbulReporter: {
-      reports: ['html'],
+      reports: [process.env.TRAVIS? 'lcov': 'html'],
       dir : 'coverage/'
     },
     singleRun: true,
