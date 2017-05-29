@@ -30,7 +30,7 @@ Akili.init();
 </body>
 ```
 
-More examples are on the [site](http://akilijs.com)
+More examples are on the [site](http://akilijs.com).
 
 ## Installation
 You can install it via npm
@@ -39,17 +39,17 @@ You can install it via npm
 npm install akili --save
 ```
 
-or [download](/dist/akili.min.js) and include as script
+or [download](http://akilijs.com/framework) and include as script
  
 ```
 <script src="/akili.min.js"></script>
 ```
 
 ## Documentation
-Documentation [here](http://akilijs.com/docs/getting-started)
+Documentation [here](http://akilijs.com/docs/getting-started).
 
 ## License
-Akili is [MIT licensed](/LICENSE)
+Akili is [MIT licensed](/LICENSE).
 
 
  
