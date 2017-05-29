@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = function(config) {
-  config.set({
+  let conf = {
     basePath: "",
     frameworks: ['mocha', 'chai'],
     files: [
@@ -35,7 +35,7 @@ module.exports = function(config) {
             loader: 'babel-loader',
             exclude: /node_modules/,
             query: {
-              presets: ['es2015-node5', 'stage-0', 'stage-3']
+              presets: ['es2015', 'stage-0', 'stage-3']
             }
           }
         ]
@@ -48,6 +48,12 @@ module.exports = function(config) {
       terminal: true,
       level: ""
     },
+    customLaunchers: {
+      Chrome_travis_ci: {
+        base: 'Chrome',
+        flags: ['--no-sandbox']
+      }
+    },
     coverageIstanbulReporter: {
       reports: ['html'],
       dir : 'dist/coverage/'
@@ -55,5 +61,11 @@ module.exports = function(config) {
     singleRun: true,
     colors: true,
     port: 9999
-  });
+  };
+
+  if(process.env.TRAVIS){
+    conf.browsers = ['Chrome_travis_ci'];
+  }
+
+  config.set(conf);
 };
