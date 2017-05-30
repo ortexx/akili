@@ -49,7 +49,7 @@ export default class All extends Component {
       <radio
         name="radio"
         value="\${this.cRadioValue}"
-        on-check="\${this.cRadioValue = event.detail}"
+        on-radio="\${this.cRadioValue = event.detail}"
       >
         <radio-button value="radio-1"></radio-button>
         <radio-button value="radio-2"></radio-button>

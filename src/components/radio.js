@@ -6,7 +6,7 @@ import Akili from '../akili';
  */
 export default class Radio extends For {
   static matches = '[name]';
-  static events = ['check'];
+  static events = ['radio'];
 
   static define() {
     Akili.component('radio', Radio);
@@ -44,7 +44,7 @@ export default class Radio extends For {
         }
 
         this.prevValue = value;
-        this.attrs.onCheck.trigger(value, { bubbles: true });
+        this.attrs.onRadio.trigger(value);
       });
     });
   }
@@ -93,7 +93,7 @@ export default class Radio extends For {
       }
     }
 
-    this.attrs.onCheck.trigger(value, { bubbles: true });
+    this.attrs.onRadio.trigger(value, { bubbles: true });
   }
 
   getRadioValue() {
