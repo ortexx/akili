@@ -1,6 +1,6 @@
 {
   "name": "akili",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Akili - javascript framework",
   "homepage": "http://akilijs.com",
   "main": "./src/akili.js",
@@ -9,7 +9,7 @@
     "email": "mywebstreet@gmail.com"
   },
   "scripts": {
-    "start": "webpack --config=webpack.config.js",
+    "start": "webpack",
     "build": "BUILD=true MINIMIZE=true webpack",
     "test": "karma start"
   },

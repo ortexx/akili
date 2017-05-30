@@ -1,7 +1,8 @@
 const webpack = require('webpack');
+const path = require('path');
 
 let entry = {
-  'akili': "./src/akili.js",
+  'akili': "./src/akili.js"
 };
 
 let plugins = [];
@@ -24,7 +25,7 @@ let config = {
   devtool: "inline-source-map",
   entry: entry,
   output: {
-    path: "./dist",
+    path: path.join(__dirname, "/dist"),
     filename: "[name].js"
   },
   module: {

@@ -49,6 +49,11 @@ or [download](http://akilijs.com/js/libs/akili.min.js) and include as script
 ## Documentation
 Documentation [here](http://akilijs.com/docs/getting-started).
 
+## Changelog
+A new entry will be added to the changelog after the version's first or second number changing.
+
 ## License
 Akili is [MIT licensed](/LICENSE).
+
+
  
