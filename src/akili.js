@@ -1,7 +1,10 @@
 /**
+ * Javascript framework
+ *
  * const Akili = makeItEasy(js + html);
  *
  * @author Alexandr Balasyan <mywebstreet@gmail.com>
+ * @link http://akilijs.com
  */
 
 import Component from './component';
