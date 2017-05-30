@@ -1,26 +1,31 @@
-const webpack = require("webpack");
+const webpack = require('webpack');
 
-let prod = process.env.NODE_ENV == 'production';
-let filename = "./dist/akili.js";
+let entry = {
+  'akili': "./src/akili.js",
+};
+
 let plugins = [];
+let minimize = process.env.MINIMIZE;
+let watch = !process.env.BUILD;
 
-if(prod) {
-  filename = "./dist/akili.min.js";
+plugins.push(new webpack.optimize.UglifyJsPlugin({
+  include: /\.min\.js$/,
+  minimize: true,
+  compress: {
+    warnings: false
+  }
+}));
 
-  plugins.push(new webpack.optimize.UglifyJsPlugin({
-    compress: {
-      warnings: false
-    }
-  }));
-}
+minimize && (entry['akili.min'] = entry.akili);
 
 let config = {
-  watch: !prod,
+  watch: watch,
   bail: true,
   devtool: "inline-source-map",
-  entry: "./src/akili.js",
+  entry: entry,
   output: {
-    filename: filename
+    path: "./dist",
+    filename: "[name].js"
   },
   module: {
     loaders: [
