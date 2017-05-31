@@ -1,6 +1,6 @@
-import Component from '../component';
-import router from '../services/router';
-import Akili from '../akili';
+import Component from '../component.js';
+import router from '../services/router.js';
+import Akili from '../akili.js';
 
 export default class A extends Component {
   static matches = '[state]:not([url]),[url]:not([state])';

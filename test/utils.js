@@ -1,7 +1,7 @@
 import { assert } from 'chai';
-import elements from './app/elements';
-import utils from '../src/utils';
-import Akili from '../src/akili';
+import elements from './app/elements.js';
+import utils from '../src/utils.js';
+import Akili from '../src/akili.js';
 
 describe('utils.js', () => {
   describe('utils', () => {

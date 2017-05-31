@@ -1,5 +1,5 @@
-import For, { Loop } from './for';
-import Akili from '../akili';
+import For, { Loop } from './for.js';
+import Akili from '../akili.js';
 
 /**
  * The radio group component

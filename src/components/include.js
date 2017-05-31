@@ -1,6 +1,6 @@
-import Component from '../component';
-import Akili from '../akili';
-import request from '../services/request';
+import Component from '../component.js';
+import Akili from '../akili.js';
+import request from '../services/request.js';
 
 export default class Include extends Component {
   static transparent = true;

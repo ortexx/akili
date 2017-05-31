@@ -1,7 +1,7 @@
 import { assert } from 'chai';
 import Akili from '../src/akili.js';
 import router from '../src/services/router.js';
-import elements from './app/elements';
+import elements from './app/elements.js';
 
 describe('components/', () => {
   let component;

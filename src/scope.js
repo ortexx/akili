@@ -1,5 +1,5 @@
-import Akili from './akili';
-import utils from './utils';
+import Akili from './akili.js';
+import utils from './utils.js';
 
 /**
  * Scope class.

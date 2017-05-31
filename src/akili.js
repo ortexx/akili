@@ -7,23 +7,23 @@
  * @link http://akilijs.com
  */
 
-import Component from './component';
-import If from './components/if';
-import For from './components/for';
-import Select from './components/select';
-import Input from './components/input';
-import Radio from './components/radio';
-import Text from './components/text';
-import Textarea from './components/textarea';
-import Content from './components/content';
-import Include from './components/include';
-import Route from './components/route';
-import A from './components/a';
-import Scope from './scope';
-import EventEmitter from './event-emitter';
-import request from './services/request';
-import router from './services/router';
-import utils from './utils';
+import Component from './component.js';
+import If from './components/if.js';
+import For from './components/for.js';
+import Select from './components/select.js';
+import Input from './components/input.js';
+import Radio from './components/radio.js';
+import Text from './components/text.js';
+import Textarea from './components/textarea.js';
+import Content from './components/content.js';
+import Include from './components/include.js';
+import Route from './components/route.js';
+import A from './components/a.js';
+import Scope from './scope.js';
+import EventEmitter from './event-emitter.js';
+import request from './services/request.js';
+import router from './services/router.js';
+import utils from './utils.js';
 
 const Akili = {};
 

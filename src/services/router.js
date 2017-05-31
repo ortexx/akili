@@ -1,7 +1,7 @@
-import Akili from '../akili';
-import utils from '../utils';
-import request from './request';
-import Route from '../components/route';
+import Akili from '../akili.js';
+import utils from '../utils.js';
+import request from './request.js';
+import Route from '../components/route.js';
 
 export class Transition {
   constructor(url, query, hash = '', previous = null) {

@@ -1,5 +1,5 @@
-import Component from '../component';
-import Akili from '../akili';
+import Component from '../component.js';
+import Akili from '../akili.js';
 
 /**
  * If component

@@ -1,6 +1,6 @@
-import For, { Loop } from './for';
-import utils from '../utils';
-import Akili from '../akili';
+import For, { Loop } from './for.js';
+import utils from '../utils.js';
+import Akili from '../akili.js';
 
 export default class Select extends For {
   static booleanAttributes = ['multiple'];

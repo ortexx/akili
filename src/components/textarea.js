@@ -1,5 +1,5 @@
-import Text from './text';
-import Akili from '../akili';
+import Text from './text.js';
+import Akili from '../akili.js';
 
 export default class Textarea extends Text {
   static define() {

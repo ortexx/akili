@@ -12,9 +12,10 @@ let watch = !process.env.BUILD;
 
 let banner = `Akili is a javascript framework\n
 const Akili = makeItEasy(js + html);\n
+@version ${pack.version}
 @author Alexandr Balasyan <mywebstreet@gmail.com>
-@link http://akilijs.com
-@version ${pack.version}`;
+{@link http://akilijs.com}
+{@link https://github.com/ortexx/akili}`;
 
 plugins.push(new webpack.BannerPlugin({
   banner: banner.trim()

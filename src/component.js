@@ -1,6 +1,6 @@
-import Akili from './akili';
-import request from './services/request';
-import utils from './utils';
+import Akili from './akili.js';
+import request from './services/request.js';
+import utils from './utils.js';
 
 const evaluationRegex = /\${(((?!\${).)*)}/;
 const evaluationRegexGlobal = new RegExp(evaluationRegex.source, "g");

@@ -1,6 +1,6 @@
-import Component from '../component';
-import Akili from '../akili';
-import utils from '../utils';
+import Component from '../component.js';
+import Akili from '../akili.js';
+import utils from '../utils.js';
 
 export default class For extends Component {
   static matches = '[in]';

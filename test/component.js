@@ -1,7 +1,7 @@
 import { assert } from 'chai';
 import Akili from '../src/akili.js';
 import Home from './app/home.js';
-import elements from './app/elements';
+import elements from './app/elements.js';
 
 elements.abstract.appendChild(elements.home);
 

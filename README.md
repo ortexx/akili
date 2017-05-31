@@ -31,6 +31,7 @@ Akili.init();
 </body>
 ```
 
+[Tabs component](https://github.com/ortexx/akili-tabs) for the framework.
 More examples are on the [site](http://akilijs.com).
 
 ## Installation

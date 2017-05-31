@@ -1,5 +1,5 @@
-import EventEmitter from '../src/event-emitter';
-import elements from './app/elements';
+import EventEmitter from '../src/event-emitter.js';
+import elements from './app/elements.js';
 import { assert } from 'chai';
 
 let oldAddEventListener = Element.prototype.addEventListener;

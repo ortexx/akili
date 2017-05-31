@@ -1,7 +1,7 @@
 import { assert } from 'chai';
 import Akili from '../src/akili.js';
-import elements from './app/elements';
-import ForCompile from './app/for-compile';
+import elements from './app/elements.js';
+import ForCompile from './app/for-compile.js';
 
 describe('akili.js', () => {
   describe('Akili', () => {
