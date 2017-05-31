@@ -31,7 +31,6 @@ Akili.init();
 </body>
 ```
 
-[Tabs component](https://github.com/ortexx/akili-tabs) for the framework.
 More examples are on the [site](http://akilijs.com).
 
 ## Installation
@@ -49,6 +48,10 @@ or [download](http://akilijs.com/js/libs/akili.min.js) and include as script
 
 ## Documentation
 Documentation is [here](http://akilijs.com/docs/getting-started).
+
+## Additional components
+* [akili-tabs](https://github.com/ortexx/akili-tabs)
+
 
 ## Changelog
 A new entry will be added to the changelog after the version's first or second number changing.
