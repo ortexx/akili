@@ -591,8 +591,18 @@ Akili.isolateFunction = function(fn, context = null) {
  */
 Akili.errorHandling = function() {
   window.addEventListener('error', () => {
-    Akili.__init = false;
+    this.triggerInit(false);
   });
+};
+
+/**
+ * Trigger an initialization status
+ *
+ * @param {boolean} status
+ */
+Akili.triggerInit = function(status) {
+  Akili.__init = status;
+  window.dispatchEvent(new CustomEvent('akili-init', { detail: status }));
 };
 
 /**
@@ -609,9 +619,10 @@ Akili.init = function(root) {
       return router.changeState();
     }
   }).then(() => {
-    Akili.__init = true;
+    this.triggerInit(true);
+
   }).catch((err) => {
-    Akili.__init = false;
+    this.triggerInit(false);
     throw err;
   });
 };
