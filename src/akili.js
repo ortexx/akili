@@ -620,7 +620,6 @@ Akili.init = function(root) {
     }
   }).then(() => {
     this.triggerInit(true);
-
   }).catch((err) => {
     this.triggerInit(false);
     throw err;
