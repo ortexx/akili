@@ -22,7 +22,10 @@ class HelloWorld extends Akili.Component {
 }
 
 Akili.component('hello-world', HelloWorld);
-Akili.init();
+
+document.addEventListener('DOMContentLoaded', () => {
+  Akili.init();
+});
 ```
 
 ```html

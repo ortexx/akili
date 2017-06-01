@@ -1,696 +1,675 @@
-import Akili from '../akili.js';
-import utils from '../utils.js';
-import request from './request.js';
-import Route from '../components/route.js';
+/**
+ * Javascript framework
+ *
+ * const Akili = makeItEasy(js + html);
+ *
+ * @author Alexandr Balasyan <mywebstreet@gmail.com>
+ * @link http://akilijs.com
+ */
 
-export class Transition {
-  constructor(url, query, hash = '', previous = null) {
-    this.url = url;
-    this.query = query;
-    this.hash = hash;
-    this.previous = previous;
-    this.path = null;
-    this.routes = [];
-    this.states = [];
-    this.params = {};
-    this.__cancelled = false;
-  }
+import Component from './component.js';
+import If from './components/if.js';
+import For from './components/for.js';
+import Select from './components/select.js';
+import Input from './components/input.js';
+import Radio from './components/radio.js';
+import Text from './components/text.js';
+import Textarea from './components/textarea.js';
+import Content from './components/content.js';
+import Include from './components/include.js';
+import Route from './components/route.js';
+import A from './components/a.js';
+import Scope from './scope.js';
+import EventEmitter from './event-emitter.js';
+import request from './services/request.js';
+import router from './services/router.js';
+import utils from './utils.js';
 
-  redirect() {
-    this.cancel();
-    router.state.apply(router, arguments);
-  }
+const Akili = {};
 
-  setPath(path) {
-    path.parent = this.path || null;
-    this.path = path;
-    this.routes.push(path);
-    this.states.push(path.state);
-    this.params = !path.parent? path.params: {...path.parent.params, ...path.params};
-  }
+Akili.options = {
+  nestedWatching: true,
+  showEvaluationErrors: true,
+  debug: true
+};
 
-  getRoute(state) {
-    for(let i = 0, l = this.routes.length; i < l; i++) {
-      let route = this.routes[i];
+Akili.__init = null;
+Akili.__components = {};
+Akili.__aliases = {};
+Akili.__scopes = {};
+Akili.__isolation = null;
+Akili.__evaluation = null;
 
-      if(route.state === state) {
-        return route;
-      }
-    }
+Akili.htmlBooleanAttributes = [
+  'disabled', 'contenteditable', 'hidden'
+];
 
-    return null;
-  }
-
-  hasState(state) {
-    return this.states.indexOf(state) != -1;
-  }
-
-  cancel() {
-    this.__cancelled = true;
-  }
-}
-
-const router = {};
-
-router.baseUrl = "/";
-router.states = [];
-router.hashMode = true;
-router.__redirects = 0;
-router.__init = false;
-router.__options = {};
-router.__paramRegex = /(:([\w\d-]+))/g;
-router.__routeSelector = c => c instanceof Route;
+Akili.components = {};
+Akili.decorators = {};
+Akili.services = {};
 
 /**
- * Add new state to the router
+ * Join binding keys
  *
- * @param {string} name - state name. To set parents you can use dot, e.g. 'app.article.edit'
- * @param {string} pattern - url pattern like 'app/article/:id'
- * @param {object} [options]
- * @returns {router}
+ * @param {string[]} keys binding keys
  */
-router.add = function (name, pattern, options = {}) {
-  let defaultOptions = {
-    template: '',
-    templateUrl: '',
-    abstract: false,
-    handler: (transition) => {}
-  };
-
-  if(!options.template && !options.templateUrl) {
-    options.abstract = true;
-  }
-
-  if(this.has(name)) {
-    throw new Error(`Router state "${name}" is already exists`)
-  }
-
-  this.setState(name, pattern, {...defaultOptions, ...options});
-
-  return this;
+Akili.joinBindingKeys = function(keys) {
+  return keys.map(el => el.toString()).join('.');
 };
 
 /**
- * Remove state from the list
+ * Add scope to the scopes list
  *
- * @param {string} name
+ * @param scope
  */
-router.remove = function(name) {
-  for(let i = 0, l = this.states.length; i < l; i++) {
-    if(this.states[i].name == name) {
-      this.states.splice(i, 1);
+Akili.addScope = function(scope) {
+  if(this.__scopes[scope.__name]) {
+    throw new Error(`Scope name ${scope.__name} already exists`);
+  }
 
+  this.__scopes[scope.__name] = scope;
+};
+
+/**
+ * Get scope from the scopes list
+ *
+ * @param {string} name - scope name
+ * @returns {Scope}
+ */
+Akili.getScope = function(name) {
+  return this.__scopes[name];
+};
+
+/**
+ * Delete scope from the scopes list
+ *
+ * @param {string} name - scope name
+ */
+Akili.removeScope = function(name) {
+  let scope = this.__scopes[name];
+
+  scope.__component = null;
+  scope.__el = null;
+  scope.__parent = null;
+  this.__scopes[name] = null;
+  delete this.__scopes[name];
+};
+
+/**
+ * Get all elements with attached Akili components
+ *
+ * @param {HTMLElement} el
+ * @param {boolean} [tree=true] - return array of the parents if true, closest parent if false
+ * @returns {Array|HTMLElement|null}
+ */
+Akili.getAkiliParents = function (el, tree = true) {
+  let arr = [];
+
+  function check(node) {
+    if(!node.parentNode) {
       return;
     }
-  }
-};
 
-/**
- * Check state exists
- *
- * @param {string} name
- * @returns {boolean}
- */
-router.has = function(name) {
-  for(let i = 0, l = this.states.length; i < l; i++) {
-    if(this.states[i].name == name) {
-      return true;
-    }
-  }
+    if(node.parentNode.__akili) {
+      arr.push(node.parentNode);
 
-  return false;
-};
-
-/**
- * Change the state to the passed
- *
- * @param {string} name - state name
- * @param {object} [params] - params for state {id: 1} => '/app/:id' => '/app/1'
- * @param {object} [query] - query {x: 1} => '/app/?x=1'
- * @param {string} [hash]
- * @param {object} [options]
- */
-router.state = function (name, params = {}, query = {}, hash = '', options = {}) {
-  let state = this.getState(name);
-
-  if (!state) {
-    throw new Error(`Not found route state with name ${name}`);
-  }
-
-  let url = this.createStateUrl(state, params, query, hash);
-
-  if(!options.reload && url === this.getUrl()) {
-    return;
-  }
-
-  this.__options = options;
-  this.setUrl(url);
-};
-
-/**
- * Go back
- */
-router.back = function() {
-  return window.history.back.apply(window.history, arguments);
-};
-
-/**
- * Go to any way
- */
-router.go = function() {
-  return window.history.go.apply(window.history, arguments);
-};
-
-/**
- * Go forward
- */
-router.forward = function() {
-  return window.history.forward.apply(window.history, arguments);
-};
-
-/**
- * Change state by url
- *
- * @param {string} url
- * @param {object} [options]
- */
-router.location = function(url, options = { reload: false }) {
-  this.__options = options;
-
-  if(this.hashMode) {
-    window.location.hash = url;
-  }
-  else {
-    window.history.pushState(null, '', url);
-  }
-};
-
-/**
- * Router initialization. Should be called before Akili.init()
- *
- * @param {string} [defaultUrl]
- * @param {boolean} [hashMode=true]
- */
-router.init = function (defaultUrl = '', hashMode = true) {
-  let oldPushState = window.history.pushState;
-
-  window.history.pushState = function() {
-    let res = oldPushState.apply(this, arguments);
-
-    router.changeState();
-
-    return res;
-  };
-
-  this.__onStateChangeHandler = () => {
-    this.changeState();
-  };
-
-  this.defaultUrl = defaultUrl;
-  this.hashMode = hashMode;
-
-  this.states.sort((a, b) => {
-    a = a.name.split('.').length;
-    b = b.name.split('.').length;
-
-    return a - b;
-  });
-
-  let states = {};
-
-  for (let i = 0, l = this.states.length; i < l; i++) {
-    let state = this.states[i];
-    let parents = [];
-
-    states[state.name] = state;
-    state.children = [];
-    parents = state.name.split('.');
-    parents.pop();
-    state.level = state.abstract? null: parents.length;
-
-    if (parents.length) {
-      let parentName = parents.join('.');
-      let parent = states[parentName];
-
-      if (!parent) {
-        throw new Error(`Not found parent route state "${parentName}" for "${state.name}"`)
+      if(!tree) {
+        return;
       }
-
-      if(state.level !== null && parent.abstract) {
-        state.level--;
-      }
-
-      state.fullPattern = this.splitSlashes(parent.fullPattern + '/' + state.pattern);
-      parent.children.push(state);
     }
-    else {
-      state.fullPattern = state.pattern;
-    }
+
+    check(node.parentNode);
   }
 
-  if(!this.states.length && Akili.options.debug) {
-    console.warn(`You didn't add any routes to the router`);
-  }
+  check(el);
 
-  window.addEventListener('popstate', this.__onStateChangeHandler);
-  this.__init = true;
+  return tree? arr: arr[0];
 };
 
 /**
- * Get state by name
+ * Set element inner html with content replacing
  *
- * @param {string} name
- * @returns {object|null}
- */
-router.getState = function (name) {
-  for (let i = 0, l = this.states.length; i < l; i++) {
-    let state = this.states[i];
-
-    if (state.name == name) {
-      return state;
-    }
-  }
-
-  return null;
-};
-
-/**
- * Set state
+ * @example
+ * // returns "<i>Hello</i><b>World</b>"
+ * el.innerHTML = "<b>World</b>";
+ * Akili.setTemplate(el, "<i>Hello</i>${this.__children}");
  *
- * @param {string} name
- * @param {string} pattern
- * @param {object} options
+ * @param {HTMLElement} el
+ * @param {string} template
+ * @returns {string}
  */
-router.setState = function (name, pattern, options = {}) {
-  let state = {...options, name, pattern};
+Akili.setTemplate = function(el, template) {
+  template = template.replace(/\${(((?!\${)\s*this\.__content\s*)*)}/, el.innerHTML);
+  el.innerHTML = template;
 
-  router.states.push(state);
-
-  return state;
+  return el.innerHTML;
 };
 
 /**
- * Remove state by name
- *
- * @param {string} name
- */
-router.removeState = function (name) {
-  for (let i = 0, l = this.states.length; i < l; i++) {
-    let state = this.states[i];
-
-    if (state.name == name) {
-      this.states.splice(i, 1);
-
-      return;
-    }
-  }
-};
-
-/**
- * Set url
- *
- * @param {string} url
- */
-router.setUrl = function (url) {
-  this.hashMode? this.setHashUrl(url): this.setHistoryUrl(url);
-};
-
-/**
- * Set url using history
- *
- * @param url
- */
-router.setHistoryUrl = function (url) {
-  window.history.pushState(null, '', url);
-};
-
-/**
- * Set url using hash
- *
- * @param url
- */
-router.setHashUrl = function (url) {
-  window.location.hash = '#' + (url || '/');
-};
-
-/**
- * Get url
+ * Generate unique scope name
  *
  * @returns {string}
  */
-router.getUrl = function () {
-  return this.hashMode ? this.getHashUrl() : this.getHistoryUrl();
-};
-
-/**
- * Get url using history
- *
- * @returns {string}
- */
-router.getHistoryUrl = function () {
-  if(window.location.pathname === '/') {
-    return '';
-  }
-
-  return window.location.pathname + window.location.search + window.location.hash;
-};
-
-/**
- * Get url using hash
- *
- * @returns {string}
- */
-router.getHashUrl = function () {
-  return window.location.hash.replace(/^#/, '');
-};
-
-/**
- * Get query params
- *
- * @returns {object}
- */
-router.getUrlQuery = function() {
-  return this.hashMode ? this.getHashUrlQuery() : this.getHistoryUrlQuery();
-};
-
-/**
- * Get query params using history
- *
- * @returns {object}
- */
-router.getHistoryUrlQuery = function() {
-  return request.paramsFromQuery(window.location.search.replace(/^\?/, ''));
-};
-
-/**
- * Get query params using hash
- *
- * @returns {object}
- */
-router.getHashUrlQuery = function() {
-  return request.paramsFromQuery((window.location.hash.split('?')[1] || ''));
-};
-
-/**
- * Create url by data
- *
- * @param {string|Object} state
- * @param {object} [params]
- * @param {object} [query]
- * @param {string} [hash]
- */
-router.createStateUrl = function (state, params = {}, query = {}, hash = '') {
-  typeof state !== 'object' && (state = this.getState(state));
-
-  let url = state.fullPattern.replace(this.__paramRegex, (m, f, v) => {
-    return params[v] || '';
+Akili.createScopeName = function() {
+  return utils.createRandomString(16, (str) => {
+    return !!this.__scopes[str];
   });
+};
 
-  url = this.splitSlashes(url);
-
-  if(Object.keys(query).length) {
-    url += '?' + request.paramsToQuery(query);
+/**
+ * Isolate function.
+ * Every scope variable change calls according node evaluation.
+ * For example, if you change some scope variable in the loop - evaluation will be called on the each change.
+ * It may be slow for the application.
+ * You can isolate this action and run all evaluation process after passed function at once.
+ *
+ * @param {function} fn
+ * @returns {*}
+ */
+Akili.isolate = function(fn) {
+  if(this.__isolation) {
+    return fn();
   }
 
-  hash = (hash || '').replace('#', '');
+  this.__isolation = {};
 
-  if(!this.hashMode && hash) {
-    url += '#' + hash;
-  }
+  let res = fn();
+  let props = [];
 
-  return url;
-};
-
-/**
- * Remove all unnecessary slashes from an url
- *
- * @param {string} url
- * @returns {string}
- */
-router.splitSlashes = function (url) {
-  return url.replace(/[\/]+/g, '/');
-};
-
-/**
- * Clear all router dependencies
- */
-router.clear = function () {
-  window.removeEventListener('popstate', this.__onStateChangeHandler);
-};
-
-/**
- * Get state url content
- *
- * @param {string|Object} state
- * @param {string} url
- * @returns {object}
- */
-router.getPatternContent = function (state, url) {
-  typeof state !== 'object' && (state = this.getState(state));
-
-  let keys = [];
-  let i = 0;
-  let params = {};
-
-  url = url.split('?')[0];
-  url = url.split('#')[0];
-
-  let urlPattern = state.fullPattern.replace(this.__paramRegex, (m, f, v) => {
-    keys.push(v);
-
-    return '([^\\/]*)';
-  });
-
-  let regex = new RegExp(urlPattern);
-  let isIncluded = url.match(regex);
-
-  if (!isIncluded) {
-    return null;
-  }
-
-  url.replace(regex, (m, v) => {
-    v && (params[keys[i]] = v);
-    i++;
-  });
-
-  return { params };
-};
-
-/**
- * Check the state is active now
- *
- * @param {string|Object} state
- * @param {boolean} includes
- * @returns {boolean}
- */
-router.isActiveState = function(state, includes = false) {
-  typeof state !== 'object' && (state = this.getState(state));
-
-  let url = this.splitSlashes(this.getUrl().split('?')[0] + '/');
-  let urlPattern = state.fullPattern.replace(this.__paramRegex, '([^\\/]*)');
-  let str = includes? urlPattern: this.splitSlashes('^' + urlPattern + '\/$');
-  let regex = new RegExp(str);
-
-  return regex.test(url);
-};
-
-/**
- * Check the current url includes a state
- *
- * @param {string|Object} state
- * @returns {boolean}
- */
-router.inActiveState = function(state) {
-  return router.isActiveState(state, true);
-};
-
-/**
- * Get route component by level
- *
- * @param {number} level
- */
-router.getRoute = function (level) {
-  let i = 0;
-
-  let find = (el) => {
-    let route = el.child(this.__routeSelector);
-
-    if (!route) {
-      return null;
-    }
-
-    if (i == level) {
-      return route;
-    }
-
-    i++;
-
-    return find(route);
-  };
-
-  return find(Akili.root);
-};
-
-/**
- * Get the first match
- *
- * @param {array} arr
- * @param {string} url
- * @returns {object|null}
- */
-router.getArrayPatternContent = function (arr, url) {
-  for (let i = 0, l = arr.length; i < l; i++) {
-    let state = arr[i];
-    let content = this.getPatternContent(state, url);
-
-    if (!content) {
+  for(let k in this.__isolation) {
+    if(!this.__isolation.hasOwnProperty(k)) {
       continue;
     }
 
-    return {state: state, ...content};
+    props.push(this.__isolation[k]);
   }
 
-  return null;
-};
+  this.__isolation = null;
 
-/**
- * Get states by level
- *
- * @param {number} level
- * @returns {Array}
- */
-router.getStatesByLevel = function (level) {
-  let states = [];
+  for(let i = 0, l = props.length; i < l; i++) {
+    let prop = props[i];
 
-  for (let i = 0, l = this.states.length; i < l; i++) {
-    let state = this.states[i];
+    if(prop.isDeleted) {
+      prop.component.__evaluateByKeys(prop.keys, undefined, true);
 
-    if (state.level < level) {
       continue;
     }
-    else if (state.level > level) {
-      break;
-    }
 
-    states.push(state);
+    utils.setPropertyByKeys(prop.keys, prop.component.scope, (last, val) => {
+      if(!last) {
+        return val || {};
+      }
+
+      return prop.value;
+    });
   }
 
-  return states;
+  props = null;
+
+  return res;
 };
 
 /**
- * Change state
+ * Stop evaluation before the function and continue after
+ *
+ * @param {function} fn
+ * @returns {*}
  */
-router.changeState = function () {
-  if(this.__disableChange) {
-    delete this.__disableChange;
+Akili.unevaluated = function(fn) {
+  let evaluation = this.__evaluation;
+  let res;
+
+  this.__evaluation = null;
+  res = fn();
+  this.__evaluation = evaluation;
+
+  return res;
+};
+
+/**
+ * Stop isolation before the function and continue after
+ *
+ * @param {function} fn
+ * @returns {*}
+ */
+Akili.unisolated = function(fn) {
+  let evaluation = this.__isolation;
+  let res;
+
+  this.__isolation = null;
+  res = fn();
+  this.__isolation = evaluation;
+
+  return res;
+};
+
+/**
+ * Initialize element
+ *
+ * @param {HTMLElement} el
+ * @param {object} [options={}]
+ * @returns {*}
+ */
+Akili.initialize = function(el, options = {}) {
+  let recompile = options.recompile;
+  let component = el.__akili;
+
+  if(component) {
+    if(recompile) {
+      component.__recompile();
+
+      return component;
+    }
 
     return;
   }
 
-  let url = this.getUrl();
-  let hash = this.hashMode? '': window.location.hash.replace('#', '');
-  let query = this.getUrlQuery();
-  let prevTransition = router.transition || null;
-  let transition = router.transition = new Transition(url, query, hash, prevTransition);
-  let level = 0;
+  let isRoot = el === this.__root;
+  let componentName = utils.toDashCase(el.getAttribute('component') || el.tagName.toLowerCase());
+  let _Component = this.__components[componentName];
 
-  let next = (states, onEnd) => {
-    if (!states.length) {
-      return onEnd && onEnd();
+  CHECK_ALIASES: if(!_Component) {
+    let selectors = Object.keys(this.__aliases);
+
+    if(!selectors.length) {
+      break CHECK_ALIASES;
     }
 
-    let content = this.getArrayPatternContent(states, url);
+    let selectorAll = selectors.join(',');
 
-    if (!content) {
-      return onEnd && onEnd();
+    if(!el.matches(selectorAll)) {
+      break CHECK_ALIASES;
     }
 
-    let state = content.state;
-    let params = content.params;
-    let route = state.abstract? null: this.getRoute(state.level);
-
-    if (!route && !state.abstract) {
-      throw new Error (`Not found route component for state "${state.name}"`);
-    }
-
-    transition.setPath({ state, params, query, hash, component: route, loaded: true });
-    level++;
-
-    let hasState = prevTransition && prevTransition.hasState(state);
-    let isDifferent = true;
-
-    if(hasState) {
-      let route = prevTransition.getRoute(state);
-      let prev = { params: route.params, query: route.query, hash: route.hash };
-      let current = { params, query, hash };
-
-      isDifferent = !utils.compare(prev, current);
-    }
-
-    let isHistory = this.__options.reload === undefined && !isDifferent;
-    let isReload = this.__options.reload === false;
-
-    if (hasState && (isHistory || isReload)) {
-      transition.path.loaded = false;
-
-      return next(state.children, onEnd);
-    }
-
-    Promise.resolve(state.handler(transition)).then((data) => {
-      if (transition.__cancelled) {
-        return onEnd && onEnd();
+    for(let selector in this.__aliases) {
+      if(!this.__aliases.hasOwnProperty(selector)) {
+        continue;
       }
 
-      transition.path.data = data;
-
-      if(state.abstract) {
-        return next(state.children, onEnd);
+      if(el.matches(selector)) {
+        _Component = this.__components[this.__aliases[selector]];
+        break;
       }
+    }
+  }
 
-      route.setTransition(transition).then(() => {
-        transition.path.loaded = true;
+  if(!_Component && !isRoot) {
+    return;
+  }
 
-        next(state.children, onEnd);
+  if(!_Component) {
+    _Component = this.Component;
+  }
+
+  if(_Component.matches && !el.matches(_Component.matches)) {
+    return;
+  }
+
+  component = new _Component(el, {});
+
+  if(component.__cancelled) {
+    return;
+  }
+
+  component.__create();
+
+  return component;
+};
+
+/**
+ * Compile the element
+ *
+ * @param {HTMLElement} root
+ * @param {object} [options]
+ * @returns {Promise}
+ */
+Akili.compile = function(root, options = { recompile: false }) {
+  let elements = [];
+
+  let nestedInitializing = (el) => {
+    let component = this.initialize(el, options);
+    let children = el.children;
+
+    component && elements.push(component);
+
+    for(let i = 0, l = children.length; i < l; i++) {
+      let child = children[i];
+
+      nestedInitializing(child);
+    }
+  };
+
+  nestedInitializing(root);
+
+  let p = [];
+
+  for(let i = 0, l = elements.length; i < l; i++) {
+    let component = elements[i];
+
+    p.push(component.__compile());
+  }
+
+  return Promise.all(p).then(() => {
+    let r = [];
+
+    for(let i = elements.length - 1; i >= 0; i--) {
+      let component = elements[i];
+
+      r.push(component.__resolve());
+    }
+
+    return Promise.all(r);
+  });
+};
+
+/**
+ * Register the component or get it if fn is not passed
+ *
+ * @param {string} name
+ * @param {Component} [fn]
+ */
+Akili.component = function(name, fn) {
+  name = name.toLowerCase();
+
+  if(!fn) {
+    return this.__components[name] || null;
+  }
+
+  if(this.__components[name] && Akili.options.debug) {
+    console.warn(`Component ${name} already was added`);
+  }
+
+  this.__components[name] = fn;
+};
+
+/**
+ * Unregister the component
+ *
+ * @param {string} name
+ */
+Akili.unregisterComponent = function(name) {
+  delete this.__components[name];
+};
+
+/**
+ * Register the selector alias or get it if component name is not passed
+ *
+ * @param {string} selector - DOM selector
+ * @param {string} [componentName]
+ */
+Akili.alias = function(selector, componentName = '') {
+  componentName = componentName.toLowerCase();
+
+  if(!componentName) {
+    return this.__aliases[selector] || null;
+  }
+
+  if(this.__aliases[selector] && Akili.options.debug) {
+    console.warn(`Alias with selector ${selector} already was added`);
+  }
+
+  this.__aliases[selector] = componentName;
+};
+
+/**
+ * Unregister the selector alias
+ *
+ * @param {string} selector
+ */
+Akili.unregisterAlias = function(selector) {
+  delete this.__components[selector];
+};
+
+/**
+ * Isolate array prototype functions
+ */
+Akili.isolateArrayPrototype = function() {
+  let keys = Object.getOwnPropertyNames(Array.prototype);
+
+  for(let i = 0, l = keys.length; i < l; i++) {
+    let key = keys[i];
+    let old = Array.prototype[key];
+
+    if(typeof old != 'function' || key == 'constructor') {
+      continue;
+    }
+
+    Array.prototype[key] = function() {
+      return Akili.unevaluated(() => {
+        if(!this.__isProxy) {
+          return old.apply(this, arguments);
+        }
+
+        return Akili.isolate(() => {
+          return old.apply(this, arguments);
+        });
+      });
+    };
+  }
+};
+
+/**
+ * Isolate some window functions
+ */
+Akili.isolateWindowFunctions = function() {
+  window.setTimeout = this.createCallbackIsolation(window.setTimeout, 0);
+  window.setInterval = this.createCallbackIsolation(window.setInterval, 0);
+  window.Promise && (window.Promise.constructor = this.createCallbackIsolation(window.Promise.constructor , 0));
+};
+
+/**
+ * Isolate event listeners
+ */
+Akili.isolateEvents = function() {
+  let oldAddEventListener = Element.prototype.addEventListener;
+  let oldRemoveEventListener = Element.prototype.removeEventListener;
+  let oldRemove = Element.prototype.remove;
+
+  Element.prototype.remove = function() {
+    delete this.__akiliListeners;
+
+    return oldRemove.apply(this, arguments);
+  };
+
+  Element.prototype.addEventListener = function(name, fn) {
+    let args = [].slice.call(arguments);
+
+    if(!this.__akiliListeners) {
+      this.__akiliListeners = {};
+    }
+
+    if(!this.__akiliListeners[name]) {
+      this.__akiliListeners[name] = [];
+    }
+
+    args[1] = function () {
+      return Akili.unevaluated(() => {
+        return Akili.isolate(() => {
+          return fn.apply(this, arguments);
+        });
+      });
+    };
+
+    this.__akiliListeners[name].push({
+      link: fn,
+      fn: args[1]
+    });
+
+    return oldAddEventListener.apply(this, args);
+  };
+
+  Element.prototype.removeEventListener = function(name, fn) {
+    if(!this.__akiliListeners) {
+      this.__akiliListeners = {};
+    }
+
+    if(!this.__akiliListeners[name]) {
+      this.__akiliListeners[name] = [];
+    }
+
+    for(let i = 0, l = this.__akiliListeners[name].length; i < l; i++) {
+      let listener = this.__akiliListeners[name][i];
+
+      if(listener.link === fn) {
+        this.__akiliListeners[name].splice(i, 1);
+        i--;
+        l--;
+
+        break;
+      }
+    }
+
+    if(!this.__akiliListeners[name].length) {
+      delete this.__akiliListeners[name];
+    }
+
+    return oldRemoveEventListener.apply(this, arguments);
+  };
+};
+
+/**
+ * Wrap the function callback to an isolate context
+ *
+ * @param {function} fn
+ * @param {number|string} [pos="last"]
+ * @returns {Function}
+ */
+Akili.createCallbackIsolation = function(fn, pos = 'last') {
+  return function() {
+    let args = [].slice.call(arguments);
+    let callback = pos == 'last'? args[args.length - 1]: args[pos];
+
+    if(typeof callback != 'function') {
+      return fn.apply(this, arguments);
+    }
+
+    args[0] = () => {
+      return Akili.unevaluated(() => {
+        return Akili.isolate(() => {
+          return callback();
+        });
+      });
+    };
+
+    return fn.apply(this, args);
+  };
+};
+
+/**
+ * Isolate the function
+ *
+ * @param {function} fn
+ * @param {object} [context]
+ * @returns {function}
+ */
+Akili.isolateFunction = function(fn, context = null) {
+  if(fn.__akili) {
+    return fn;
+  }
+
+  let oFn = function() {
+    context = context || this;
+
+    return Akili.unevaluated(() => {
+      return Akili.isolate(() => {
+        return fn.apply(context, arguments);
       });
     });
   };
 
-  next(this.getStatesByLevel(0), () => {
-    if(!transition.routes.length) {
-      if(this.__redirects) {
-        throw new Error(`Wrong router default url "${this.defaultUrl}"`);
-      }
+  Object.defineProperty(oFn, '__akili', {
+    configurable: true,
+    enumerable: false,
+    value: true
+  });
 
-      if(this.defaultUrl) {
-        this.hashMode && this.defaultUrl != this.getUrl() && (this.__disableChange = true);
-        this.setUrl(this.defaultUrl);
-        this.__redirects++;
+  return oFn;
+};
 
-        return this.changeState();
-      }
-
-      if(Akili.options.debug) {
-        console.warn(`Not found a default route. You can pass it in "router.init(defaultUrl)" function`);
-      }
-    }
-
-    this.__options = {};
-    this.__redirects = 0;
-
-    if(prevTransition) {
-      for(let i = level, l = prevTransition.routes.length; i < l; i++) {
-        let route = prevTransition.routes[i];
-        route.component && route.component.empty();
-      }
-    }
-
-    window.dispatchEvent(new CustomEvent('state-change', {
-      detail: transition
-    }));
+/**
+ * Error handling
+ */
+Akili.errorHandling = function() {
+  window.addEventListener('error', () => {
+    this.triggerInit(false);
   });
 };
 
-router.Transition = Transition;
+/**
+ * Trigger an initialization status
+ *
+ * @param {boolean} status
+ */
+Akili.triggerInit = function(status) {
+  Akili.__init = status;
+  window.dispatchEvent(new CustomEvent('akili-init', { detail: status }));
+};
 
-export default router;
+/**
+ * Initialize an application
+ *
+ * @param {HTMLElement} [root]
+ * @returns {Promise}
+ */
+Akili.init = function(root) {
+  this.__root = root || document.querySelector("html");
+
+  return this.compile(this.__root).then(() => {
+    if(router.__init) {
+      return router.changeState();
+    }
+  }).then(() => {
+    this.triggerInit(true);
+
+  }).catch((err) => {
+    this.triggerInit(false);
+    throw err;
+  });
+};
+
+/**
+ * Define all default components
+ */
+Akili.define = function() {
+  A.define();
+  Content.define();
+  Component.define();
+  For.define();
+  Include.define();
+  Input.define();
+  If.define();
+  Radio.define();
+  Route.define();
+  Select.define();
+  Textarea.define();
+};
+
+Akili.Component = Component;
+Akili.EventEmitter = EventEmitter;
+Akili.Scope = Scope;
+Akili.utils = utils;
+Akili.components.A = A;
+Akili.components.Content = Content;
+Akili.components.For = For;
+Akili.components.If = If;
+Akili.components.Include = Include;
+Akili.components.Input = Input;
+Akili.components.Radio = Radio;
+Akili.components.Route = Route;
+Akili.components.Select = Select;
+Akili.components.Text = Text;
+Akili.components.Textarea = Textarea;
+Akili.services.request = request;
+Akili.services.router = router;
+
+window.Akili = Akili;
+
+export const components = Akili.components;
+export const services = Akili.services;
+export default Akili;
+
+Akili.define();
+Akili.errorHandling();
+Akili.isolateEvents();
+Akili.isolateArrayPrototype();
+Akili.isolateWindowFunctions();

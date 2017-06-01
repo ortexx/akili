@@ -33,7 +33,7 @@ Akili.options = {
   debug: true
 };
 
-Akili.__init = false;
+Akili.__init = null;
 Akili.__components = {};
 Akili.__aliases = {};
 Akili.__scopes = {};
@@ -587,6 +587,15 @@ Akili.isolateFunction = function(fn, context = null) {
 };
 
 /**
+ * Error handling
+ */
+Akili.errorHandling = function() {
+  window.addEventListener('error', () => {
+    Akili.__init = false;
+  });
+};
+
+/**
  * Initialize an application
  *
  * @param {HTMLElement} [root]
@@ -597,18 +606,13 @@ Akili.init = function(root) {
 
   return this.compile(this.__root).then(() => {
     if(router.__init) {
-      return new Promise((res) => {
-        let onState = () => {
-          res();
-          window.removeEventListener('state-change', onState);
-        };
-
-        window.addEventListener('state-change', onState);
-        router.changeState();
-      });
+      return router.changeState();
     }
   }).then(() => {
     Akili.__init = true;
+  }).catch((err) => {
+    Akili.__init = false;
+    throw err;
   });
 };
 
@@ -654,6 +658,7 @@ export const services = Akili.services;
 export default Akili;
 
 Akili.define();
+Akili.errorHandling();
 Akili.isolateEvents();
 Akili.isolateArrayPrototype();
 Akili.isolateWindowFunctions();
