@@ -2,12 +2,12 @@
   "name": "akili",
   "version": "0.1.7",
   "description": "Akili - javascript framework",
-  "homepage": "http://akilijs.com",
   "main": "./src/akili.js",
   "author": {
     "name": "Alexandr Balasyan",
     "email": "mywebstreet@gmail.com"
   },
+  "homepage": "http://akilijs.com",
   "scripts": {
     "start": "webpack",
     "build": "BUILD=true MINIMIZE=true webpack",
