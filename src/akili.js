@@ -618,11 +618,15 @@ Akili.init = function(root) {
   this.__root = root || document.querySelector("html");
 
   let serverP = Promise.resolve();
-  let server = window.document.documentElement.getAttribute('akili-server');
- 
+  let html = window.document.documentElement;
+  let server = html.getAttribute('akili-server');
+
   if(server) {
+    html.innerHTML = '';
+    html.style.opacity = 0;
+
     serverP = request.get(server).then((res) => {
-      window.document.documentElement.innerHTML = res.data;
+      html.innerHTML = res.data;
     });
   }
 
@@ -632,6 +636,7 @@ Akili.init = function(root) {
         return router.changeState();
       }
     }).then(() => {
+      html.style.opacity = 1;
       this.triggerInit(true);
     }).catch((err) => {
       this.triggerInit(false);
