@@ -17,6 +17,9 @@ import Text from './components/text.js';
 import Textarea from './components/textarea.js';
 import Content from './components/content.js';
 import Include from './components/include.js';
+import Iframe from './components/iframe.js';
+import Image from './components/image.js';
+import Embed from './components/embed.js';
 import Route from './components/route.js';
 import A from './components/a.js';
 import Scope from './scope.js';
@@ -614,15 +617,26 @@ Akili.triggerInit = function(status) {
 Akili.init = function(root) {
   this.__root = root || document.querySelector("html");
 
-  return this.compile(this.__root).then(() => {
-    if(router.__init) {
-      return router.changeState();
-    }
-  }).then(() => {
-    this.triggerInit(true);
-  }).catch((err) => {
-    this.triggerInit(false);
-    throw err;
+  let serverP = Promise.resolve();
+  let server = window.document.documentElement.getAttribute('akili-server');
+ 
+  if(server) {
+    serverP = request.get(server).then((res) => {
+      window.document.documentElement.innerHTML = res.data;
+    });
+  }
+
+  return serverP.then(() => {
+    return this.compile(this.__root).then(() => {
+      if(router.__init) {
+        return router.changeState();
+      }
+    }).then(() => {
+      this.triggerInit(true);
+    }).catch((err) => {
+      this.triggerInit(false);
+      throw err;
+    });
   });
 };
 
@@ -633,8 +647,11 @@ Akili.define = function() {
   A.define();
   Content.define();
   Component.define();
+  Embed.define();
   For.define();
   Include.define();
+  Iframe.define();
+  Image.define();
   Input.define();
   If.define();
   Radio.define();
@@ -650,9 +667,12 @@ Akili.utils = utils;
 Akili.components.A = A;
 Akili.components.Content = Content;
 Akili.components.For = For;
+Akili.components.Embed = Embed;
 Akili.components.If = If;
 Akili.components.Include = Include;
 Akili.components.Input = Input;
+Akili.components.Iframe = Iframe;
+Akili.components.Image = Image;
 Akili.components.Radio = Radio;
 Akili.components.Route = Route;
 Akili.components.Select = Select;
