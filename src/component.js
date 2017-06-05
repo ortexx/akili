@@ -74,7 +74,6 @@ export default class Component {
     this.__setParents();
     this.__setBooleanAttributes();
     this.__defineAttributes();
-
   }
 
   /**
@@ -861,7 +860,7 @@ export default class Component {
         this.el.removeAttribute(key);
       }
       else if(node) {
-        node.nodeValue = value;
+        node.value = value;
       }
       else {
         this.el.setAttribute(key, value);
