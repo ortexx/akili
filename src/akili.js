@@ -42,6 +42,8 @@ Akili.__aliases = {};
 Akili.__scopes = {};
 Akili.__isolation = null;
 Akili.__evaluation = null;
+Akili.__html = window.document.documentElement;
+Akili.__serverRendering = false;
 
 Akili.htmlBooleanAttributes = [
   'disabled', 'contenteditable', 'hidden'
@@ -605,6 +607,7 @@ Akili.errorHandling = function() {
  */
 Akili.triggerInit = function(status) {
   Akili.__init = status;
+  this.__serverRendering && (this.__html.style.visibility = 'visible');
   window.dispatchEvent(new CustomEvent('akili-init', { detail: status }));
 };
 
@@ -615,18 +618,18 @@ Akili.triggerInit = function(status) {
  * @returns {Promise}
  */
 Akili.init = function(root) {
-  this.__root = root || document.querySelector("html");
-
   let serverP = Promise.resolve();
-  let html = window.document.documentElement;
-  let server = html.getAttribute('akili-server');
+  let server = this.__html.getAttribute('akili-server');
+
+  this.__root = root || document.querySelector("html");
+  this.__serverRendering = !!server;
 
   if(server) {
-    html.innerHTML = '';
-    html.style.visibility = 'hidden';
+    this.__html.innerHTML = '';
+    this.__html.style.visibility = 'hidden';
 
     serverP = request.get(server).then((res) => {
-      html.innerHTML = res.data;
+      this.__html.innerHTML = res.data;
     });
   }
 
@@ -636,7 +639,6 @@ Akili.init = function(root) {
         return router.changeState();
       }
     }).then(() => {
-      server && (html.style.visibility = 'visible');
       this.triggerInit(true);
     }).catch((err) => {
       this.triggerInit(false);
