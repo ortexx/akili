@@ -27,17 +27,14 @@ export default class Component {
   /**
    * Parse the expression
    *
-   * Required context variables:
-   *  this - scope object
-   *  event - window.event
-   *
    * @param {object} context
    * @param {string} expression
+   * @param {Event} [event=null]
    */
-  static parse(context, expression) {
-    return (function (expression) {
+  static parse(context, expression, event = null) {
+    return (function (expression, event) {
       return eval(expression);
-    }).call(context, expression)
+    }).call(context, expression, event)
   }
 
   constructor(el, scope = {}) {
@@ -707,12 +704,11 @@ export default class Component {
    */
   __evaluateEvent(node, el, e) {
     let expression = evaluationRegex.exec(node.__expression);
+    let evaluate;
 
     if(!expression) {
       return;
     }
-
-    !window.event && (window.event = e);
 
     this.__evaluatingEvent = {
       el: el,
@@ -722,8 +718,10 @@ export default class Component {
     };
 
     this.__disableProxy = null;
-    this.constructor.parse(this.__evaluationComponent.scope, expression[1]);
+    evaluate = this.constructor.parse(this.__evaluationComponent.scope, expression[1], e);
     this.__evaluatingEvent = null;
+
+    return evaluate;
   }
 
   /**
@@ -766,7 +764,7 @@ export default class Component {
 
       if(node.__expression) {
         emitter.bind((e) => {
-          component.__evaluateEvent(node, el, e);
+          return component.__evaluateEvent(node, el, e);
         });
       }
 

@@ -1,6 +1,6 @@
 {
   "name": "akili",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "description": "Akili - javascript framework",
   "main": "./src/akili.js",
   "author": {
@@ -22,7 +22,7 @@
   "dependencies": {},
   "devDependencies": {
     "babel-core": "^6.22.1",
-    "babel-loader": "^6.2.10",
+    "babel-loader": "^7.0.0",
     "babel-preset-es2015": "^6.24.0",
     "babel-preset-stage-0": "^6.22.0",
     "babel-preset-stage-3": "^6.22.0",
