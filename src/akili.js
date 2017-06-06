@@ -623,7 +623,7 @@ Akili.init = function(root) {
 
   if(server) {
     html.innerHTML = '';
-    html.style.opacity = 0;
+    html.style.visibility = 'hidden';
 
     serverP = request.get(server).then((res) => {
       html.innerHTML = res.data;
@@ -636,7 +636,7 @@ Akili.init = function(root) {
         return router.changeState();
       }
     }).then(() => {
-      html.style.opacity = 1;
+      server && (html.style.visibility = 'visible');
       this.triggerInit(true);
     }).catch((err) => {
       this.triggerInit(false);
