@@ -659,7 +659,7 @@ Akili.init = function(root) {
 };
 
 /**
- * Denitialize the application
+ * Deinitialize the application
  */
 Akili.deinit = function() {
   for(let key in this.__window.Element.prototype) {
