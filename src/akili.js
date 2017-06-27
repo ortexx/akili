@@ -586,10 +586,8 @@ Akili.isolateFunction = function(fn, context = null) {
   let oFn = function() {
     context = context || this;
 
-    return Akili.unevaluated(() => {
-      return Akili.isolate(() => {
-        return fn.apply(context, arguments);
-      });
+    return Akili.isolate(() => {
+      return fn.apply(context, arguments);
     });
   };
 
