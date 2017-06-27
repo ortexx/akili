@@ -85,12 +85,12 @@ export class Request {
           err.response = response;
 
           return reject(err);
-        }
-
+        } 
+        
         resolve(response);
       };
 
-      xhr.timeout = () => {
+      xhr.ontimeout = () => {
         reject(new Error(`Request to "${url}" timed out`));
       };
 

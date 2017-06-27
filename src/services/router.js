@@ -197,13 +197,13 @@ router.init = function (defaultUrl = '', hashMode = true) {
   window.history.pushState = function() {
     let res = oldPushState.apply(this, arguments);
 
-    router.changeState();
+    router.changeState().catch((err) => console.error(err));;
 
     return res;
   };
 
   this.__onStateChangeHandler = () => {
-    this.changeState();
+    this.changeState().catch((err) => console.error(err));;
   };
 
   this.defaultUrl = defaultUrl;
@@ -648,12 +648,16 @@ router.changeState = function () {
         transition.path.loaded = true;
 
         next(state.children, onEnd);
-      });
+      }).catch((err) => onEnd && onEnd(err));
     });
   };
 
   return new Promise((resolve, reject) => {
-    next(this.getStatesByLevel(0), () => {
+    next(this.getStatesByLevel(0), (err) => {
+      if(err) {
+        return reject(err);
+      }
+
       if(!transition.routes.length) {
         if(this.__redirects) {
           return reject(new Error(`Wrong router default url "${this.defaultUrl}"`));

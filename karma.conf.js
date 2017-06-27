@@ -35,7 +35,7 @@ module.exports = function(config) {
             loader: 'babel-loader',
             exclude: /node_modules/,
             query: {
-              presets: ['es2015', 'stage-0', 'stage-3']
+              presets: ['es2015', 'stage-2', 'stage-3']
             }
           }
         ]

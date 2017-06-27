@@ -40,6 +40,7 @@ Akili.__init = null;
 Akili.__components = {};
 Akili.__aliases = {};
 Akili.__scopes = {};
+Akili.__window = {};
 Akili.__isolation = null;
 Akili.__evaluation = null;
 Akili.__html = window.document.documentElement;
@@ -328,7 +329,7 @@ Akili.initialize = function(el, options = {}) {
  * @param {object} [options]
  * @returns {Promise}
  */
-Akili.compile = function(root, options = { recompile: false }) {
+Akili.compile = function(root, options = { recompile: false }) {  
   let elements = [];
 
   let nestedInitializing = (el) => {
@@ -429,6 +430,8 @@ Akili.unregisterAlias = function(selector) {
  * Isolate array prototype functions
  */
 Akili.isolateArrayPrototype = function() {
+  this.__window.Array = { prototype: {} };
+
   let keys = Object.getOwnPropertyNames(Array.prototype);
 
   for(let i = 0, l = keys.length; i < l; i++) {
@@ -438,6 +441,8 @@ Akili.isolateArrayPrototype = function() {
     if(typeof old != 'function' || key == 'constructor') {
       continue;
     }
+
+    this.__window.Array.prototype[key] = old;
 
     Array.prototype[key] = function() {
       return Akili.unevaluated(() => {
@@ -457,6 +462,10 @@ Akili.isolateArrayPrototype = function() {
  * Isolate some window functions
  */
 Akili.isolateWindowFunctions = function() {
+  this.__window.setTimeout = setTimeout;
+  this.__window.setInterval = setInterval;
+  this.__window.Promise = Promise;
+
   window.setTimeout = this.createCallbackIsolation(window.setTimeout, 0);
   window.setInterval = this.createCallbackIsolation(window.setInterval, 0);
   window.Promise && (window.Promise.constructor = this.createCallbackIsolation(window.Promise.constructor , 0));
@@ -466,14 +475,16 @@ Akili.isolateWindowFunctions = function() {
  * Isolate event listeners
  */
 Akili.isolateEvents = function() {
-  let oldAddEventListener = Element.prototype.addEventListener;
-  let oldRemoveEventListener = Element.prototype.removeEventListener;
-  let oldRemove = Element.prototype.remove;
+  this.__window.Element = { prototype: {} };
+
+  this.__window.Element.prototype.addEventListener = Element.prototype.addEventListener;
+  this.__window.Element.prototype.removeEventListener = Element.prototype.removeEventListener;
+  this.__window.Element.prototype.remove = Element.prototype.remove;
 
   Element.prototype.remove = function() {
     delete this.__akiliListeners;
 
-    return oldRemove.apply(this, arguments);
+    return Akili.__window.Element.prototype.remove.apply(this, arguments);
   };
 
   Element.prototype.addEventListener = function(name, fn) {
@@ -500,7 +511,7 @@ Akili.isolateEvents = function() {
       fn: args[1]
     });
 
-    return oldAddEventListener.apply(this, args);
+    return Akili.__window.Element.prototype.addEventListener.apply(this, args);
   };
 
   Element.prototype.removeEventListener = function(name, fn) {
@@ -528,7 +539,7 @@ Akili.isolateEvents = function() {
       delete this.__akiliListeners[name];
     }
 
-    return oldRemoveEventListener.apply(this, arguments);
+    return  Akili.__window.Element.prototype.removeEventListener.apply(this, arguments);
   };
 };
 
@@ -612,7 +623,7 @@ Akili.triggerInit = function(status) {
 };
 
 /**
- * Initialize an application
+ * Initialize the application
  *
  * @param {HTMLElement} [root]
  * @returns {Promise}
@@ -646,6 +657,23 @@ Akili.init = function(root) {
     });
   });
 };
+
+/**
+ * Denitialize the application
+ */
+Akili.deinit = function() {
+  for(let key in this.__window.Element.prototype) {
+    Element.prototype[key] = this.__window.Element.prototype[key];
+  }
+
+  for(let key in this.__window.Array.prototype) {
+    Array.prototype[key] = this.__window.Array.prototype[key];
+  }
+
+  window.setTimeout = this.__window.setTimeout;
+  window.setInterval = this.__window.setInterval;
+  window.Promise = this.__window.Promise;
+}
 
 /**
  * Define all default components
