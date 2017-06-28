@@ -20,7 +20,13 @@ import Include from './components/include.js';
 import Iframe from './components/iframe.js';
 import Image from './components/image.js';
 import Embed from './components/embed.js';
+import Audio from './components/audio.js';
+import Video from './components/video.js';
+import Track from './components/track.js';
+import Source from './components/source.js';
+import Objects from './components/object.js';
 import Route from './components/route.js';
+import Url from './components/url.js';
 import A from './components/a.js';
 import Scope from './scope.js';
 import EventEmitter from './event-emitter.js';
@@ -678,6 +684,7 @@ Akili.deinit = function() {
  */
 Akili.define = function() {
   A.define();
+  Audio.define();
   Content.define();
   Component.define();
   Embed.define();
@@ -687,10 +694,14 @@ Akili.define = function() {
   Image.define();
   Input.define();
   If.define();
+  Objects.define();
   Radio.define();
   Route.define();
   Select.define();
+  Source.define();
   Textarea.define();
+  Track.define();
+  Video.define();
 };
 
 Akili.Component = Component;
@@ -698,6 +709,7 @@ Akili.EventEmitter = EventEmitter;
 Akili.Scope = Scope;
 Akili.utils = utils;
 Akili.components.A = A;
+Akili.components.Audio = Audio;
 Akili.components.Content = Content;
 Akili.components.For = For;
 Akili.components.Embed = Embed;
@@ -706,11 +718,16 @@ Akili.components.Include = Include;
 Akili.components.Input = Input;
 Akili.components.Iframe = Iframe;
 Akili.components.Image = Image;
+Akili.components.Object = Objects;
 Akili.components.Radio = Radio;
 Akili.components.Route = Route;
 Akili.components.Select = Select;
+Akili.components.Source = Source;
 Akili.components.Text = Text;
 Akili.components.Textarea = Textarea;
+Akili.components.Track = Track;
+Akili.components.Url = Url;
+Akili.components.Video = Video;
 Akili.services.request = request;
 Akili.services.router = router;
 

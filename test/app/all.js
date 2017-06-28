@@ -4,6 +4,10 @@ export default class All extends Component {
   constructor(...args) {
     super(...args);
 
+     this.el.innerHTML += `
+      <object url="\${this.cObjectValue}"></object>
+    `;
+
     this.el.innerHTML += `
       <if recreate is="\${this.cIfData === 0}">0</if>
       <else-if is="\${this.cIfData === 1}">1</else-if>

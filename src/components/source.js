@@ -1,8 +1,8 @@
 import Url from './url.js';
 import Akili from '../akili.js';
 
-export default class Embed extends Url {  
+export default class Source extends Url {  
   static define() {
-    Akili.component('embed', Embed);
+    Akili.component('source', Source);
   }
 };

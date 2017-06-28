@@ -269,6 +269,18 @@ describe('components/', () => {
     });
   });
 
+  describe('url.js', 'object.js', () => {
+    let object;
+
+    before(() => {
+      object = component.child('object');
+      component.scope.cObjectValue = '/fake';
+    });
+
+    it('should set attrbure data to object', () => {
+      assert.isEqual(object.el.getAttribute('src'), '/fake');
+    });
+  });
 
   describe('route.js,a.js', () => {
     function onStateChange(callback) {

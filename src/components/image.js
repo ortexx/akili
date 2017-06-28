@@ -1,22 +1,8 @@
-import Component from '../component.js';
+import Url from './url.js';
 import Akili from '../akili.js';
 
-export default class Image extends Component {
-  static matches = '[url]';
-  
+export default class Image extends Url {  
   static define() {
     Akili.component('img', Image);
-  }
-
-  changedUrl(url) {
-    this.setSrc(url);
-  }
-
-  compiled() {
-    this.attrs.hasOwnProperty('url') && this.setSrc(this.attrs.url);
-  }
-
-  setSrc(url) {
-    this.attrs.src = url;
   }
 };
