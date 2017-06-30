@@ -680,12 +680,18 @@ router.changeState = function () {
         }
       }
 
+      if(!this.__options.saveScrollPosition && !transition.hash) {
+        document.body.scrollTop = 0;
+        document.body.scrollLeft = 0;
+      }
+
       this.__options = {};
       this.__redirects = 0;
 
       if(prevTransition) {
         for(let i = level, l = prevTransition.routes.length; i < l; i++) {
           let route = prevTransition.routes[i];
+          
           route.component && route.component.empty();
         }
       }
