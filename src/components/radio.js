@@ -93,7 +93,7 @@ export default class Radio extends For {
       }
     }
 
-    this.attrs.onRadio.trigger(value, { bubbles: true });
+    this.attrs.onRadio.trigger(value);
   }
 
   getRadioValue() {

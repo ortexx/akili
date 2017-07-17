@@ -38,13 +38,13 @@ export default class Input extends Text {
     }
 
     this.el.checked = this.prevChecked = value;
-    trigger && this.attrs.onChange.dispatch(Event, { bubbles: true });
+    trigger && this.attrs.onChange.dispatch(Event);
     this.isRadio && this.changeRadio();
   }
 
   setValue() {
     super.setValue.apply(this, arguments);
-    this.isRadio && this.attrs.onChange.dispatch(Event, { bubbles: true });
+    this.isRadio && this.attrs.onChange.dispatch(Event);
   }
 
   changeRadio() {
