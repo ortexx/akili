@@ -5,4 +5,4 @@ export default class Textarea extends Text {
   static define() {
     Akili.component('textarea', Textarea);
   }
-};
+}

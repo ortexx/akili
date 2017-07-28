@@ -743,14 +743,6 @@ describe('component.js', () => {
           Akili.compile(component.el, { recompile: true });
         });
       });
-
-      it('should not be an error', () => {
-        Akili.options.showEvaluationErrors = false;
-        assert.doesNotThrow(() => {
-          Akili.compile(component.el, { recompile: true });
-        });
-        Akili.options.showEvaluationErrors = true;
-      });
     });
 
     describe('.empty()', () => {

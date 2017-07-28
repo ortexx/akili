@@ -5,4 +5,4 @@ export default class Audio extends Url {
   static define() {
     Akili.component('audio', Audio);
   }
-};
+}

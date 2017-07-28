@@ -34,7 +34,7 @@ export default class Component {
   static parse(context, expression, event = null) {
     return (function (expression, event) {
       return eval(expression);
-    }).call(context, expression, event)
+    }).call(context, expression, event);
   }
 
   constructor(el, scope = {}) {
@@ -437,20 +437,7 @@ export default class Component {
         evaluate = this.constructor.parse(this.__evaluationComponent.scope, parseValue);
       }
       catch (err) {
-        let message = `Scope parsing error in the template expression: ${node.__expression}`;
-
-        if(!Akili.options.showEvaluationErrors) {
-          if(Akili.options.debug) {
-            console.warn(message);
-            console.warn(err.stack);
-          }
-
-          evaluate = undefined;
-        }
-        else {
-          console.error(message);
-          throw err;
-        }
+        throw err;
       }
 
       evaluation = Akili.__evaluation? Akili.__evaluation.list: [];
@@ -490,7 +477,7 @@ export default class Component {
       existingBindings = null;
       evaluation = null;
 
-      if(node instanceof Attr) {
+      if(node instanceof window.Attr) {
         expression = m;
         attributeValue = evaluate;
 
@@ -509,7 +496,7 @@ export default class Component {
       return evaluate;
     });
 
-    if(node instanceof Attr) {
+    if(node instanceof window.Attr) {
       let value = res;
       let isBooleanAttribute = false;
 
@@ -584,11 +571,11 @@ export default class Component {
 
         lastProps = [...lastProps, key];
         value = utils.getPropertyByKeys(lastProps, scope);
-        props.push({ keys: lastProps, value: value})
+        props.push({ keys: lastProps, value: value});
       }
     }
     else {
-      props.push({ keys: keys, value: utils.getPropertyByKeys(keys, scope)})
+      props.push({ keys: keys, value: utils.getPropertyByKeys(keys, scope)});
     }
 
     let propsLength = props.length;
@@ -640,7 +627,7 @@ export default class Component {
 
     elEvaluate(this.el);
     evaluate(this.__children);
-  };
+  }
 
   /**
    * Evaluate value by keys
@@ -732,7 +719,7 @@ export default class Component {
    */
   __evaluateNode(node) {
     if(this.__checkEvaluation(node)) {
-      node[(node instanceof Attr)? 'value': 'nodeValue'] = this.__evaluate(node);
+      node[(node instanceof window.Attr)? 'value': 'nodeValue'] = this.__evaluate(node);
     }
   }
 
@@ -801,7 +788,7 @@ export default class Component {
       return false;
     }
 
-    node.__expression = node[(node instanceof Attr)? 'value': 'nodeValue'];
+    node.__expression = node[(node instanceof window.Attr)? 'value': 'nodeValue'];
     node.__properties = {};
     node.__attributeOf = null;
     node.__attributeOn = null;
@@ -1026,7 +1013,7 @@ export default class Component {
         return true;
       }
     });
-  };
+  }
 
   /**
    * Check key is system
@@ -1034,7 +1021,7 @@ export default class Component {
    * @param {string} key
    * @returns {boolean}
    */
-  __isSystemKey = function(key) {
+  __isSystemKey (key) {
     if(key == '__' || (key[0] == '_' && key[1] == '_')) {
       return true;
     }
@@ -1043,7 +1030,7 @@ export default class Component {
     }
 
     return false;
-  };
+  }
 
   /**
    * Nested observing the value
@@ -1103,7 +1090,7 @@ export default class Component {
     this.__disableProxy = null;
 
     return res;
-  };
+  }
 
   /**
    * Create isolation object
@@ -1133,7 +1120,7 @@ export default class Component {
     Akili.__isolation[isolationKey].value = utils.getPropertyByKeys(keys, this.__scope);
 
     return Akili.__isolation[isolationKey];
-  };
+  }
 
   /**
    * Prepare the node to binding
@@ -1165,7 +1152,7 @@ export default class Component {
       value: value,
       notBinding: notBinding
     });
-  };
+  }
 
   /**
    * Get binding by keys
@@ -1398,7 +1385,7 @@ export default class Component {
       }
     };
 
-    clear(obj || this.__bindings)
+    clear(obj || this.__bindings);
   }
 
   /**
@@ -1495,15 +1482,15 @@ export default class Component {
    *
    * @param {string} [selector='']
    * @param {boolean} [findAll=true] - get array if true
-   * @param {number|number[]} [levels]
+   * @param {number|number[]} [levels=null]
    * @returns {Component|Component[]}
    * @protected
    */
-  __getParent(selector = '', findAll = false, levels) {
+  __getParent(selector = '', findAll = false, levels = null) {
     let arr = [];
     let level = 0;
 
-    if(levels !== undefined && !Array.isArray(levels)) {
+    if(typeof levels != 'object') {
       levels = [levels];
     }
 
@@ -1538,15 +1525,15 @@ export default class Component {
    *
    * @param {string} [selector='']
    * @param {boolean} [findAll=true] - get array if true
-   * @param {number|number[]} [levels]
+   * @param {number|number[]} [levels=null]
    * @returns {Component|Component[]}
    * @protected
    */
-  __getChildren(selector = '', findAll = true, levels) {
+  __getChildren(selector = '', findAll = true, levels = null) {
     let arr = [];
     let level = 0;
 
-    if(levels !== undefined && !Array.isArray(levels)) {
+    if(typeof levels != 'object') {
       levels = [levels];
     }
 
@@ -1576,7 +1563,7 @@ export default class Component {
 
     find(this.__children);
 
-    return findAll? arr: (arr[0] || null)
+    return findAll? arr: (arr[0] || null);
   }
 
   /**
@@ -1606,7 +1593,7 @@ export default class Component {
       }
 
       if(!selector || el.__akili.matches(selector)) {
-        arr.push(el.__akili)
+        arr.push(el.__akili);
       }
     }
 
@@ -1637,10 +1624,10 @@ export default class Component {
    * Get closest parent component by selector
    *
    * @param {string|function} [selector='']
-   * @param {number|number[]} [levels]
+   * @param {number|number[]} [levels=null]
    * @returns {Component}
    */
-  parent(selector = '', levels) {
+  parent(selector = '', levels = null) {
     return this.__getParent(selector, false, levels);
   }
 
@@ -1648,10 +1635,10 @@ export default class Component {
    * Get array of parent components by selector
    *
    * @param {string|function} [selector='']
-   * @param {number|number[]} [levels]
+   * @param {number|number[]} [levels=null]
    * @returns {Component[]}
    */
-  parents(selector = '', levels) {
+  parents(selector = '', levels = null) {
     return this.__getParent(selector, true, levels);
   }
 
@@ -1659,10 +1646,10 @@ export default class Component {
    * Get closest child component by selector
    *
    * @param {string|function} [selector='']
-   * @param {number|number[]} [levels]
+   * @param {number|number[]} [levels=null]
    * @returns {Component}
    */
-  child(selector = '', levels) {
+  child(selector = '', levels = null) {
     return this.__getChildren(selector, false, levels);
   }
 
@@ -1670,10 +1657,10 @@ export default class Component {
    * Get array of child components by selector
    *
    * @param {string|function} [selector='']
-   * @param {number|number[]} [levels]
+   * @param {number|number[]} [levels=null]
    * @returns {Component[]}
    */
-  children(selector = '', levels) {
+  children(selector = '', levels = null) {
     return this.__getChildren(selector, true, levels);
   }
 
@@ -1759,4 +1746,4 @@ export default class Component {
   changed(key, value) {}
   resolved() {}
   removed() {}
-};
+}

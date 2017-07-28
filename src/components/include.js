@@ -45,6 +45,7 @@ export default class Include extends Component {
       });
     }).catch((err) => {
       this.attrs.onError.trigger(err);
+      throw err;
     });
   }
-};
+}

@@ -286,7 +286,7 @@ export class Loop extends For {
     this.comparsion = {
       copy: this.for.__comparisonValue,
       value: this.for.__value
-    }
+    };
   }
 
   iterate(index) {}

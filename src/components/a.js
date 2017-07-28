@@ -144,4 +144,4 @@ export default class A extends Component {
       this.attrs.href = router.createStateUrl(this.state, this.params, this.query, this.hash);
     }
   }
-};
+}

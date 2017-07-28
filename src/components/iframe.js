@@ -5,4 +5,4 @@ export default class Iframe extends Url {
   static define() {
     Akili.component('iframe', Iframe);
   }
-};
+}

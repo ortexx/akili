@@ -32,4 +32,4 @@ export default class Content extends Text {
     selection.addRange(range);
     this.el.focus();
   }
-};
+}

@@ -61,4 +61,4 @@ export default class EventEmitter {
   unbind() {
     this.fn && this.el.removeEventListener(this.name, this.fn);
   }
-};
+}

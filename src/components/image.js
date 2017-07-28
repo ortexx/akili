@@ -5,4 +5,4 @@ export default class Image extends Url {
   static define() {
     Akili.component('img', Image);
   }
-};
+}

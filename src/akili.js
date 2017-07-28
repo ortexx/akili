@@ -38,7 +38,6 @@ const Akili = {};
 
 Akili.options = {
   nestedWatching: true,
-  showEvaluationErrors: true,
   debug: true
 };
 
@@ -98,11 +97,6 @@ Akili.getScope = function(name) {
  * @param {string} name - scope name
  */
 Akili.removeScope = function(name) {
-  let scope = this.__scopes[name];
-
-  scope.__component = null;
-  scope.__el = null;
-  scope.__parent = null;
   this.__scopes[name] = null;
   delete this.__scopes[name];
 };
@@ -677,7 +671,7 @@ Akili.deinit = function() {
   window.setTimeout = this.__window.setTimeout;
   window.setInterval = this.__window.setInterval;
   window.Promise = this.__window.Promise;
-}
+};
 
 /**
  * Define all default components

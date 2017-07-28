@@ -5,4 +5,4 @@ export default class Track extends Url {
   static define() {
     Akili.component('track', Track);
   }
-};
+}

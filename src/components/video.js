@@ -5,4 +5,4 @@ export default class Video extends Url {
   static define() {
     Akili.component('video', Video);
   }
-};
+}

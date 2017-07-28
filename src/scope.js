@@ -45,4 +45,4 @@ export default class Scope {
       strict && (this.__component.__disableProxyRedefining = false);
     });
   }
-};
+}

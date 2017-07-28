@@ -21,4 +21,4 @@ export default class Url extends Component {
   setUrl(url) {
     this.attrs[this.urlAttribute] = url;
   }
-};
+}

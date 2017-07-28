@@ -32,7 +32,6 @@ Akili.component('section-empty', SectionEmpty);
 Akili.component('all', All);
 
 Akili.options.debug = false;
-Akili.options.showEvaluationErrors = true;
 
 describe('Application initialization', () => {
   return Akili.init(document.body);

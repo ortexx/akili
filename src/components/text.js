@@ -35,5 +35,5 @@ export default class Text extends Component {
   setElementBlur() {
     this.el.blur();
   }
-};
+}
 

@@ -64,4 +64,4 @@ export default class Route extends Component {
       return Akili.compile(this.el, { recompile: true });
     });
   }
-};
+}

@@ -5,4 +5,4 @@ export default class Embed extends Url {
   static define() {
     Akili.component('embed', Embed);
   }
-};
+}

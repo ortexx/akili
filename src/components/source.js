@@ -5,4 +5,4 @@ export default class Source extends Url {
   static define() {
     Akili.component('source', Source);
   }
-};
+}

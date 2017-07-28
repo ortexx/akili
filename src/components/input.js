@@ -58,4 +58,4 @@ export default class Input extends Text {
       radio.setChecked(radio.el.checked);
     }
   }
-};
+}
