@@ -178,7 +178,10 @@ router.location = function(url, options = { reload: false }) {
   this.__options = options;
 
   if(this.hashMode) {
+    let current = window.location.hash.replace('#', '');
+
     window.location.hash = url;
+    current === url && this.changeState().catch((err) => console.error(err));
   }
   else {
     window.history.pushState(null, '', url);
@@ -197,13 +200,13 @@ router.init = function (defaultUrl = '', hashMode = true) {
   window.history.pushState = function() {
     let res = oldPushState.apply(this, arguments);
 
-    router.changeState().catch((err) => console.error(err));;
+    router.changeState().catch((err) => console.error(err));
 
     return res;
   };
 
   this.__onStateChangeHandler = () => {
-    this.changeState().catch((err) => console.error(err));;
+    this.changeState().catch((err) => console.error(err));
   };
 
   this.defaultUrl = defaultUrl;
@@ -581,7 +584,7 @@ router.changeState = function () {
   if(this.__disableChange) {
     delete this.__disableChange;
 
-    return;
+    return Promise.resolve();
   }
 
   let url = this.getUrl();
@@ -673,7 +676,7 @@ router.changeState = function () {
           console.warn(`Not found a default route. You can pass it in "router.init(defaultUrl)" function`);
         }
       }
-
+      
       if(!this.__options.saveScrollPosition && !transition.hash) {
         document.body.scrollTop = 0;
         document.body.scrollLeft = 0;
