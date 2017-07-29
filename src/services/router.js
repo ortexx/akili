@@ -627,11 +627,7 @@ router.changeState = function () {
     let isHistory = this.__options.reload === undefined && !isDifferent;
     let isReload = this.__options.reload === false;
 
-    if (hasState && (isHistory || isReload)) {
-      transition.path.loaded = false;
-
-      return next(state.children, onEnd);
-    }
+    transition.path.loaded = !(hasState && (isHistory || isReload));
 
     Promise.resolve(state.handler(transition)).then((data) => {
       if (transition.__cancelled) {
@@ -643,10 +639,8 @@ router.changeState = function () {
       if(state.abstract) {
         return next(state.children, onEnd);
       }
-
+ 
       route.setTransition(transition).then(() => {
-        transition.path.loaded = true;
-
         next(state.children, onEnd);
       }).catch((err) => onEnd && onEnd(err));
     });

@@ -24,7 +24,7 @@ class HelloWorld extends Akili.Component {
 Akili.component('hello-world', HelloWorld);
 
 document.addEventListener('DOMContentLoaded', () => {
-  Akili.init();
+  Akili.init().catch((err) => console.error(err));
 });
 ```
 

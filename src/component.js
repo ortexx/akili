@@ -41,6 +41,7 @@ export default class Component {
     this.__isMounted = false;
     this.__isCompiled = false;
     this.__cancelled = false;
+    this.__prevent = false;
     this.__bindings = {};
     this.__evaluatingEvent = null;
     this.__recompiling = null;
@@ -422,6 +423,14 @@ export default class Component {
     let counter = 0;
     let attributeValue;
     let expression;
+
+    if(node.__component.parents((com) => com.__prevent).length) {
+      return node.__expression;
+    }
+
+    if(!(node instanceof window.Attr) && node.__component.__prevent) {
+      return node.__expression;
+    }
 
     let res = node.__expression.replace(evaluationRegexGlobal, (m, d) => {
       counter++;
@@ -1720,6 +1729,13 @@ export default class Component {
    */
   cancel() {
     this.__cancelled = true;
+  }
+
+  /**
+   * Compale the component, but cancel the compilation inside of it
+   */
+  prevent() {
+    this.__prevent = true;
   }
 
   /**

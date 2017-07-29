@@ -259,6 +259,13 @@ Akili.unisolated = function(fn) {
 Akili.initialize = function(el, options = {}) {
   let recompile = options.recompile;
   let component = el.__akili;
+  let parents = Akili.getAkiliParents(el);
+
+  for(let i = 0, l = parents.length; i < l; i++) {
+    if(parents[i].__akili.__prevent) {
+      return;
+    }
+  }
 
   if(component) {
     if(recompile) {
@@ -647,12 +654,12 @@ Akili.init = function(root) {
       if(router.__init) {
         return router.changeState();
       }
-    }).then(() => {
-      this.triggerInit(true);
-    }).catch((err) => {
-      this.triggerInit(false);
-      throw err;
     });
+  }).then(() => {
+    this.triggerInit(true);
+  }).catch((err) => {
+    this.triggerInit(false);
+    throw err;
   });
 };
 

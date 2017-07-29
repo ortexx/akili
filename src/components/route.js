@@ -48,6 +48,10 @@ export default class Route extends Component {
       query: query
     };
 
+    if(!transition.path.loaded) {
+      return Akili.compile(this.el, { recompile: true });
+    }
+
     if (state.template) {
       this.empty();
       this.el.innerHTML = `<component>${state.template}</component>`;
