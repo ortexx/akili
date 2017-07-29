@@ -4,7 +4,7 @@
 * fixed some small bugs in the Akili.router
 * deleted Akili __showEvaluationErrors__ option
 * added Akili.router __saveScrollPosition__ option
-* added url, object, audio, video, track, source components
+* added __url__, __object__, __audio__, __video__, __track__, __source__ components
 * added the feature to recall functions in a template after the changing of dependent variables
 * added Akili.deinit function to deactivate the framework
 * fixed Akili.request xhr.ontimeout handling
