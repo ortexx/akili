@@ -1,7 +1,7 @@
 # 0.3.x (July 29, 2017)
 
 * added __Component.prototype.prevent__ method to prevent the compilation inside of a component 
-* fixed some samall bugs in the Akili.router
+* fixed some small bugs in the Akili.router
 * deleted Akili __showEvaluationErrors__ option
 * added Akili.router __saveScrollPosition__ option
 * added url, object, audio, video, track, source components
