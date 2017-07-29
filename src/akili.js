@@ -49,6 +49,7 @@ Akili.__window = {};
 Akili.__isolation = null;
 Akili.__evaluation = null;
 Akili.__html = window.document.documentElement;
+Akili.__serverPromise = Promise.resolve();
 Akili.__serverRendering = false;
 
 Akili.htmlBooleanAttributes = [
@@ -259,13 +260,6 @@ Akili.unisolated = function(fn) {
 Akili.initialize = function(el, options = {}) {
   let recompile = options.recompile;
   let component = el.__akili;
-  let parents = Akili.getAkiliParents(el);
-
-  for(let i = 0, l = parents.length; i < l; i++) {
-    if(parents[i].__akili.__prevent) {
-      return;
-    }
-  }
 
   if(component) {
     if(recompile) {
@@ -628,38 +622,41 @@ Akili.triggerInit = function(status) {
 };
 
 /**
+ * Server rendering implementation
+ */
+Akili.serverRendering = function() {
+  let server = this.__html.getAttribute('akili-server');
+
+  this.__serverRendering = !!server;
+
+  if(server) {
+    this.__html.style.visibility = 'hidden';
+    this.__serverPromise = request.get(server).then((res) => {      
+      this.__html.innerHTML = res.data;
+    });
+  }
+};
+
+/**
  * Initialize the application
  *
  * @param {HTMLElement} [root]
  * @returns {Promise}
  */
 Akili.init = function(root) {
-  let serverP = Promise.resolve();
-  let server = this.__html.getAttribute('akili-server');
-
   this.__root = root || document.querySelector("html");
-  this.__serverRendering = !!server;
 
-  if(server) {
-    this.__html.innerHTML = '';
-    this.__html.style.visibility = 'hidden';
-
-    serverP = request.get(server).then((res) => {
-      this.__html.innerHTML = res.data;
-    });
-  }
-
-  return serverP.then(() => {
+  return this.__serverPromise.then(() => {
     return this.compile(this.__root).then(() => {
       if(router.__init) {
         return router.changeState();
       }
+    }).then(() => {
+      this.triggerInit(true);
+    }).catch((err) => {
+      this.triggerInit(false);
+      throw err;
     });
-  }).then(() => {
-    this.triggerInit(true);
-  }).catch((err) => {
-    this.triggerInit(false);
-    throw err;
   });
 };
 
@@ -738,6 +735,7 @@ export const components = Akili.components;
 export const services = Akili.services;
 export default Akili;
 
+Akili.serverRendering();
 Akili.define();
 Akili.errorHandling();
 Akili.isolateEvents();
