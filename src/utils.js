@@ -72,6 +72,10 @@ utils.style = function(obj) {
  * @example
  * // returns [{x:1}, {x:11}]
  * utils.filter([{x:1}, {x:2}, {x:3}, {x:11}], '1', ['x']);
+ * 
+ *  * @example
+ * // returns [{x:{y:1}}]
+ * utils.filter([{x:{y:1}}, {x:{y:2}}], '1', ['x', 'y']);
  *
  * @param {Array} arr
  * @param {string|RegExp|function} handler - type of filtering
@@ -136,6 +140,10 @@ utils.filter = function (arr, handler, keys = []) {
  * @example
  * // returns [{x: 1, y: 3}, {x: 2, y: 1}, {x:2, y: 2}]
  * utils.sort([{x: 2, y: 2}, {x: 2, y: 1}, {x: 2, y: 3}], [['x'], ['y']], [true, true]);
+ * 
+ * @example
+ * // returns [{x: {y: 1}}, {x: {y: 2}}]
+ * utils.sort([{x: {y: 2}}, {x: {y: 1}}], [['x', 'y']], [true]);
  *
  * @param {Array} arr
  * @param {boolean|Array[]|string[]|string} [keys]

@@ -332,6 +332,18 @@ describe('utils.js', () => {
 
         assert.equal(JSON.stringify([{value: 3}]), JSON.stringify(res));
       });
+
+      it('should filter array with the nested property key', () => {
+        let arr = [
+          { x: { value: 1 } },
+          { x: { value: 2 } },
+          { x: { value: 3 } }
+        ];
+
+        let res = utils.filter(arr, '1', ['x', 'value']);
+
+        assert.equal(JSON.stringify([{ x: { value: 1 } }]), JSON.stringify(res));
+      });
     });
 
     describe('.sort()', () => {
@@ -371,6 +383,13 @@ describe('utils.js', () => {
         let sorted = [{x: 2, y: 1}, {x: 2, y: 2}, {x: 2, y: 3}, {x: 3, y: 1}];
 
         assert.equal(JSON.stringify(sorted), JSON.stringify(utils.sort(arr, ['x', 'y'], [true, true])));
+      });
+
+      it('should order nested keys', () => {
+        let arr = [{x: {y: 2}}, {x: {y: 1}}];
+        let sorted = [{x: {y: 1}}, {x: {y: 2}}];
+
+        assert.equal(JSON.stringify(sorted), JSON.stringify(utils.sort(arr, [['x', 'y']], [true])));
       });
     });
   });
