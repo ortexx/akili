@@ -1071,6 +1071,7 @@ export default class Component {
             value = target;
           }
           else if(Akili.joinBindingKeys(parents) != Akili.joinBindingKeys(value.__keys)) {
+            target = utils.copy(target, false);
             value = target;
           }
         }
