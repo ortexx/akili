@@ -979,6 +979,7 @@ export default class Component {
           target[key] = this.__nestedObserve(value, keys);
         }
         else {
+          value = utils.copy(value);
           target[key] = value;
         }
 
@@ -1075,6 +1076,10 @@ export default class Component {
             value = target;
           }
         }
+      }
+      else if(!this.__disableProxyRedefining && !(value instanceof Akili.Scope)) {
+        target = utils.copy(target, false);          
+        value = target;
       }
 
       for(let k in target) {

@@ -317,10 +317,13 @@ utils.makeAttributeValue = function(value) {
  * @returns {boolean}
  */
 utils.compare = function (a, b) {
-  if((a instanceof Date) && (b instanceof Date)) {
+  if(this.isScopeProxy(a) && this.isScopeProxy(b)) {
+    return a.__target === b.__target;
+  }
+  else if((a instanceof Date) && (b instanceof Date)) {
     return a.getTime() === b.getTime();
   }
-  if(typeof a == 'function' && typeof b == 'function') {
+  else if(typeof a == 'function' && typeof b == 'function') {
     return a.toString() === b.toString();
   }
   else if(typeof a == 'object' && typeof b == 'object') {
