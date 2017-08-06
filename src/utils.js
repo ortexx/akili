@@ -253,15 +253,25 @@ utils.isPlainObject = function(obj) {
  *
  * @param {*} value
  * @param {boolean} [nested=true] - deep copy if is true
+ * @param {boolean} [enumerable=false] - including enumerable properties
  * @returns {*}
  */
-utils.copy = function(value, nested = true) {
+utils.copy = function(value, nested = true, enumerable = false) {
   if(typeof value != 'object' || !value) {
     return value;
   }
 
   function next(obj) {
-    obj = Array.isArray(obj)? [...obj]: {...obj};
+    let keys = enumerable? Object.getOwnPropertyNames(obj): Object.keys(obj);
+    let newObj = Array.isArray(obj)? []: {};
+
+    for(let i = 0, l = keys.length; i < l; i++) {
+      let key = keys[i];
+
+      newObj[key] = obj[key];
+    }
+
+    obj = newObj;
 
     if(!nested) {
       return obj;

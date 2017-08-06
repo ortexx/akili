@@ -1068,17 +1068,17 @@ export default class Component {
 
         if(!this.__disableProxyRedefining) {
           if(value.__component !== this) {
-            target = utils.copy(target, false);
+            target = utils.copy(target, false, true);
             value = target;
           }
           else if(Akili.joinBindingKeys(parents) != Akili.joinBindingKeys(value.__keys)) {
-            target = utils.copy(target, false);
+            target = utils.copy(target, false, true);
             value = target;
           }
         }
       }
       else if(!this.__disableProxyRedefining && !(value instanceof Akili.Scope)) {
-        target = utils.copy(target, false);          
+        target = utils.copy(target, false, true);          
         value = target;
       }
 

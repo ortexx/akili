@@ -118,7 +118,7 @@ export default class For extends Component {
       if(found == 2) {
         let cValue = iterator.comparsion.value;
         let cCopy = iterator.comparsion.copy;
-
+       
         if (this.__index !== iterator.index) {
           iterator.setIndex();
         }
