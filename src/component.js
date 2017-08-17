@@ -938,7 +938,7 @@ export default class Component {
           let realTarget  = utils.getOwnPropertyTarget(target, key);
 
           if(!utils.isPlainObject(realTarget)) {
-            realTarget[key] = Akili.isolateFunction(realTarget[key], realTarget.__component);
+            realTarget[key] = Akili.isolateFunction(realTarget[key]);
           }
         }
 
