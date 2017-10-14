@@ -73,7 +73,7 @@ utils.style = function(obj) {
  * // returns [{x:1}, {x:11}]
  * utils.filter([{x:1}, {x:2}, {x:3}, {x:11}], '1', ['x']);
  * 
- *  * @example
+ * @example
  * // returns [{x:{y:1}}]
  * utils.filter([{x:{y:1}}, {x:{y:2}}], '1', ['x', 'y']);
  *
