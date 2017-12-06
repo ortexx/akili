@@ -17,7 +17,7 @@ export default class All extends Component {
     `;
     
     this.el.innerHTML += `
-      <for in="\${this.cForData}"><iterator>\${this.loopKey}=\${this.loopValue}</iterator></for>
+      <for in="\${this.cForData}">\${this.loopKey}=\${this.loopValue}</for>
       <ul in="\${this.cForData}"><li>\${this.loopKey}=\${this.loopValue}</li></ul>
     `;
 

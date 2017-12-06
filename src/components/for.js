@@ -57,7 +57,9 @@ export default class For extends Component {
     }
 
     if(!el) {
-      throw new Error('"For" component must have at least one child')
+      el = document.createElement('loop');
+      el.innerHTML = this.el.innerHTML;
+      this.el.appendChild(el);
     }
 
     let componentName = el.getAttribute('component');
