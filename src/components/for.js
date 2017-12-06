@@ -57,8 +57,9 @@ export default class For extends Component {
     }
 
     if(!el) {
-      el = document.createElement('loop');
-      el.innerHTML = this.el.innerHTML;
+      el = document.createElement('loop');      
+      el.innerHTML = this.el.innerHTML; 
+      this.el.innerHTML = '';     
       this.el.appendChild(el);
     }
 
