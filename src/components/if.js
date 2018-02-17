@@ -55,7 +55,7 @@ export default class If extends Component {
     let next = this.el.nextElementSibling;
     let result;
 
-    if(!next || !next.matches('else-if,else')) {
+    if (!next || !next.matches('else-if,else')) {
       return;
     }
 
@@ -71,18 +71,18 @@ export default class If extends Component {
   compilation() {
     let res;
 
-    if(this.state && !this.active) {
-      if(this.recreate || !this.isCompiled) {
+    if (this.state && !this.active) {
+      if (this.recreate || !this.isCompiled) {
         res = this.compile();
       }
 
       this.el.style.display = this.display;
     }
     else {
-      if(this.recreate) {
+      if (this.recreate) {
         this.__empty();
       }
-      else if(!this.isCompiled) {
+      else if (!this.isCompiled) {
         res = this.compile();
       }
 

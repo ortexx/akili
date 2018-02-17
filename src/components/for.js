@@ -44,10 +44,10 @@ export default class For extends Component {
   createIterator() {
     let el;
 
-    for(let i = 0, l = this.el.children.length; i < l; i++) {
+    for (let i = 0, l = this.el.children.length; i < l; i++) {
       let child = this.el.children[i];
 
-      if(child.getAttribute('component') == 'loop') {
+      if (child.getAttribute('component') == 'loop') {
         el = child;
 
         break;
@@ -56,7 +56,7 @@ export default class For extends Component {
       el = child;
     }
 
-    if(!el) {
+    if (!el) {
       el = document.createElement('loop');      
       el.innerHTML = this.el.innerHTML; 
       this.el.innerHTML = '';     
@@ -65,13 +65,13 @@ export default class For extends Component {
 
     let componentName = el.getAttribute('component');
 
-    if(componentName != 'loop') {
+    if (componentName != 'loop') {
       let component = Akili.component(componentName || el.tagName);
 
-      if(!component) {
+      if (!component) {
         el.setAttribute('component', 'loop');
       }
-      else if(!(component.prototype instanceof For)) {
+      else if (!(component.prototype instanceof For)) {
         let mask = document.createElement('loop');
 
         mask.appendChild(el);
@@ -103,22 +103,22 @@ export default class For extends Component {
     let hash = '';
     let found = 0;
 
-    if(value && typeof value == 'object' && value.__hash) {
+    if (value && typeof value == 'object' && value.__hash) {
       hash = value.__hash;
     }
 
-    if(this.iterators[hash]) {
+    if (this.iterators[hash]) {
       key = hash;
       found = 2;
     }
-    else if(this.iterators[key]) {
+    else if (this.iterators[key]) {
       found = 1;
     }
 
-    if(found) {
+    if (found) {
       let iterator = this.iterators[key];
 
-      if(found == 2) {
+      if (found == 2) {
         let cValue = iterator.comparsion.value;
         let cCopy = iterator.comparsion.copy;
        
@@ -150,8 +150,8 @@ export default class For extends Component {
     this.el.insertBefore(el, this.iteratorRef);
     Akili.compile(el);
 
-    if(value && typeof value == 'object') {
-      if(!value.__hash) {
+    if (value && typeof value == 'object') {
+      if (!value.__hash) {
         hash = utils.createRandomString(32, (str) => {
           return this.iterators[str];
         });
@@ -168,7 +168,7 @@ export default class For extends Component {
       delete this.iterators[hash];
     }
     else {
-      if(Akili.options.debug) {
+      if (Akili.options.debug) {
         let eValue = typeof this.__value == 'string'? `"${this.__value}"`: this.__value;
 
         let args = [
@@ -188,7 +188,7 @@ export default class For extends Component {
 
   draw(data) {
     if (typeof data != 'object' || data === null) {
-      if(Akili.options.debug) {
+      if (Akili.options.debug) {
         console.warn(`"For" component "in" attribute value type must be an object/array`);
         data = [];
       }
@@ -199,20 +199,20 @@ export default class For extends Component {
     let lastElement = null;
     let last = this.el.children[this.el.children.length - 1];
 
-    if(last && !(last.__akili instanceof Loop)) {
+    if (last && !(last.__akili instanceof Loop)) {
       lastElement = last;
     }
 
-    if(Array.isArray(data)) {
-      for(let i = 0, l = data.length; i < l; i++) {
+    if (Array.isArray(data)) {
+      for (let i = 0, l = data.length; i < l; i++) {
         indexKeys.push(this.loop(i, data[i], keys, i));
       }
     }
     else {
       let i = 0;
 
-      for(let k in data) {
-        if(!data.hasOwnProperty(k)) {
+      for (let k in data) {
+        if (!data.hasOwnProperty(k)) {
           continue;
         }
 
@@ -221,7 +221,7 @@ export default class For extends Component {
       }
     }
 
-    for(let i = 0, l = indexKeys.length; i < l; i++) {
+    for (let i = 0, l = indexKeys.length; i < l; i++) {
       let iterator = indexKeys[i];
 
       this.el.appendChild(iterator.el);
@@ -230,8 +230,8 @@ export default class For extends Component {
 
     lastElement && this.el.appendChild(lastElement);
 
-    for(let k in this.iterators) {
-      if(!this.iterators.hasOwnProperty(k)) {
+    for (let k in this.iterators) {
+      if (!this.iterators.hasOwnProperty(k)) {
         continue;
       }
 
@@ -253,7 +253,7 @@ export class Loop extends For {
     this.html = this.el.innerHTML;
     this.isFor = this.el.hasAttribute('in');
 
-    if(!this.isFor && !(this.el.parentNode.__akili instanceof For)) {
+    if (!this.isFor && !(this.el.parentNode.__akili instanceof For)) {
       this.cancel();
     }
   }

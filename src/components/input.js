@@ -33,7 +33,7 @@ export default class Input extends Text {
   setChecked(value, trigger = true) {
     value = !!value;
 
-    if(this.prevChecked === value) {
+    if (this.prevChecked === value) {
       return;
     }
 
@@ -52,7 +52,7 @@ export default class Input extends Text {
     let selector = `input[type=radio][name='${name}']:not([scope='${this.scope.__name}'])`;
     let children = Akili.root.children(selector);
 
-    for(let i = 0, l = children.length; i < l; i++) {
+    for (let i = 0, l = children.length; i < l; i++) {
       let radio = children[i];
 
       radio.setChecked(radio.el.checked);

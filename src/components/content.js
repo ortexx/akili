@@ -10,12 +10,12 @@ export default class Content extends Text {
   constructor(...args) {
     super(...args);
 
-    if(this.el.hasAttribute('editable')) {
+    if (this.el.hasAttribute('editable')) {
       this.el.setAttribute('contenteditable', this.el.getAttribute('editable'));
       this.el.removeAttribute('editable');
     }
 
-    if(getComputedStyle(this.el).display == 'inline') {
+    if (getComputedStyle(this.el).display == 'inline') {
       this.el.style.display = 'block';
     }
 

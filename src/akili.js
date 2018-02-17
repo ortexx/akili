@@ -75,7 +75,7 @@ Akili.joinBindingKeys = function(keys) {
  * @param scope
  */
 Akili.addScope = function(scope) {
-  if(this.__scopes[scope.__name]) {
+  if (this.__scopes[scope.__name]) {
     throw new Error(`Scope name ${scope.__name} already exists`);
   }
 
@@ -113,14 +113,14 @@ Akili.getAkiliParents = function (el, tree = true) {
   let arr = [];
 
   function check(node) {
-    if(!node.parentNode) {
+    if (!node.parentNode) {
       return;
     }
 
-    if(node.parentNode.__akili) {
+    if (node.parentNode.__akili) {
       arr.push(node.parentNode);
 
-      if(!tree) {
+      if (!tree) {
         return;
       }
     }
@@ -174,7 +174,7 @@ Akili.createScopeName = function() {
  * @returns {*}
  */
 Akili.isolate = function(fn) {
-  if(this.__isolation) {
+  if (this.__isolation) {
     return fn();
   }
 
@@ -183,8 +183,8 @@ Akili.isolate = function(fn) {
   let res = fn();
   let props = [];
 
-  for(let k in this.__isolation) {
-    if(!this.__isolation.hasOwnProperty(k)) {
+  for (let k in this.__isolation) {
+    if (!this.__isolation.hasOwnProperty(k)) {
       continue;
     }
 
@@ -193,17 +193,17 @@ Akili.isolate = function(fn) {
 
   this.__isolation = null;
 
-  for(let i = 0, l = props.length; i < l; i++) {
+  for (let i = 0, l = props.length; i < l; i++) {
     let prop = props[i];
 
-    if(prop.isDeleted) {
+    if (prop.isDeleted) {
       prop.component.__evaluateByKeys(prop.keys, undefined, true);
 
       continue;
     }
 
     utils.setPropertyByKeys(prop.keys, prop.component.scope, (last, val) => {
-      if(!last) {
+      if (!last) {
         return val || {};
       }
 
@@ -261,8 +261,8 @@ Akili.initialize = function(el, options = {}) {
   let recompile = options.recompile;
   let component = el.__akili;
 
-  if(component) {
-    if(recompile) {
+  if (component) {
+    if (recompile) {
       component.__recompile();
 
       return component;
@@ -275,46 +275,46 @@ Akili.initialize = function(el, options = {}) {
   let componentName = utils.toDashCase(el.getAttribute('component') || el.tagName.toLowerCase());
   let _Component = this.__components[componentName];
 
-  CHECK_ALIASES: if(!_Component) {
+  CHECK_ALIASES: if (!_Component) {
     let selectors = Object.keys(this.__aliases);
 
-    if(!selectors.length) {
+    if (!selectors.length) {
       break CHECK_ALIASES;
     }
 
     let selectorAll = selectors.join(',');
 
-    if(!el.matches(selectorAll)) {
+    if (!el.matches(selectorAll)) {
       break CHECK_ALIASES;
     }
 
-    for(let selector in this.__aliases) {
-      if(!this.__aliases.hasOwnProperty(selector)) {
+    for (let selector in this.__aliases) {
+      if (!this.__aliases.hasOwnProperty(selector)) {
         continue;
       }
 
-      if(el.matches(selector)) {
+      if (el.matches(selector)) {
         _Component = this.__components[this.__aliases[selector]];
         break;
       }
     }
   }
 
-  if(!_Component && !isRoot) {
+  if (!_Component && !isRoot) {
     return;
   }
 
-  if(!_Component) {
+  if (!_Component) {
     _Component = this.Component;
   }
 
-  if(_Component.matches && !el.matches(_Component.matches)) {
+  if (_Component.matches && !el.matches(_Component.matches)) {
     return;
   }
 
   component = new _Component(el, {});
 
-  if(component.__cancelled) {
+  if (component.__cancelled) {
     return;
   }
 
@@ -333,13 +333,13 @@ Akili.initialize = function(el, options = {}) {
 Akili.compile = function(root, options = { recompile: false }) {  
   let elements = [];
 
-  let nestedInitializing = (el) => {
+  const nestedInitializing = (el) => {
     let component = this.initialize(el, options);
     let children = el.children;
 
     component && elements.push(component);
 
-    for(let i = 0, l = children.length; i < l; i++) {
+    for (let i = 0, l = children.length; i < l; i++) {
       let child = children[i];
 
       nestedInitializing(child);
@@ -350,7 +350,7 @@ Akili.compile = function(root, options = { recompile: false }) {
 
   let p = [];
 
-  for(let i = 0, l = elements.length; i < l; i++) {
+  for (let i = 0, l = elements.length; i < l; i++) {
     let component = elements[i];
 
     p.push(component.__compile());
@@ -359,7 +359,7 @@ Akili.compile = function(root, options = { recompile: false }) {
   return Promise.all(p).then(() => {
     let r = [];
 
-    for(let i = elements.length - 1; i >= 0; i--) {
+    for (let i = elements.length - 1; i >= 0; i--) {
       let component = elements[i];
 
       r.push(component.__resolve());
@@ -378,11 +378,11 @@ Akili.compile = function(root, options = { recompile: false }) {
 Akili.component = function(name, fn) {
   name = name.toLowerCase();
 
-  if(!fn) {
+  if (!fn) {
     return this.__components[name] || null;
   }
 
-  if(this.__components[name] && Akili.options.debug) {
+  if (this.__components[name] && Akili.options.debug) {
     console.warn(`Component ${name} already was added`);
   }
 
@@ -407,11 +407,11 @@ Akili.unregisterComponent = function(name) {
 Akili.alias = function(selector, componentName = '') {
   componentName = componentName.toLowerCase();
 
-  if(!componentName) {
+  if (!componentName) {
     return this.__aliases[selector] || null;
   }
 
-  if(this.__aliases[selector] && Akili.options.debug) {
+  if (this.__aliases[selector] && Akili.options.debug) {
     console.warn(`Alias with selector ${selector} already was added`);
   }
 
@@ -435,11 +435,11 @@ Akili.isolateArrayPrototype = function() {
 
   let keys = Object.getOwnPropertyNames(Array.prototype);
 
-  for(let i = 0, l = keys.length; i < l; i++) {
+  for (let i = 0, l = keys.length; i < l; i++) {
     let key = keys[i];
     let old = Array.prototype[key];
 
-    if(typeof old != 'function' || key == 'constructor') {
+    if (typeof old != 'function' || key == 'constructor') {
       continue;
     }
 
@@ -447,7 +447,7 @@ Akili.isolateArrayPrototype = function() {
 
     Array.prototype[key] = function() {
       return Akili.unevaluated(() => {
-        if(!this.__isProxy) {
+        if (!this.__isProxy) {
           return old.apply(this, arguments);
         }
 
@@ -491,11 +491,11 @@ Akili.isolateEvents = function() {
   Element.prototype.addEventListener = function(name, fn) {
     let args = [].slice.call(arguments);
 
-    if(!this.__akiliListeners) {
+    if (!this.__akiliListeners) {
       this.__akiliListeners = {};
     }
 
-    if(!this.__akiliListeners[name]) {
+    if (!this.__akiliListeners[name]) {
       this.__akiliListeners[name] = [];
     }
 
@@ -516,18 +516,18 @@ Akili.isolateEvents = function() {
   };
 
   Element.prototype.removeEventListener = function(name, fn) {
-    if(!this.__akiliListeners) {
+    if (!this.__akiliListeners) {
       this.__akiliListeners = {};
     }
 
-    if(!this.__akiliListeners[name]) {
+    if (!this.__akiliListeners[name]) {
       this.__akiliListeners[name] = [];
     }
 
-    for(let i = 0, l = this.__akiliListeners[name].length; i < l; i++) {
+    for (let i = 0, l = this.__akiliListeners[name].length; i < l; i++) {
       let listener = this.__akiliListeners[name][i];
 
-      if(listener.link === fn) {
+      if (listener.link === fn) {
         this.__akiliListeners[name].splice(i, 1);
         i--;
         l--;
@@ -536,7 +536,7 @@ Akili.isolateEvents = function() {
       }
     }
 
-    if(!this.__akiliListeners[name].length) {
+    if (!this.__akiliListeners[name].length) {
       delete this.__akiliListeners[name];
     }
 
@@ -556,7 +556,7 @@ Akili.createCallbackIsolation = function(fn, pos = 'last') {
     let args = [].slice.call(arguments);
     let callback = pos == 'last'? args[args.length - 1]: args[pos];
 
-    if(typeof callback != 'function') {
+    if (typeof callback != 'function') {
       return fn.apply(this, arguments);
     }
 
@@ -580,7 +580,7 @@ Akili.createCallbackIsolation = function(fn, pos = 'last') {
  * @returns {function}
  */
 Akili.isolateFunction = function(fn, context = null) {
-  if(fn.__akili) {
+  if (fn.__akili) {
     return fn;
   }
 
@@ -629,7 +629,7 @@ Akili.serverRendering = function() {
 
   this.__serverRendering = !!server;
 
-  if(server) {
+  if (server) {
     this.__html.style.visibility = 'hidden';
     this.__serverPromise = request.get(server).then((res) => {      
       this.__html.innerHTML = res.data;
@@ -648,7 +648,7 @@ Akili.init = function(root) {
 
   return this.__serverPromise.then(() => {
     return this.compile(this.__root).then(() => {
-      if(router.__init) {
+      if (router.__init) {
         return router.changeState();
       }
     }).then(() => {
@@ -664,11 +664,11 @@ Akili.init = function(root) {
  * Deinitialize the application
  */
 Akili.deinit = function() {
-  for(let key in this.__window.Element.prototype) {
+  for (let key in this.__window.Element.prototype) {
     Element.prototype[key] = this.__window.Element.prototype[key];
   }
 
-  for(let key in this.__window.Array.prototype) {
+  for (let key in this.__window.Array.prototype) {
     Array.prototype[key] = this.__window.Array.prototype[key];
   }
 

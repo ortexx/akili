@@ -30,31 +30,31 @@ export class Request {
       xhr.open(options.method, url, true, options.user, options.password);
       options.headers = options.headers || {};
 
-      if(options.json) {
+      if (options.json) {
         options.body = JSON.stringify(options.json);
         options.headers['content-type'] = 'application/json';
         options.responseType = options.responseType || 'json';
       }
-      else if(options.form) {
+      else if (options.form) {
         options.body = this.createFormData(options.form);
         options.headers['content-type'] = 'multipart/form-data';
       }
 
-      if(options.hasOwnProperty('timeout')) {
+      if (options.hasOwnProperty('timeout')) {
         xhr.timeout = options.timeout;
       }
 
-      if(options.responseType) {
+      if (options.responseType) {
         xhr.responseType = options.responseType;
       }
 
-      if(options.withCredentials) {
+      if (options.withCredentials) {
         xhr.withCredentials = options.withCredentials;
       }
 
-      if(options.headers) {
-        for(let k in options.headers) {
-          if(!options.headers.hasOwnProperty(k)) {
+      if (options.headers) {
+        for (let k in options.headers) {
+          if (!options.headers.hasOwnProperty(k)) {
             continue;
           }
 
@@ -62,15 +62,15 @@ export class Request {
         }
       }
 
-      if(options.params) {
+      if (options.params) {
         let str = this.paramsToQuery(options.params);
 
-        if(str) {
+        if (str) {
           url += "?" + str;
         }
       }
 
-      if(typeof options.onProgress == 'function') {
+      if (typeof options.onProgress == 'function') {
         xhr.onprogress = () => {
           return options.onProgress(xhr);
         };
@@ -79,7 +79,7 @@ export class Request {
       xhr.onload = () => {
         let response = this.transformAfter(xhr);
 
-        if((xhr.status + '').match(options.statusErrorsPattern)) {
+        if ((xhr.status + '').match(options.statusErrorsPattern)) {
           let err = new Error(`Request to "${url}" returns failure status code ${xhr.status}`);
 
           err.response = response;
@@ -126,7 +126,7 @@ export class Request {
           return ks + `[${i}]` + eq + encodeURIComponent(v);
         }).join(sep);
       }
-      else if(obj[k] && typeof obj[k] === 'object') {
+      else if (obj[k] && typeof obj[k] === 'object') {
         let opt = [];
 
         Object.keys(obj[k]).map((key) => {
@@ -151,19 +151,19 @@ export class Request {
     let query = {};
     let amps = str.split('&');
 
-    for(let i = 0, l = amps.length; i <l; i++) {
+    for (let i = 0, l = amps.length; i <l; i++) {
       let eqs =  amps[i].split('=');
       let key = decodeURIComponent(eqs[0]);
       let val = decodeURIComponent(eqs[1]);
 
-      if(!key) {
+      if (!key) {
         continue;
       }
 
-      if(Array.isArray(query[key])) {
+      if (Array.isArray(query[key])) {
         query[key].push(val);
       }
-      else if(query[key]) {
+      else if (query[key]) {
         query[key] = [query[key], val];
       }
       else {
@@ -186,8 +186,8 @@ export class Request {
   createFormData(obj, data = null, namespace = '') {
     let fd = data || new FormData();
 
-    for(let k in obj) {
-      if(obj.hasOwnProperty(k) && obj[k]) {
+    for (let k in obj) {
+      if (obj.hasOwnProperty(k) && obj[k]) {
         let key = namespace? namespace + '[' + k + ']': k;
 
         if (obj[k] instanceof Date) {

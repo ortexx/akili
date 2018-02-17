@@ -30,10 +30,10 @@ export class Transition {
   }
 
   getRoute(state) {
-    for(let i = 0, l = this.routes.length; i < l; i++) {
+    for (let i = 0, l = this.routes.length; i < l; i++) {
       let route = this.routes[i];
 
-      if(route.state === state) {
+      if (route.state === state) {
         return route;
       }
     }
@@ -77,11 +77,11 @@ router.add = function (name, pattern, options = {}) {
     handler: (transition) => {}
   };
 
-  if(!options.template && !options.templateUrl) {
+  if (!options.template && !options.templateUrl) {
     options.abstract = true;
   }
 
-  if(this.has(name)) {
+  if (this.has(name)) {
     throw new Error(`Router state "${name}" is already exists`)
   }
 
@@ -96,8 +96,8 @@ router.add = function (name, pattern, options = {}) {
  * @param {string} name
  */
 router.remove = function(name) {
-  for(let i = 0, l = this.states.length; i < l; i++) {
-    if(this.states[i].name == name) {
+  for (let i = 0, l = this.states.length; i < l; i++) {
+    if (this.states[i].name == name) {
       this.states.splice(i, 1);
 
       return;
@@ -112,8 +112,8 @@ router.remove = function(name) {
  * @returns {boolean}
  */
 router.has = function(name) {
-  for(let i = 0, l = this.states.length; i < l; i++) {
-    if(this.states[i].name == name) {
+  for (let i = 0, l = this.states.length; i < l; i++) {
+    if (this.states[i].name == name) {
       return true;
     }
   }
@@ -139,7 +139,7 @@ router.state = function (name, params = {}, query = {}, hash = '', options = {})
 
   let url = this.createStateUrl(state, params, query, hash);
 
-  if(!options.reload && url === this.getUrl()) {
+  if (!options.reload && url === this.getUrl()) {
     return;
   }
 
@@ -177,7 +177,7 @@ router.forward = function() {
 router.location = function(url, options = { reload: false }) {
   this.__options = options;
 
-  if(this.hashMode) {
+  if (this.hashMode) {
     let current = window.location.hash.replace('#', '');
 
     window.location.hash = url;
@@ -239,7 +239,7 @@ router.init = function (defaultUrl = '', hashMode = true) {
         throw new Error(`Not found parent route state "${parentName}" for "${state.name}"`)
       }
 
-      if(state.level !== null && parent.abstract) {
+      if (state.level !== null && parent.abstract) {
         state.level--;
       }
 
@@ -251,7 +251,7 @@ router.init = function (defaultUrl = '', hashMode = true) {
     }
   }
 
-  if(!this.states.length && Akili.options.debug) {
+  if (!this.states.length && Akili.options.debug) {
     console.warn(`You didn't add any routes to the router`);
   }
 
@@ -407,13 +407,13 @@ router.createStateUrl = function (state, params = {}, query = {}, hash = '') {
 
   url = this.splitSlashes(url);
 
-  if(Object.keys(query).length) {
+  if (Object.keys(query).length) {
     url += '?' + request.paramsToQuery(query);
   }
 
   hash = (hash || '').replace('#', '');
 
-  if(!this.hashMode && hash) {
+  if (!this.hashMode && hash) {
     url += '#' + hash;
   }
 
@@ -511,7 +511,7 @@ router.inActiveState = function(state) {
 router.getRoute = function (level) {
   let i = 0;
 
-  let find = (el) => {
+  const find = (el) => {
     let route = el.child(this.__routeSelector);
 
     if (!route) {
@@ -581,7 +581,7 @@ router.getStatesByLevel = function (level) {
  * Change state
  */
 router.changeState = function () {
-  if(this.__disableChange) {
+  if (this.__disableChange) {
     delete this.__disableChange;
 
     return Promise.resolve();
@@ -594,7 +594,7 @@ router.changeState = function () {
   let transition = router.transition = new Transition(url, query, hash, prevTransition);
   let level = 0;
 
-  let next = (states, onEnd) => {
+  const next = (states, onEnd) => {
     if (!states.length) {
       return onEnd && onEnd();
     }
@@ -619,7 +619,7 @@ router.changeState = function () {
     let hasState = prevTransition && prevTransition.hasState(state);
     let isDifferent = true;
 
-    if(hasState) {
+    if (hasState) {
       let route = prevTransition.getRoute(state);
       let prev = { params: route.params, query: route.query, hash: route.hash };
       let current = { params, query, hash };
@@ -639,7 +639,7 @@ router.changeState = function () {
 
       transition.path.data = data;
 
-      if(state.abstract) {
+      if (state.abstract) {
         return next(state.children, onEnd);
       }
  
@@ -651,17 +651,17 @@ router.changeState = function () {
 
   return new Promise((resolve, reject) => {
     next(this.getStatesByLevel(0), (err) => {
-      if(err) {
+      if (err) {
         return reject(err);
       }
 
-      if(!transition.routes.length) {
-        if(this.__redirects) {
+      if (!transition.routes.length) {
+        if (this.__redirects) {
           return reject(new Error(`Wrong router default url "${this.defaultUrl}"`));
         }
 
-        if(this.defaultUrl) {
-          if(this.defaultUrl == this.getUrl()) {
+        if (this.defaultUrl) {
+          if (this.defaultUrl == this.getUrl()) {
             return reject(new Error(`Not found any routes`));
           }
 
@@ -672,20 +672,20 @@ router.changeState = function () {
           return this.changeState().then(resolve).catch(reject);
         }
 
-        if(Akili.options.debug) {
+        if (Akili.options.debug) {
           console.warn(`Not found a default route. You can pass it in "router.init(defaultUrl)" function`);
         }
       }
       
-      if(!this.__options.saveScrollPosition && !transition.hash) {
+      if (!this.__options.saveScrollPosition && !transition.hash) {
         window.scrollTo(0, 0);
       }
 
       this.__options = {};
       this.__redirects = 0;
 
-      if(prevTransition) {
-        for(let i = level, l = prevTransition.routes.length; i < l; i++) {
+      if (prevTransition) {
+        for (let i = level, l = prevTransition.routes.length; i < l; i++) {
           let route = prevTransition.routes[i];
           
           route.component && route.component.empty();

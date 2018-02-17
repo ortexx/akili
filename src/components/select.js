@@ -58,18 +58,18 @@ export default class Select extends For {
   drawSelect() {
     let selected = [];
 
-    for(let i = 0, l = this.el.options.length; i < l; i++) {
+    for (let i = 0, l = this.el.options.length; i < l; i++) {
       let option = this.el.options[i].__akili;
       let selection = option.attrs.selected;
 
-      if(selection) {
+      if (selection) {
         selected.push(option.el.value);
       }
 
       option.el.selected = selection;
     }
 
-    if(!selected.length) {
+    if (!selected.length) {
       this.redefine();
     }
     else {
@@ -80,7 +80,7 @@ export default class Select extends For {
   createIteratorElement() {
     let el = super.createIteratorElement();
 
-    if(!el.hasAttribute('value')) {
+    if (!el.hasAttribute('value')) {
       el.setAttribute('value', this.html.trim());
     }
 
@@ -88,7 +88,7 @@ export default class Select extends For {
   }
 
   inContent(value) {
-    if(!this.isMultiple) {
+    if (!this.isMultiple) {
       return this.el.content === value;
     }
 
@@ -96,16 +96,16 @@ export default class Select extends For {
   }
 
   getContent() {
-    if(!this.isMultiple) {
+    if (!this.isMultiple) {
       return this.el.value;
     }
 
     let content = [];
 
-    for(let i = 0, l = this.el.options.length; i < l; i++) {
+    for (let i = 0, l = this.el.options.length; i < l; i++) {
       let option = this.el.options[i];
 
-      if(option.selected) {
+      if (option.selected) {
         content.push(option.value);
       }
     }
@@ -114,16 +114,16 @@ export default class Select extends For {
   }
 
   formatValue(value) {
-    if(this.isMultiple) {
-      if(!Array.isArray(value)) {
+    if (this.isMultiple) {
+      if (!Array.isArray(value)) {
         value = (value !== undefined && value !== null)? [value]: [];
       }
     }
     else {
-      if(Array.isArray(value)) {
+      if (Array.isArray(value)) {
         value = value.length? value[0]: '';
       }
-      else if(typeof value == 'object' || typeof value == 'function') {
+      else if (typeof value == 'object' || typeof value == 'function') {
         value = '';
       }
     }
@@ -136,14 +136,14 @@ export default class Select extends For {
   }
 
   changeValue(value) {
-    if(utils.compare(this.el.content, value)) {
+    if (utils.compare(this.el.content, value)) {
       return;
     }
 
-    if(Array.isArray(value)) {
+    if (Array.isArray(value)) {
       this.el.value = value[value.length - 1];
 
-      for(let i = 0, l = this.el.options.length; i < l; i++) {
+      for (let i = 0, l = this.el.options.length; i < l; i++) {
         let option = this.el.options[i];
 
         option.selected = value.indexOf(option.value) != -1;
@@ -152,7 +152,7 @@ export default class Select extends For {
     else {
       this.el.value = value;
 
-      for(let i = 0, l = this.el.options.length; i < l; i++) {
+      for (let i = 0, l = this.el.options.length; i < l; i++) {
         let option = this.el.options[i];
 
         option.selected = option.value == value;

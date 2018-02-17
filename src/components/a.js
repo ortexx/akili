@@ -59,7 +59,7 @@ export default class A extends Component {
     this.el.addEventListener('click', (e) => {
       e.preventDefault();
 
-      if(this.isUrl) {
+      if (this.isUrl) {
         router.location(this.attrs.url, this.options);
 
         return;
@@ -91,7 +91,7 @@ export default class A extends Component {
   }
 
   setParams(params) {
-    if(typeof params != 'object' || !params) {
+    if (typeof params != 'object' || !params) {
       throw new Error(`Router state params must be an object`);
     }
 
@@ -99,7 +99,7 @@ export default class A extends Component {
   }
 
   setQuery(query) {
-    if(typeof query != 'object' || !query) {
+    if (typeof query != 'object' || !query) {
       throw new Error(`Router state query must be an object`);
     }
 
@@ -107,7 +107,7 @@ export default class A extends Component {
   }
 
   setHash(hash) {
-    if(typeof hash != 'string') {
+    if (typeof hash != 'string') {
       throw new Error(`Router state hash must be a string`);
     }
 
@@ -115,7 +115,7 @@ export default class A extends Component {
   }
 
   setOptions(options) {
-    if(typeof options != 'object' || !options) {
+    if (typeof options != 'object' || !options) {
       throw new Error(`Router state options must be an object`);
     }
 
@@ -129,7 +129,7 @@ export default class A extends Component {
   getState(name) {
     let state = router.getState(name);
 
-    if(!state) {
+    if (!state) {
       throw new Error(`Not found router state with name "${name}"`);
     }
 
@@ -137,7 +137,7 @@ export default class A extends Component {
   }
 
   resetHref(url) {
-    if(url) {
+    if (url) {
       this.attrs.href = url;
     }
     else {

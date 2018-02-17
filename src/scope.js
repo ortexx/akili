@@ -29,14 +29,14 @@ export default class Scope {
    * @protected
    */
   __set(keys, value, strict = false) {
-    if(!Array.isArray(keys)) {
+    if (!Array.isArray(keys)) {
       keys = [keys];
     }
 
     Akili.unisolated(() => {
       strict && (this.__component.__disableProxyRedefining = true);
       utils.setPropertyByKeys(keys, this, (last, val) => {
-        if(!last) {
+        if (!last) {
           return val || {};
         }
 

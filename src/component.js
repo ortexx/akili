@@ -104,20 +104,20 @@ export default class Component {
 
     this.__attributeOf = control? this: this.__evaluateParent.__akili;
 
-    if(!this.__recompiling || this.__compiling.newParent || this.__controlAttributes) {
+    if (!this.__recompiling || this.__compiling.newParent || this.__controlAttributes) {
       this.__interpolateAttributes(this.el, this.__attributeOf);
     }
 
-    let interpolate = (children, parent) => {
-      for(let i = 0, l = children.length; i < l; i++) {
+    const interpolate = (children, parent) => {
+      for (let i = 0, l = children.length; i < l; i++) {
         let child = children[i];
 
-        if(child.nodeType == 3) {
+        if (child.nodeType == 3) {
           this.__initializeNode(child, parent);
 
           child.nodeValue = this.__evaluate(child);
         }
-        else if(child.nodeType == 1 && !child.__akili) {
+        else if (child.nodeType == 1 && !child.__akili) {
           this.__interpolateAttributes(child);
           interpolate(child.childNodes, child);
         }
@@ -129,14 +129,14 @@ export default class Component {
 
     let res;
 
-    if(!this.__recompiling) {
+    if (!this.__recompiling) {
       res = Akili.isolate(() => {
         this.attrs.onCompiled && this.attrs.onCompiled.trigger();
 
         return this.compiled();
       });
 
-      if(this.constructor.templateUrl) {
+      if (this.constructor.templateUrl) {
         p = request.get(this.constructor.templateUrl).then((res) => {
           this.el.innerHTML = this.__content;
           Akili.setTemplate(this.el, res.data);
@@ -169,7 +169,7 @@ export default class Component {
    * @returns {Promise}
    */
   __resolve() {
-    if(this.__recompiling) {
+    if (this.__recompiling) {
       return Promise.resolve();
     }
 
@@ -188,7 +188,7 @@ export default class Component {
     let scope;
     let isRoot = Akili.__root === this.el;
 
-    if(parent) {
+    if (parent) {
       scope = new Scope(this.el.getAttribute('scope') || Akili.createScopeName(), this.el, this);
     }
     else {
@@ -198,40 +198,24 @@ export default class Component {
 
     let __scope = scope;
     let _scope = Object.assign(scope, this.scope);
-    let nestedWatching = Akili.options.nestedWatching;
     let controlAttributes = this.constructor.controlAttributes;
     let events = this.constructor.events;
 
-    if(this.constructor.template) {
+    if (this.constructor.template) {
       Akili.setTemplate(this.el, this.constructor.template);
     }
 
-    if(this.constructor.templateUrl) {
+    if (this.constructor.templateUrl) {
       this.__content = this.el.innerHTML;
       this.el.innerHTML = '';
     }
 
-    if(this.constructor.nestedWatching !== undefined) {
-      nestedWatching = this.constructor.nestedWatching;
-    }
-    else if(Scope.nestedWatching !== undefined) {
-      nestedWatching = Scope.nestedWatching;
-    }
-
     this.__scope = __scope;
     this.__events = events;
-    this.__nestedWatching = nestedWatching;
     this.__controlAttributes = controlAttributes;
 
     Akili.addScope(scope);
-
-    if(nestedWatching) {
-      scope = this.__nestedObserve(_scope, []);
-    }
-    else {
-      scope = this.__observe(_scope, []);
-    }
-
+    scope = this.__nestedObserve(_scope, []);
     this.scope = scope;
   }
 
@@ -243,12 +227,12 @@ export default class Component {
   __setBooleanAttributes() {
     this.booleanAttributes = [].concat(Akili.htmlBooleanAttributes, this.constructor.booleanAttributes);
 
-    let setAttr = (el) => {
+    const setAttr = (el) => {
       for (let i = 0, attrs = el.attributes, l = attrs.length; i < l; i++) {
         let node = attrs[i];
 
-        if(this.booleanAttributes.indexOf(node.nodeName) != -1) {
-          if(el.hasAttribute(`boolean-${node.nodeName}`)) {
+        if (this.booleanAttributes.indexOf(node.nodeName) != -1) {
+          if (el.hasAttribute(`boolean-${node.nodeName}`)) {
             continue;
           }
 
@@ -257,10 +241,10 @@ export default class Component {
         }
       }
 
-      for(let i = 0, l = el.children.length; i < l; i++) {
+      for (let i = 0, l = el.children.length; i < l; i++) {
         let child = el.children[i];
 
-        if(!child.__akili) {
+        if (!child.__akili) {
           setAttr(child);
         }
       }
@@ -275,12 +259,12 @@ export default class Component {
    * @protected
    */
   __setEvents() {
-    for(let i = 0, l = this.__events.length; i < l; i++) {
+    for (let i = 0, l = this.__events.length; i < l; i++) {
       let ev = this.__events[i];
 
       !/^on-/i.test(ev) && (ev = 'on-' + ev);
 
-      if(!this.el.hasAttribute(ev)) {
+      if (!this.el.hasAttribute(ev)) {
         this.el.setAttribute(ev, '');
       }
     }
@@ -294,17 +278,17 @@ export default class Component {
   __setParents() {
     let parents = Akili.getAkiliParents(this.el);
 
-    if(!parents.length) {
+    if (!parents.length) {
       return;
     }
 
     let newParent = this.__parent !== parents[0];
     let evaluateParent = null;
 
-    for(let i = 0, l = parents.length; i < l; i++) {
+    for (let i = 0, l = parents.length; i < l; i++) {
       let parent = parents[i];
 
-      if(!parent.__akili.constructor.transparent) {
+      if (!parent.__akili.constructor.transparent) {
         evaluateParent = parent;
 
         break;
@@ -314,7 +298,7 @@ export default class Component {
     this.__compiling.newParent = newParent;
     newParent && this.__detach();
 
-    if(this.constructor.transparent) {
+    if (this.constructor.transparent) {
       this.__evaluationComponent = evaluateParent.__akili;
     }
 
@@ -343,10 +327,10 @@ export default class Component {
    * @protected
    */
   __spliceChild(el) {
-    for(let i = 0, l = this.__children.length; i < l; i++) {
+    for (let i = 0, l = this.__children.length; i < l; i++) {
       let child = this.__children[i];
 
-      if(child === el) {
+      if (child === el) {
         this.__children.splice(i, 1);
         i--;
         l--;
@@ -378,14 +362,14 @@ export default class Component {
     }
 
     for (let k in node.__properties) {
-      if(!node.__properties.hasOwnProperty(k)) {
+      if (!node.__properties.hasOwnProperty(k)) {
         continue;
       }
 
       let prop = node.__properties[k];
       let value = utils.getPropertyByKeys(prop.keys, prop.component.__scope);
 
-      if(!utils.comparePreviousValue(value, prop.value, prop.copy, utils.copy(value))) {
+      if (!utils.comparePreviousValue(value, prop.value, prop.copy, utils.copy(value))) {
         return true;
       }
     }
@@ -405,7 +389,7 @@ export default class Component {
   __checkNodePropertyChanging(node, keys, value) {
     let prop = this.__getNodeProperty(node, keys);
 
-    if(!prop) {
+    if (!prop) {
       return true;
     }
 
@@ -424,11 +408,11 @@ export default class Component {
     let attributeValue;
     let expression;
 
-    if(node.__component.parents((com) => com.__prevent).length) {
+    if (node.__component.parents((com) => com.__prevent).length) {
       return node.__expression;
     }
 
-    if(!(node instanceof window.Attr) && node.__component.__prevent) {
+    if (!(node instanceof window.Attr) && node.__component.__prevent) {
       return node.__expression;
     }
 
@@ -453,29 +437,29 @@ export default class Component {
       Akili.__evaluation.list = null;
       Akili.__evaluation = null;
 
-      for(let i = evaluation.length - 1; i >= 0; i--) {
+      for (let i = evaluation.length - 1; i >= 0; i--) {
         let data = evaluation[i];
         let hash = `${data.component.__scope.__name}.${data.keysString}`;
 
-        if(data.notBinding) {
+        if (data.notBinding) {
           continue;
         }
 
-        if(existingBindings[hash]) {
+        if (existingBindings[hash]) {
           continue;
         }
 
         let parentValue = utils.getPropertyByKeys(data.parents, data.component.__scope);
         let evalComponent = node.__attributeOf || node.__component;
 
-        if(utils.isScopeProxy(parentValue) && data.component !== evalComponent.__evaluationComponent) {
+        if (utils.isScopeProxy(parentValue) && data.component !== evalComponent.__evaluationComponent) {
           continue;
         }
 
         let bind = data.component.__getBoundNode(data.keys, node);
         let value = utils.getPropertyByKeys(data.keys, data.component.__scope);
 
-        if(!bind) {
+        if (!bind) {
           data.component.__bind(data.keys, { node: node });
         }
 
@@ -486,14 +470,14 @@ export default class Component {
       existingBindings = null;
       evaluation = null;
 
-      if(node instanceof window.Attr) {
+      if (node instanceof window.Attr) {
         expression = m;
         attributeValue = evaluate;
 
         return utils.makeAttributeValue(evaluate);
       }
 
-      if(typeof evaluate == 'object') {
+      if (typeof evaluate == 'object') {
         try {
           return JSON.stringify(evaluate);
         }
@@ -505,26 +489,26 @@ export default class Component {
       return evaluate;
     });
 
-    if(node instanceof window.Attr) {
+    if (node instanceof window.Attr) {
       let value = res;
       let isBooleanAttribute = false;
 
-      if(counter) {
+      if (counter) {
         node.__hasBindings = true;
       }
 
-      if(counter == 1 && expression && node.__expression == expression) {
+      if (counter == 1 && expression && node.__expression == expression) {
         value = attributeValue;
       }
 
       let clearAttribute = node.nodeName.replace(/^boolean-(.+)/i, '$1');
 
-      if(clearAttribute != node.nodeName) {
+      if (clearAttribute != node.nodeName) {
         isBooleanAttribute = true;
         value = !!value;
       }
 
-      if(node.__attributeOn) {
+      if (node.__attributeOn) {
         let component = node.__attributeOn;
 
         component.__disableAttributeSetter = true;
@@ -549,7 +533,7 @@ export default class Component {
           });
         }
       }
-      else if(isBooleanAttribute) {
+      else if (isBooleanAttribute) {
         let element = node.__element;
         let attr = utils.toCamelCase(clearAttribute);
 
@@ -571,7 +555,7 @@ export default class Component {
     let scope = this.__scope;
     let props = [];
 
-    if(!withoutParents) {
+    if (!withoutParents) {
       let lastProps = [];
 
       for (let i = 0, l = keys.length; i < l; i++) {
@@ -589,7 +573,7 @@ export default class Component {
 
     let propsLength = props.length;
 
-    let elEvaluate = (element) => {
+    const elEvaluate = (element) => {
       let component = element.__akili;
 
       for (let m = 0; m < propsLength; m++) {
@@ -603,12 +587,12 @@ export default class Component {
         for (let k = 0, c = data.__data.length; k < c; k++) {
           let bind = data.__data[k];
 
-          if(component.__checkNodePropertyChanging(bind.node, prop.keys, prop.value)) {
+          if (component.__checkNodePropertyChanging(bind.node, prop.keys, prop.value)) {
             component.__disableProxy = true;
             component.__evaluateNode(bind.node);
 
-            for(let _k in bind.node.__properties) {
-              if(!bind.node.__properties.hasOwnProperty(_k)) {
+            for (let _k in bind.node.__properties) {
+              if (!bind.node.__properties.hasOwnProperty(_k)) {
                 continue;
               }
 
@@ -626,7 +610,7 @@ export default class Component {
       return component;
     };
 
-    let evaluate = (elements) => {
+    const evaluate = (elements) => {
       for (let i = 0, l = elements.length; i < l; i++) {
         let component = elEvaluate(elements[i]);
 
@@ -649,9 +633,9 @@ export default class Component {
   __evaluateByKeys(keys, value, isDeleted = false) {
     let data = this.__getBind(keys);
 
-    let unbind = (obj, parents) => {
-      for(let k in obj) {
-        if(!obj.hasOwnProperty(k) || k == '__data') {
+    const unbind = (obj, parents) => {
+      for (let k in obj) {
+        if (!obj.hasOwnProperty(k) || k == '__data') {
           continue;
         }
 
@@ -664,17 +648,17 @@ export default class Component {
         __keys.shift();
         hasKey = utils.hasPropertyByKeys(__keys, value);
 
-        if(value && typeof value == 'object' && !hasKey) {
+        if (value && typeof value == 'object' && !hasKey) {
           _isDeleted = true;
         }
 
-        if(val && typeof val == 'object') {
+        if (val && typeof val == 'object') {
           unbind(val, _keys);
         }
 
         this.__evaluateNested(_keys, true);
 
-        if(value === null || typeof value != 'object' || !hasKey) {
+        if (value === null || typeof value != 'object' || !hasKey) {
           this.__unbind(_keys);
           _isDeleted && utils.deletePropertyByKeys(__keys, value);
         }
@@ -684,7 +668,7 @@ export default class Component {
     data && unbind(data, [].concat(keys));
     this.__evaluateNested(keys);
 
-    if(isDeleted) {
+    if (isDeleted) {
       this.__unbind(keys);
       isDeleted && utils.deletePropertyByKeys(keys, this.__scope);
     }
@@ -702,7 +686,7 @@ export default class Component {
     let expression = evaluationRegex.exec(node.__expression);
     let evaluate;
 
-    if(!expression) {
+    if (!expression) {
       return;
     }
 
@@ -727,7 +711,7 @@ export default class Component {
    * @protected
    */
   __evaluateNode(node) {
-    if(this.__checkEvaluation(node)) {
+    if (this.__checkEvaluation(node)) {
       node[(node instanceof window.Attr)? 'value': 'nodeValue'] = this.__evaluate(node);
     }
   }
@@ -741,7 +725,7 @@ export default class Component {
    * @protected
    */
   __initializeAttribute(node, el, attributeOf) {
-    if(systemAttributes.indexOf(node.nodeName) != -1) {
+    if (systemAttributes.indexOf(node.nodeName) != -1) {
       return;
     }
 
@@ -751,14 +735,14 @@ export default class Component {
     let nodeName = utils.toCamelCase(node.nodeName);
     let component = attributeOf? attributeOf: this;
 
-    if(eventName != node.nodeName) {
-      if(node.__event) {
+    if (eventName != node.nodeName) {
+      if (node.__event) {
         return;
       }
 
       let emitter = new Akili.EventEmitter(eventName, el, component);
 
-      if(node.__expression) {
+      if (node.__expression) {
         emitter.bind((e) => {
           return component.__evaluateEvent(node, el, e);
         });
@@ -767,7 +751,7 @@ export default class Component {
       node.__event = emitter;
       el.setAttribute(node.nodeName, utils.makeAttributeValue(emitter));
 
-      if(attributeOf) {
+      if (attributeOf) {
         this.__disableAttributeSetter = true;
         this.attrs[nodeName] = emitter;
         this.__disableAttributeSetter = false;
@@ -776,7 +760,7 @@ export default class Component {
       return;
     }
 
-    if(attributeOf) {
+    if (attributeOf) {
       node.__attributeOn = this;
       node.__attributeOf = component;
     }
@@ -793,7 +777,7 @@ export default class Component {
    * @protected
    */
   __initializeNode(node, el) {
-    if(node.__initialized) {
+    if (node.__initialized) {
       return false;
     }
 
@@ -829,31 +813,31 @@ export default class Component {
    * @protected
    */
   __defineAttributes() {
-    let changeAttribute = (key, value, isDeleted = false) => {
-      if(this.__disableAttributeSetter) {
+    const changeAttribute = (key, value, isDeleted = false) => {
+      if (this.__disableAttributeSetter) {
         return;
       }
 
       let node = this.el.getAttributeNode(key);
 
-      if(node) {
-        if(node.__event) {
+      if (node) {
+        if (node.__event) {
           node.__event.unbind();
           node.__event = null;
           node.__expression = value;
         }
 
-        if(node.__hasBindings) {
+        if (node.__hasBindings) {
           this.__parent && this.__parent.__akili.__evaluationComponent.__unbindByNodes([node]);
           node.__hasBindings = false;
           node.__expression = value;
         }
       }
 
-      if(isDeleted) {
+      if (isDeleted) {
         this.el.removeAttribute(key);
       }
-      else if(node) {
+      else if (node) {
         node.value = value;
       }
       else {
@@ -863,7 +847,7 @@ export default class Component {
 
     this.attrs = new Proxy(this.__attrs, {
       get: (target, key) => {
-        if(key == '__isProxy') {
+        if (key == '__isProxy') {
           return true;
         }
 
@@ -872,10 +856,10 @@ export default class Component {
       set: (target, key, value) => {
         let attrKey = utils.toDashCase(key);
 
-        if(this.booleanAttributes.indexOf(attrKey) != -1) {
+        if (this.booleanAttributes.indexOf(attrKey) != -1) {
           attrKey = `boolean-${attrKey}`;
 
-          if(value) {
+          if (value) {
             this.el.setAttribute(key, value);
           }
           else {
@@ -926,18 +910,18 @@ export default class Component {
           return parents;
         }
 
-        if(this.__disableProxy) {
+        if (this.__disableProxy) {
           return target[key];
         }
 
-        if(this.__isSystemKey(key)) {
+        if (this.__isSystemKey(key)) {
           return target[key];
         }
 
-        if(typeof target[key] == 'function') {
+        if (typeof target[key] == 'function') {
           let realTarget  = utils.getOwnPropertyTarget(target, key);
 
-          if(!utils.isPlainObject(realTarget)) {
+          if (!utils.isPlainObject(realTarget)) {
             realTarget[key] = Akili.isolateFunction(realTarget[key]);
           }
         }
@@ -946,10 +930,10 @@ export default class Component {
           let keys = [].concat(parents, [key]);
           let notBinding = false;
 
-          if(!(key in target)) {
+          if (!(key in target)) {
             target[key] = undefined;
           }
-          else if(!utils.getEnumerablePropertyTarget(target, key)) {
+          else if (!utils.getEnumerablePropertyTarget(target, key)) {
             notBinding = true;
           }
 
@@ -961,13 +945,13 @@ export default class Component {
         return target[key];
       },
       set: (target, key, value) => {
-        if(this.__disableProxy) {
+        if (this.__disableProxy) {
           target[key] = value;
 
           return true;
         }
 
-        if(this.__isSystemKey(key)) {
+        if (this.__isSystemKey(key)) {
           target[key] = value;
 
           return true;
@@ -975,21 +959,15 @@ export default class Component {
 
         let keys = [].concat(parents, [key]);
 
-        if(this.__nestedWatching) {
-          target[key] = this.__nestedObserve(value, keys);
-        }
-        else {
-          value = utils.copy(value);
-          target[key] = value;
-        }
+        target[key] = this.__nestedObserve(value, keys);
 
-        if(Akili.__isolation) {
+        if (Akili.__isolation) {
           this.__createIsolationObject(parents, key, false);
 
           return true;
         }
 
-        if(this.__isMounted) {
+        if (this.__isMounted) {
           this.__evaluateByKeys(keys, value);
         }
 
@@ -998,19 +976,19 @@ export default class Component {
       deleteProperty: (target, key) => {
         let keys = [].concat(parents, [key]);
 
-        if(this.__disableProxy) {
+        if (this.__disableProxy) {
           delete target[key];
 
           return true;
         }
 
-        if(this.__isSystemKey(key)) {
+        if (this.__isSystemKey(key)) {
           delete target[key];
 
           return true;
         }
 
-        if(Akili.__isolation) {
+        if (Akili.__isolation) {
           delete target[key];
           this.__createIsolationObject(parents, key, true);
 
@@ -1032,10 +1010,10 @@ export default class Component {
    * @returns {boolean}
    */
   __isSystemKey (key) {
-    if(key == '__' || (key[0] == '_' && key[1] == '_')) {
+    if (key == '__' || (key[0] == '_' && key[1] == '_')) {
       return true;
     }
-    else if(['constructor'].indexOf(key) != -1) {
+    else if (['constructor'].indexOf(key) != -1) {
       return true;
     }
 
@@ -1052,37 +1030,37 @@ export default class Component {
   __nestedObserve (value, startKeys) {
     this.__disableProxy = true;
 
-    let observe = (value, parents) => {
-      if(typeof value != 'object' || value === null) {
+    const observe = (value, parents) => {
+      if (typeof value != 'object' || value === null) {
         return value;
       }
 
-      if(!utils.isPlainObject(value) && !utils.isScopeProxy(value) && !(value instanceof Akili.Scope)) {
+      if (!utils.isPlainObject(value) && !utils.isScopeProxy(value) && !(value instanceof Akili.Scope)) {
         return value;
       }
 
       let target = value;
 
-      if(value.__isProxy) {
+      if (value.__isProxy) {
         target = value.__target;
 
-        if(!this.__disableProxyRedefining) {
-          if(value.__component !== this) {
+        if (!this.__disableProxyRedefining) {
+          if (value.__component !== this) {
             target = utils.copy(target, false, true);
             value = target;
           }
-          else if(Akili.joinBindingKeys(parents) != Akili.joinBindingKeys(value.__keys)) {
+          else if (Akili.joinBindingKeys(parents) != Akili.joinBindingKeys(value.__keys)) {
             target = utils.copy(target, false, true);
             value = target;
           }
         }
       }
-      else if(!this.__disableProxyRedefining && !(value instanceof Akili.Scope)) {
+      else if (!this.__disableProxyRedefining && !(value instanceof Akili.Scope)) {
         target = utils.copy(target, false, true);          
         value = target;
       }
 
-      for(let k in target) {
+      for (let k in target) {
         if (!target.hasOwnProperty(k)) {
           continue;
         }
@@ -1093,7 +1071,7 @@ export default class Component {
         target[k] = observe(val, keys);
       }
 
-      if(!value.__isProxy) {
+      if (!value.__isProxy) {
         return this.__observe(target, parents);
       }
 
@@ -1120,11 +1098,11 @@ export default class Component {
     let keys = parents.length? [parents[0]]: [key];
     let isolationKey = `${this.__scope.__name}.${Akili.joinBindingKeys(keys)}`;
 
-    if(parents.length) {
+    if (parents.length) {
       isDeleted = false;
     }
 
-    if(!Akili.__isolation[isolationKey]) {
+    if (!Akili.__isolation[isolationKey]) {
       Akili.__isolation[isolationKey] = {
         component: this,
         keys: keys
@@ -1150,11 +1128,11 @@ export default class Component {
   __bindNode(bind, keys, parents, value, notBinding = false) {
     let parentKeysString = Akili.joinBindingKeys(parents);
 
-    if(bind.length && !notBinding) {
+    if (bind.length && !notBinding) {
       let l = bind.length - 1;
       let data = bind[l];
 
-      if(data.keysString == parentKeysString && data.component === this) {
+      if (data.keysString == parentKeysString && data.component === this) {
         bind.splice(l, 1);
       }
     }
@@ -1191,14 +1169,14 @@ export default class Component {
   __getBoundNode(keys, node) {
     let bind =  utils.getPropertyByKeys(keys, this.__bindings);
 
-    if(!bind || !bind.__data || !bind.__data.length) {
+    if (!bind || !bind.__data || !bind.__data.length) {
       return null;
     }
 
-    for(let i = 0, l = bind.__data.length; i < l; i++) {
+    for (let i = 0, l = bind.__data.length; i < l; i++) {
       let data = bind.__data[i];
 
-      if(data.node === node) {
+      if (data.node === node) {
         return data;
       }
     }
@@ -1219,7 +1197,7 @@ export default class Component {
     let prop = this.__getNodeProperty(node, keys);
     let copy = utils.copy(value);
 
-    if(prop) {
+    if (prop) {
       let res = utils.comparePreviousValue(value, prop.value, prop.copy, copy);
 
       prop.value = value;
@@ -1278,15 +1256,15 @@ export default class Component {
     utils.setPropertyByKeys(keys, this.__bindings, (last, value) => {
       let obj = {__data: []};
 
-      if(!last) {
+      if (!last) {
         return value? value: obj;
       }
 
-      if(typeof value == 'object') {
+      if (typeof value == 'object') {
         obj = value;
       }
 
-      if(!obj.__data) {
+      if (!obj.__data) {
         obj.__data = [];
       }
 
@@ -1305,18 +1283,18 @@ export default class Component {
   __unbind(keys) {
     let bind = utils.getPropertyByKeys(keys, this.__bindings);
 
-    if(!bind || !bind.__data) {
+    if (!bind || !bind.__data) {
       return;
     }
 
-    for(let i = 0, l = bind.__data.length; i < l; i++) {
+    for (let i = 0, l = bind.__data.length; i < l; i++) {
       let node = bind.__data[i].node;
 
       this.__deleteNodeProperty(node, keys);
     }
 
     utils.deletePropertyByKeys(keys, this.__bindings, (value) => {
-      if(Object.keys(value).length > 1) {
+      if (Object.keys(value).length > 1) {
         value.__data = [];
 
         return false;
@@ -1333,27 +1311,27 @@ export default class Component {
    * @protected
    */
   __unbindByNodes(nodes) {
-    let unbind = (obj) => {
-      for(let k in obj) {
-        if(!obj.hasOwnProperty(k)) {
+    const unbind = (obj) => {
+      for (let k in obj) {
+        if (!obj.hasOwnProperty(k)) {
           continue;
         }
 
-        if(k == '__data') {
+        if (k == '__data') {
           let data = obj[k] || [];
           let l = data.length;
 
-          for(let i = 0; i < l; i++) {
+          for (let i = 0; i < l; i++) {
             let bind = data[i];
 
-            if(nodes.indexOf(bind.node) != -1) {
+            if (nodes.indexOf(bind.node) != -1) {
               data.splice(i, 1);
               i--;
               l--;
             }
           }
 
-          if(!l) {
+          if (!l) {
             delete obj[k];
           }
         }
@@ -1374,19 +1352,19 @@ export default class Component {
    * @protected
    */
   __clearEmptyBindings(obj) {
-    let clear = (obj, parent, key) => {
-      for(let k in obj) {
-        if(!obj.hasOwnProperty(k)) {
+    const clear = (obj, parent, key) => {
+      for (let k in obj) {
+        if (!obj.hasOwnProperty(k)) {
           continue;
         }
 
         let val = obj[k];
 
-        if(k == '__data' && (!val || !val.length)) {
+        if (k == '__data' && (!val || !val.length)) {
           delete obj[k];
         }
-        else if(k != '__data') {
-          if(!Object.keys(obj[k]).length) {
+        else if (k != '__data') {
+          if (!Object.keys(obj[k]).length) {
             delete obj[k];
           }
           else {
@@ -1395,7 +1373,7 @@ export default class Component {
         }
       }
 
-      if(!Object.keys(obj).length && parent) {
+      if (!Object.keys(obj).length && parent) {
         delete parent[key];
       }
     };
@@ -1409,8 +1387,8 @@ export default class Component {
    * @protected
    */
   __removeChildren() {
-    let remove = (children) => {
-      for(let i = 0; i < children.length; i++) {
+    const remove = (children) => {
+      for (let i = 0; i < children.length; i++) {
         let child = children[i];
 
         remove(child.__akili.__children);
@@ -1441,11 +1419,11 @@ export default class Component {
    * @protected
    */
   __detach() {
-    if(this.__evaluateParent && !this.__controlAttributes) {
+    if (this.__evaluateParent && !this.__controlAttributes) {
       this.__evaluateParent.__akili.__unbindByNodes([].slice.call(this.el.attributes));
     }
 
-    if(this.__parent) {
+    if (this.__parent) {
       this.__parent.__akili.__spliceChild(this.el);
     }
   }
@@ -1470,14 +1448,14 @@ export default class Component {
 
     this.__removeChildren();
 
-    let find = (children) => {
-      for(let i = 0, l = children.length; i < l; i++) {
+    const find = (children) => {
+      for (let i = 0, l = children.length; i < l; i++) {
         let child = children[i];
 
-        if(child.nodeType == 3) {
+        if (child.nodeType == 3) {
           nodes.push(child);
         }
-        else if(child.nodeType == 1 && !child.__akili) {
+        else if (child.nodeType == 1 && !child.__akili) {
           for (let k = 0, attrs = child.attributes, c = attrs.length; k < c; k++) {
             nodes.push(attrs[i]);
           }
@@ -1505,16 +1483,16 @@ export default class Component {
     let arr = [];
     let level = 0;
 
-    if(typeof levels != 'object') {
+    if (typeof levels != 'object') {
       levels = [levels];
     }
 
-    let find = (parent) => {
-      if(!parent) {
+    const find = (parent) => {
+      if (!parent) {
         return;
       }
 
-      if(!levels || levels.indexOf(level) != -1) {
+      if (!levels || levels.indexOf(level) != -1) {
         if (!selector || parent.__akili.matches(selector)) {
           if (!findAll) {
             arr.push(parent.__akili);
@@ -1548,17 +1526,17 @@ export default class Component {
     let arr = [];
     let level = 0;
 
-    if(typeof levels != 'object') {
+    if (typeof levels != 'object') {
       levels = [levels];
     }
 
-    let find = (children) => {
-      for(let i = 0, l = children.length; i < l; i++) {
+    const find = (children) => {
+      for (let i = 0, l = children.length; i < l; i++) {
         let child = children[i];
 
-        if(!levels || levels.indexOf(level) != -1) {
-          if(!selector || child.__akili.matches(selector)) {
-            if(!findAll) {
+        if (!levels || levels.indexOf(level) != -1) {
+          if (!selector || child.__akili.matches(selector)) {
+            if (!findAll) {
               arr.push(child.__akili);
 
               return;
@@ -1571,7 +1549,7 @@ export default class Component {
 
       level++;
 
-      for(let i = 0, l = children.length; i < l; i++) {
+      for (let i = 0, l = children.length; i < l; i++) {
         find(children[i].__akili.__children);
       }
     };
@@ -1591,7 +1569,7 @@ export default class Component {
    * @protected
    */
   __getNear(selector = '', findAll = true, right = false) {
-    if(!this.__parent) {
+    if (!this.__parent) {
       return null;
     }
 
@@ -1600,21 +1578,21 @@ export default class Component {
 
     right && levelElements.reverse();
 
-    for(let i = 0, l = levelElements.length; i < l; i++) {
+    for (let i = 0, l = levelElements.length; i < l; i++) {
       let el = levelElements[i];
 
-      if(el === this.el) {
+      if (el === this.el) {
         break;
       }
 
-      if(!selector || el.__akili.matches(selector)) {
+      if (!selector || el.__akili.matches(selector)) {
         arr.push(el.__akili);
       }
     }
 
     arr.reverse();
 
-    if(!findAll) {
+    if (!findAll) {
       return arr.length? arr[0]: null;
     }
 
@@ -1628,7 +1606,7 @@ export default class Component {
    * @returns {boolean}
    */
   matches(selector) {
-    if(typeof selector == 'function') {
+    if (typeof selector == 'function') {
       return selector(this);
     }
 

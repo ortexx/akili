@@ -13,14 +13,14 @@ const utils = {};
  * @returns {string}
  */
 utils.class = function (obj) {
-  if(!obj || typeof obj !== 'object') {
+  if (!obj || typeof obj !== 'object') {
     return '';
   }
 
   let classes = [];
 
-  for(let k in obj) {
-    if(!obj.hasOwnProperty(k)) {
+  for (let k in obj) {
+    if (!obj.hasOwnProperty(k)) {
       continue;
     }
 
@@ -43,14 +43,14 @@ utils.class = function (obj) {
  * @returns {string}
  */
 utils.style = function(obj) {
-  if(!obj || typeof obj !== 'object') {
+  if (!obj || typeof obj !== 'object') {
     return '';
   }
 
   let styles = [];
 
-  for(let k in obj) {
-    if(!obj.hasOwnProperty(k)) {
+  for (let k in obj) {
+    if (!obj.hasOwnProperty(k)) {
       continue;
     }
 
@@ -85,28 +85,28 @@ utils.style = function(obj) {
 utils.filter = function (arr, handler, keys = []) {
   let res = [];
 
-  if(!Array.isArray(keys)) {
+  if (!Array.isArray(keys)) {
     keys = [keys];
   }
 
-  if(!handler) {
+  if (!handler) {
     return [...arr];
   }
 
-  for(let i = 0, l = arr.length; i < l; i++) {
+  for (let i = 0, l = arr.length; i < l; i++) {
     let item = arr[i];
     let val = keys.length? this.getPropertyByKeys(keys, item): item;
 
-    if(!val) {
+    if (!val) {
       continue;
     }
 
     val += '';
 
-    if((typeof handler == 'function') && handler(item)) {
+    if ((typeof handler == 'function') && handler(item)) {
       res.push(item);
     }
-    else if(val.match(handler || '')) {
+    else if (val.match(handler || '')) {
       res.push(item);
     }
   }
@@ -153,20 +153,20 @@ utils.filter = function (arr, handler, keys = []) {
 utils.sort = function(arr, keys = true, order = []) {
   arr = [...arr];
 
-  if(keys === true) {
+  if (keys === true) {
     keys = [];
     order = [true];
   }
-  else if(keys === false) {
+  else if (keys === false) {
     keys = [];
     order = [false];
   }
 
-  if(!Array.isArray(keys)) {
+  if (!Array.isArray(keys)) {
     keys = [keys];
   }
 
-  if(!Array.isArray(order)) {
+  if (!Array.isArray(order)) {
     order = [order];
   }
 
@@ -175,33 +175,33 @@ utils.sort = function(arr, keys = true, order = []) {
   arr.sort((a, b) => {
     let i = 0;
 
-    let check = (a, b, reverse = false) => {
-      if(a instanceof Date) {
+    const check = (a, b, reverse = false) => {
+      if (a instanceof Date) {
         a = a.getTime();
       }
 
-      if(b instanceof Date) {
+      if (b instanceof Date) {
         b = b.getTime();
       }
 
-      if(a > b) {
+      if (a > b) {
         return reverse? -1: 1;
       }
-      else if(a < b) {
+      else if (a < b) {
         return reverse? 1: -1;
       }
 
       return 0;
     };
 
-    let next = () => {
-      if(i >= l) {
+    const next = () => {
+      if (i >= l) {
         return 0;
       }
 
       let key = keys[i];
 
-      if(!Array.isArray(key)) {
+      if (!Array.isArray(key)) {
         key = [key];
       }
 
@@ -209,7 +209,7 @@ utils.sort = function(arr, keys = true, order = []) {
       let bV = this.getPropertyByKeys(key, b);
       let res = check(aV, bV, order[i] === false);
 
-      if(res !== 0) {
+      if (res !== 0) {
         return res;
       }
 
@@ -218,7 +218,7 @@ utils.sort = function(arr, keys = true, order = []) {
       return next();
     };
 
-    if(!l) {
+    if (!l) {
       return check(a, b, order[i] === false);
     }
 
@@ -257,7 +257,7 @@ utils.isPlainObject = function(obj) {
  * @returns {*}
  */
 utils.copy = function(value, nested = true, enumerable = false) {
-  if(typeof value != 'object' || !value) {
+  if (typeof value != 'object' || !value) {
     return value;
   }
 
@@ -265,7 +265,7 @@ utils.copy = function(value, nested = true, enumerable = false) {
     let keys = enumerable? Object.getOwnPropertyNames(obj): Object.keys(obj);
     let newObj = Array.isArray(obj)? []: {};
 
-    for(let i = 0, l = keys.length; i < l; i++) {
+    for (let i = 0, l = keys.length; i < l; i++) {
       let key = keys[i];
 
       newObj[key] = obj[key];
@@ -273,16 +273,16 @@ utils.copy = function(value, nested = true, enumerable = false) {
 
     obj = newObj;
 
-    if(!nested) {
+    if (!nested) {
       return obj;
     }
 
-    for(let k in obj) {
-      if(!obj.hasOwnProperty(k)) {
+    for (let k in obj) {
+      if (!obj.hasOwnProperty(k)) {
         continue;
       }
 
-      if(obj[k] && typeof obj[k] == 'object') {
+      if (obj[k] && typeof obj[k] == 'object') {
         obj[k] = next(obj[k]);
       }
     }
@@ -300,19 +300,19 @@ utils.copy = function(value, nested = true, enumerable = false) {
  * @returns {*}
  */
 utils.makeAttributeValue = function(value) {
-  if(value === false || value === null || value === undefined) {
+  if (value === false || value === null || value === undefined) {
     return '';
   }
 
-  if(value instanceof EventEmitter) {
+  if (value instanceof EventEmitter) {
     return '[object Event]';
   }
 
-  if(typeof value == 'function') {
+  if (typeof value == 'function') {
     return '[object Function]';
   }
 
-  if(typeof value == 'object') {
+  if (typeof value == 'object') {
     return Object.prototype.toString.call(value);
   }
 
@@ -327,30 +327,27 @@ utils.makeAttributeValue = function(value) {
  * @returns {boolean}
  */
 utils.compare = function (a, b) {
-  if(this.isScopeProxy(a) && this.isScopeProxy(b)) {
-    return a.__target === b.__target;
-  }
-  else if((a instanceof Date) && (b instanceof Date)) {
+  if ((a instanceof Date) && (b instanceof Date)) {
     return a.getTime() === b.getTime();
   }
-  else if(typeof a == 'function' && typeof b == 'function') {
+  else if (typeof a == 'function' && typeof b == 'function') {
     return a.toString() === b.toString();
   }
-  else if(typeof a == 'object' && typeof b == 'object') {
-    if(a === null || b === null) {
+  else if (typeof a == 'object' && typeof b == 'object') {
+    if (a === null || b === null) {
       return a === b;
     }
 
-    if(Object.keys(a).length != Object.keys(b).length) {
+    if (Object.keys(a).length != Object.keys(b).length) {
       return false;
     }
 
-    for(let k in a) {
-      if(!a.hasOwnProperty(k)) {
+    for (let k in a) {
+      if (!a.hasOwnProperty(k)) {
         continue;
       }
 
-      if(!this.compare(a[k], b[k])) {
+      if (!this.compare(a[k], b[k])) {
         return false;
       }
     }
@@ -362,7 +359,7 @@ utils.compare = function (a, b) {
 };
 
 /**
- * Compare current value with previous
+ * Compare the current value with the previous
  *
  * @param {*} current - the current value
  * @param {*} previous - the current value copy
@@ -371,7 +368,7 @@ utils.compare = function (a, b) {
  * @returns {boolean}
  */
 utils.comparePreviousValue = function(current, previous, previousCopy, currentCopy) {
-  if(current !== previous) {
+  if (current !== previous) {
     return false;
   }
 
@@ -461,11 +458,11 @@ utils.getPropertyByKeys = function(keys, object) {
   keys.reduce(function(o, k) {
     i++;
 
-    if(typeof o != 'object') {
+    if (typeof o != 'object') {
       return o;
     }
 
-    if(o[k] === undefined) {
+    if (o[k] === undefined) {
       return {};
     }
 
@@ -495,11 +492,11 @@ utils.hasPropertyByKeys = function(keys, object) {
   keys.reduce(function(o, k) {
     i++;
 
-    if(typeof o != 'object') {
+    if (typeof o != 'object') {
       return !!o;
     }
 
-    if(!o.hasOwnProperty(k)) {
+    if (!o.hasOwnProperty(k)) {
       return {};
     }
 
@@ -531,11 +528,11 @@ utils.setPropertyByKeys = function(keys, object, fn) {
   keys.reduce(function(o, k) {
     i++;
 
-    if(typeof o != 'object') {
+    if (typeof o != 'object') {
       return;
     }
 
-    if(!o.hasOwnProperty(k)) {
+    if (!o.hasOwnProperty(k)) {
       return current = o[k] = fn(i == length);
     }
 
@@ -574,18 +571,18 @@ utils.deletePropertyByKeys = function(keys, object, fn) {
   keys.reduce(function(o, k) {
     i++;
 
-    if(typeof o != 'object') {
+    if (typeof o != 'object') {
       return;
     }
 
-    if(!o.hasOwnProperty(k)) {
+    if (!o.hasOwnProperty(k)) {
       return {};
     }
 
-    if(i == length) {
+    if (i == length) {
       value = o[k];
 
-      if(!fn || fn(value)) {
+      if (!fn || fn(value)) {
         delete o[k];
       }
 
@@ -608,14 +605,14 @@ utils.deletePropertyByKeys = function(keys, object, fn) {
  */
 
 utils.getEnumerablePropertyTarget = function(target, key) {
-  let check = (obj) => {
-    if(obj.propertyIsEnumerable(key)) {
+  const check = (obj) => {
+    if (obj.propertyIsEnumerable(key)) {
       return obj;
     }
 
     let proto = Object.getPrototypeOf(obj);
 
-    if(!proto) {
+    if (!proto) {
       return null;
     }
 
@@ -633,14 +630,14 @@ utils.getEnumerablePropertyTarget = function(target, key) {
  * @returns {object}
  */
 utils.getOwnPropertyTarget = function(target, key) {
-  let check = (obj) => {
-    if(obj.hasOwnProperty(key)) {
+  const check = (obj) => {
+    if (obj.hasOwnProperty(key)) {
       return obj;
     }
 
     let proto = Object.getPrototypeOf(obj);
 
-    if(!proto) {
+    if (!proto) {
       return null;
     }
 
@@ -657,18 +654,18 @@ utils.getOwnPropertyTarget = function(target, key) {
  * @returns {*}
  */
 utils.clearScopeProxy = function (value) {
-  if(typeof value != 'object' || !value) {
+  if (typeof value != 'object' || !value) {
     return value;
   }
 
-  let clear = (obj) => {
-    for(let k in obj) {
+  const clear = (obj) => {
+    for (let k in obj) {
       if (!obj.hasOwnProperty(k)) {
         continue;
       }
 
-      if(obj[k] && typeof obj[k] == 'object') {
-        if(obj[k].__isProxy) {
+      if (obj[k] && typeof obj[k] == 'object') {
+        if (obj[k].__isProxy) {
           obj[k] = obj[k].__target;
         }
 
@@ -677,7 +674,7 @@ utils.clearScopeProxy = function (value) {
     }
   };
 
-  if(value.__isProxy) {
+  if (value.__isProxy) {
     value = value.__target;
   }
 
@@ -698,8 +695,8 @@ utils.createRandomString = function(length = 16, fn = null) {
   let str = Math.random().toString(36).substring(2, length + 2);
   let val = '';
 
-  for(let i = 0, l = str.length; i < l; i++) {
-    if(Math.random() > 0.66) {
+  for (let i = 0, l = str.length; i < l; i++) {
+    if (Math.random() > 0.66) {
       val += str[i].toUpperCase();
     }
     else {
@@ -707,7 +704,7 @@ utils.createRandomString = function(length = 16, fn = null) {
     }
   }
 
-  if(fn && fn(val)) {
+  if (fn && fn(val)) {
     return this.createRandomString(length, fn);
   }
 

@@ -12,8 +12,8 @@ export default class EventEmitter {
    * @param {object} [options]
    * @param {boolean} [force]
    */
-  trigger(data, options = {}, force = false) {
-    if(force || !this.inEvaluating()) {
+  trigger(data, options = { bubbles: true }, force = false) {
+    if (force || !this.inEvaluating()) {
       this.el.dispatchEvent(new CustomEvent(this.name, {detail: data, ...options}));
     }
   }
@@ -25,8 +25,8 @@ export default class EventEmitter {
    * @param {object} [options]
    * @param {boolean} [force]
    */
-  dispatch(_Event, options = {}, force = false) {
-    if(force || !this.inEvaluating()) {
+  dispatch(_Event, options = { bubbles: true }, force = false) {
+    if (force || !this.inEvaluating()) {
       this.el.dispatchEvent(new _Event(this.name, options));
     }
   }
@@ -39,7 +39,7 @@ export default class EventEmitter {
   inEvaluating() {
     let data = this.component.__evaluatingEvent;
 
-    if(!data) {
+    if (!data) {
       return false;
     }
 

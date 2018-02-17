@@ -39,7 +39,7 @@ export default class Radio extends For {
       setTimeout(() => {
         let value = this.getRadioValue();
 
-        if(value === this.prevValue) {
+        if (value === this.prevValue) {
           return;
         }
 
@@ -57,13 +57,13 @@ export default class Radio extends For {
   setNames(name) {
     let children = this.children('input[type=radio]');
 
-    for(let i = 0, l = children.length; i < l; i++) {
+    for (let i = 0, l = children.length; i < l; i++) {
       children[i].el.setAttribute('name', name);
     }
   }
 
   setValue(value) {
-    if(value === this.prevValue) {
+    if (value === this.prevValue) {
       return;
     }
 
@@ -73,7 +73,7 @@ export default class Radio extends For {
 
     this.prevValue = value;
 
-    for(let i = 0, l = children.length; i < l; i++) {
+    for (let i = 0, l = children.length; i < l; i++) {
       let radio = children[i];
       let isSelected = radio.el.value === value;
 
@@ -81,9 +81,9 @@ export default class Radio extends For {
       radio.setChecked(isSelected);
     }
 
-    if(!isTrue) {
-      if(value === null) {
-        if(prev === undefined) {
+    if (!isTrue) {
+      if (value === null) {
+        if (prev === undefined) {
           return;
         }
       }
@@ -99,10 +99,10 @@ export default class Radio extends For {
   getRadioValue() {
     let children = this.children('input[type=radio]');
 
-    for(let i = 0, l = children.length; i < l; i++) {
+    for (let i = 0, l = children.length; i < l; i++) {
       let radio = children[i];
 
-      if(radio.el.checked) {
+      if (radio.el.checked) {
         return radio.el.value;
       }
     }

@@ -25,7 +25,7 @@ export default class Route extends Component {
     let p = Promise.resolve();
 
     function getParentScopeTransition(path) {
-      if(path.parent) {
+      if (path.parent) {
         if (path.parent.component) {
           return path.parent.component.__scope.__transition.path;
         }
@@ -48,7 +48,7 @@ export default class Route extends Component {
       query: query
     };
 
-    if(!transition.path.loaded) {
+    if (!transition.path.loaded) {
       return Akili.compile(this.el, { recompile: true });
     }
 
