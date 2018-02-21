@@ -1,6 +1,7 @@
 import './app/index.js';
 import './services/request.js';
 import './services/router.js';
+import './services/store.js';
 import './utils.js';
 import './component.js';
 import './akili.js';

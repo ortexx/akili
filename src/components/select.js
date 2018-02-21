@@ -160,7 +160,7 @@ export default class Select extends For {
     }
 
     this.el.content = value;
-    this.attrs.onChange.dispatch(Event);
+    this.attrs.onChange.dispatch(Event, { bubbles: true });
   }
 };
 

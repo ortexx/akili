@@ -44,7 +44,7 @@ export default class Radio extends For {
         }
 
         this.prevValue = value;
-        this.attrs.onRadio.trigger(value);
+        this.attrs.onRadio.trigger(value, { bubbles: true });
       });
     });
   }
@@ -93,7 +93,7 @@ export default class Radio extends For {
       }
     }
 
-    this.attrs.onRadio.trigger(value);
+    this.attrs.onRadio.trigger(value, { bubbles: true });
   }
 
   getRadioValue() {

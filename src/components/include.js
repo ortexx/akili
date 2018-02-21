@@ -41,10 +41,10 @@ export default class Include extends Component {
       Akili.setTemplate(this.el, res.data);
 
       return Akili.compile(this.el, { recompile: true }).then(() => {
-        this.attrs.onLoad.trigger();
+        this.attrs.onLoad.trigger(undefined, { bubbles: false });
       });
     }).catch((err) => {
-      this.attrs.onError.trigger(err);
+      this.attrs.onError.trigger(err, { bubbles: false });
       throw err;
     });
   }

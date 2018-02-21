@@ -1,7 +1,7 @@
 import Component from '../../src/component.js';
 
-export class SectionOne extends Component {}
 export class SectionEmpty extends Component {}
+export class SectionOne extends Component {}
 
 export class SectionOneOne extends Component {
   constructor(...args) {
@@ -11,6 +11,8 @@ export class SectionOneOne extends Component {
     this.scope.counter = 0;
   }
 }
+
+
 
 export class SectionTwo extends Component {
   constructor(...args) {

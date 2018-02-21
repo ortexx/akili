@@ -32,12 +32,13 @@ import Scope from './scope.js';
 import EventEmitter from './event-emitter.js';
 import request from './services/request.js';
 import router from './services/router.js';
+import store from './services/store.js';
 import utils from './utils.js';
 
 const Akili = {};
 
 Akili.options = {
-  nestedWatching: true,
+  defaultEventsBubbling: true,
   debug: true
 };
 
@@ -45,6 +46,7 @@ Akili.__init = null;
 Akili.__components = {};
 Akili.__aliases = {};
 Akili.__scopes = {};
+Akili.__links = {};
 Akili.__window = {};
 Akili.__isolation = null;
 Akili.__evaluation = null;
@@ -617,7 +619,6 @@ Akili.errorHandling = function() {
  */
 Akili.triggerInit = function(status) {
   Akili.__init = status;
-  this.__serverRendering && (this.__html.style.visibility = 'visible');
   window.dispatchEvent(new CustomEvent('akili-init', { detail: status }));
 };
 
@@ -630,9 +631,12 @@ Akili.serverRendering = function() {
   this.__serverRendering = !!server;
 
   if (server) {
-    this.__html.style.visibility = 'hidden';
+    let display = getComputedStyle(this.__html).display;
+    this.__html.style.display = 'none';
+
     this.__serverPromise = request.get(server).then((res) => {      
       this.__html.innerHTML = res.data;
+      this.__html.style.display = display;
     });
   }
 };
@@ -728,6 +732,7 @@ Akili.components.Url = Url;
 Akili.components.Video = Video;
 Akili.services.request = request;
 Akili.services.router = router;
+Akili.services.store = store;
 
 window.Akili = Akili;
 

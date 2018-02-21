@@ -1,5 +1,6 @@
 import Akili from './akili.js';
 import request from './services/request.js';
+import store from './services/store.js';
 import utils from './utils.js';
 
 const evaluationRegex = /\${(((?!\${).)*)}/;
@@ -51,6 +52,7 @@ export default class Component {
     this.__parent = null;
     this.__parents = [];
     this.__attrs = {};
+    this.__links = {};
     this.__attributeOf = null;
     this.__evaluationComponent = this;
     this.scope = scope;
@@ -131,7 +133,7 @@ export default class Component {
 
     if (!this.__recompiling) {
       res = Akili.isolate(() => {
-        this.attrs.onCompiled && this.attrs.onCompiled.trigger();
+        this.attrs.onCompiled && this.attrs.onCompiled.trigger(undefined, { bubbles: false });
 
         return this.compiled();
       });
@@ -148,7 +150,7 @@ export default class Component {
     }
     else {
       Akili.isolate(() => {
-        this.attrs.onRecompiled && this.attrs.onRecompiled.trigger();
+        this.attrs.onRecompiled && this.attrs.onRecompiled.trigger(undefined, { bubbles: false });
         this.recompiled();
       });
     }
@@ -173,7 +175,7 @@ export default class Component {
       return Promise.resolve();
     }
 
-    this.attrs.onResolved && this.attrs.onResolved.trigger();
+    this.attrs.onResolved && this.attrs.onResolved.trigger(undefined, { bubbles: false });
     return Promise.resolve(this.resolved());
   }
 
@@ -517,7 +519,7 @@ export default class Component {
 
         if (component.__isCompiled) {
           Akili.isolate(() => {
-            component.attrs.onChanged && component.attrs.onChanged.trigger({ key: clearAttribute, value: value});
+            component.attrs.onChanged && component.attrs.onChanged.trigger({ key: clearAttribute, value: value}, { bubbles: false });
             component.changed(clearAttribute, value);
 
             let key = utils.toCamelCase(clearAttribute);
@@ -525,11 +527,8 @@ export default class Component {
             let fnName = 'changed' + camelKey;
             let evFnName = 'onChanged' + camelKey;
 
-            component.attrs[evFnName] && component.attrs[evFnName].trigger(value);
-
-            if (typeof component[fnName] == 'function') {
-              component[fnName](value);
-            }
+            component.attrs[evFnName] && component.attrs[evFnName].trigger(value, { bubbles: false });
+            typeof component[fnName] == 'function' && component[fnName](value);
           });
         }
       }
@@ -958,6 +957,10 @@ export default class Component {
         }
 
         let keys = [].concat(parents, [key]);
+        
+        if(this.__links[Akili.joinBindingKeys(keys)]) {
+          this.__storeByKeys(keys, value);
+        }
 
         target[key] = this.__nestedObserve(value, keys);
 
@@ -1004,10 +1007,220 @@ export default class Component {
   }
 
   /**
-   * Check key is system
+   * Save the value to the store by the keys
+   * 
+   * @param {string[]} keys 
+   * @param {*} value 
+   * 
+   * @protected
+   */
+  __storeByKeys(keys, value) {
+    let links = this.__links[Akili.joinBindingKeys(keys)];
+   
+    if(!links || !links.length) {
+      return;
+    }
+
+    if(utils.isScopeProxy(value)) {
+      value = value.__target;
+    }
+    
+    for(let i = 0, l = links.length; i < l; i++) {
+      let link = links[i];
+      this.__store(link.name, value);
+    }
+  }
+
+  /**
+   * Save the value to the store by the name
+   * 
+   * @param {string} name 
+   * @param {*} value 
+   * @protected
+   */
+  __store(name, value) {  
+    store.__target[name] = value;
+
+    let links = Akili.__links[name];
+
+    if(!links || !links.length) {
+      return;
+    }
+
+    for(let i = 0, l = links.length; i < l; i++) {
+      let link = links[i];
+      let component = link.component;
+
+      if(component === this) {
+        continue;
+      }
+
+      if(link.fn) {
+        link.fn(value);
+        continue;
+      }
+
+      this.__disableProxy = true;
+      component.scope.__set(link.keys, value);      
+      this.__disableProxy = false;
+    }
+  }
+
+  /**
+   * Create a link with the scope property
+   * 
+   * @param {string} name 
+   * @param {string|string[]} keys
+   */
+  __linkByKeys(name, keys) {
+    if(!keys) {
+      throw new Error(`Link "${name}" must have the scope property name`);
+    }
+
+    if(!Array.isArray(keys)) {
+      keys = [keys];
+    }
+
+    this.scope.__set(keys, store[name]);
+    let keyString = Akili.joinBindingKeys(keys);
+    let info;
+
+    if(!this.__links[keyString]) {
+      this.__links[keyString] = [];
+    }
+
+    let arr = this.__links[keyString];
+    
+    for(let i = arr.length - 1; i >= 0; i--) {
+      let res = arr[i];
+
+      if(res.component === this && res.name == name && res.keyString == keyString) {
+        return;
+      }
+    }
+
+    if(!Akili.__links[name]) {
+      Akili.__links[name] = [];
+    }
+
+    info = { component: this, name, keys, keyString };
+    this.__links[keyString].push(info);
+    Akili.__links[name].push(info);
+  }
+
+  /**
+   * Create a link with the function
+   * 
+   * @param {string} name 
+   * @param {function} fn
+   */
+  __linkByFunction(name, fn) {
+    fn(store[name]);
+
+    if(!Akili.__links[name]) {
+      Akili.__links[name] = [];
+    }
+
+    let links = Akili.__links[name];
+    
+    for(let i = links.length - 1; i >= 0; i--) {
+      let res = links[i];
+
+      if(res.component === this && res.name == name && res.fn === fn) {
+        break;
+      }
+    }
+
+    Akili.__links[name].push({ component: this, name, fn });
+  }
+
+  /**
+   * Remove the link with the scope property
+   * 
+   * @param {string} name
+   * @param {string|string[]} keys
+   */
+  __unlinkByKeys(name, keys) {
+    if(!keys) {
+      throw new Error(`You have to pass the scope property name for link "${name}"`);
+    }
+
+    if(!Array.isArray(keys)) {
+      keys = [keys];
+    }
+
+    let keyString = Akili.joinBindingKeys(keys);
+    let arr = this.__links[keyString];
+
+    if(!arr.length) {
+      return;
+    }
+    
+    for(let i = arr.length - 1; i >= 0; i--) {
+      let res = arr[i];
+      let links = Akili.__links[res.name];
+
+      if(res.component !== this || res.name != name || res.keyString != keyString) {
+        continue;
+      }
+
+      arr.splice(i, 1);
+
+      if(!links || !links.length) {
+        continue;
+      }
+
+      for(let k = links.length - 1; k >= 0; k--) {
+        let link = links[k];
+
+        if(link.component === this && link.keyString == keyString) {
+          links.splice(k, 1);
+        }
+      }
+
+      if(!links.length) {
+        delete Akili.__links[name];
+      }
+    }
+
+    if(!arr.length) {
+      delete this.__links[keyString];
+    }
+  }
+
+   /**
+   * Remove the link with the function
+   * 
+   * @param {string} name 
+   * @param {function} fn
+   */
+  __unlinkByFunction(name, fn) {
+    if(!Akili.__links[name]) {
+      return;
+    }
+
+    let links = Akili.__links[name];
+    
+    for(let i = links.length - 1; i >= 0; i--) {
+      let res = links[i];
+
+      if(res.component === this && res.name == name && res.fn === fn) {
+        links.splice(i, 1);
+        break;
+      }
+    }
+
+    if(!links.length) {
+      delete Akili.__links[name];
+    }
+  }
+
+  /**
+   * Check the key is system
    *
    * @param {string} key
    * @returns {boolean}
+   * @protected
    */
   __isSystemKey (key) {
     if (key == '__' || (key[0] == '_' && key[1] == '_')) {
@@ -1086,7 +1299,7 @@ export default class Component {
   }
 
   /**
-   * Create isolation object
+   * Create an isolation object
    *
    * @param {string[]} parents
    * @param {string} key
@@ -1185,7 +1398,7 @@ export default class Component {
   }
 
   /**
-   * Set node property
+   * Set the node property
    *
    * @param {Node} node
    * @param {string[]} keys
@@ -1219,7 +1432,7 @@ export default class Component {
   }
 
   /**
-   * Get node property
+   * Get the node property
    *
    * @param {Node} node
    * @param {string[]} keys
@@ -1233,7 +1446,7 @@ export default class Component {
   }
 
   /**
-   * Delete node property
+   * Delete the node property
    *
    * @param {Node} node
    * @param {string[]} keys
@@ -1275,7 +1488,7 @@ export default class Component {
   }
 
   /**
-   * Unbind keys
+   * Unbind the keys
    *
    * @param {string[]} keys
    * @protected
@@ -1305,7 +1518,7 @@ export default class Component {
   }
 
   /**
-   * Unbind by nodes
+   * Unbind data by nodes
    *
    * @param {Node[]} nodes
    * @protected
@@ -1382,6 +1595,31 @@ export default class Component {
   }
 
   /**
+   * Clear the links
+   * 
+   * @protected
+   */
+  __clearLinks() {
+    let links = Akili.__links;
+
+    for(let key in links) {
+      let arr = links[key];
+
+      for(let i = arr.length - 1; i >= 0; i--) {
+        let link = arr[i];
+  
+        if(link.component === this) {
+          arr.splice(i, 1);
+        }
+      }
+
+      if(!arr.length) {
+        delete links[key];
+      }
+    }
+  }
+
+  /**
    * Remove all child components
    *
    * @protected
@@ -1407,8 +1645,9 @@ export default class Component {
    */
   __remove() {
     this.__detach();
-    this.attrs.onRemoved && this.attrs.onRemoved.trigger();
-    this.removed();
+    this.__clearLinks();
+    this.attrs.onRemoved && this.attrs.onRemoved.trigger(undefined, { bubbles: false });
+    this.removed();    
     Akili.removeScope(this.__scope.__name);
     this.el.remove();
   }
@@ -1597,6 +1836,37 @@ export default class Component {
     }
 
     return arr;
+  }
+
+  /**
+   * Create a link to the store
+   * 
+   * @param {string} name 
+   * @param {string|string[]|function} handler
+   */
+  link(name, handler) {
+    return typeof handler === 'function'? this.__linkByFunction(name, handler): this.__linkByKeys(name, handler);
+  }
+
+  /**
+   * Remove the link
+   * 
+   * @param {string} name 
+   * @param {string|string[]|function} handler
+   */
+  unlink(name, handler) {
+    return typeof handler === 'function'? this.__unlinkByFunction(name, handler): this.__unlinkByKeys(name, handler);
+  }
+
+  /**
+   * Save the value to the store
+   *
+   * @param {string[]} keys 
+   * @param {*} value 
+   * @protected
+   */
+  store(name, value) {
+    return this.__store(name, value);
   }
 
   /**

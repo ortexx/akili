@@ -1,5 +1,6 @@
 import { assert } from 'chai';
 import Akili from '../src/akili.js';
+import store from '../src/services/store.js';
 import Home from './app/home.js';
 import elements from './app/elements.js';
 

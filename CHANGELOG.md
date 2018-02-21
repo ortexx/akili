@@ -1,3 +1,15 @@
+# 0.4.x (February 21, 2018)
+
+* added store to save and distribute data
+* added an automatic loop creation in __for__ component
+* added utils.copy enumerable option
+* changed the default context of scope functions
+* fixed the router __saveScrollPosition__ option bug
+* fixed loop's item deletion speed 
+* fixed scope objects copying
+* fixed router __hashMode__, when current url is the same
+* removed nested watching possibility
+
 # 0.3.x (July 29, 2017)
 
 * added __Component.prototype.prevent__ method to prevent the compilation inside of a component 
