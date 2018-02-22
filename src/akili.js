@@ -38,7 +38,6 @@ import utils from './utils.js';
 const Akili = {};
 
 Akili.options = {
-  defaultEventsBubbling: true,
   debug: true
 };
 
