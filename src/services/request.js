@@ -18,11 +18,9 @@ export class Request {
    */
   query(options) {
     return new Promise((resolve, reject) => {
-      let url;
-      let xhr;
-
+      let url, xhr;
+      
       options = {...this.defaults, ...(options || {})};
-
       xhr = new XMLHttpRequest();
       (typeof options.onStart == 'function') && options.onStart(xhr);
       options = this.transformBefore(options);
@@ -31,7 +29,7 @@ export class Request {
       options.headers = options.headers || {};
 
       if (options.json) {
-        options.body = JSON.stringify(options.json);
+        options.json !== true && (options.body = JSON.stringify(options.json));
         options.headers['content-type'] = 'application/json';
         options.responseType = options.responseType || 'json';
       }

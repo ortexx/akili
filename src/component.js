@@ -943,7 +943,7 @@ export default class Component {
 
         return target[key];
       },
-      set: (target, key, value) => {
+      set: (target, key, value) => { 
         if (this.__disableProxy) {
           target[key] = value;
 
@@ -957,7 +957,7 @@ export default class Component {
         }
 
         let keys = [].concat(parents, [key]);
-        
+
         if(this.__links[Akili.joinBindingKeys(keys)]) {
           this.__storeByKeys(keys, value);
         }
@@ -1056,7 +1056,7 @@ export default class Component {
       }
 
       if(link.fn) {
-        link.fn(value);
+        Akili.isolate(() => link.fn(value)); 
         continue;
       }
 

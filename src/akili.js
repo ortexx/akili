@@ -181,7 +181,6 @@ Akili.isolate = function(fn) {
   }
 
   this.__isolation = {};
-
   let res = fn();
   let props = [];
 
@@ -338,7 +337,6 @@ Akili.compile = function(root, options = { recompile: false }) {
   const nestedInitializing = (el) => {
     let component = this.initialize(el, options);
     let children = el.children;
-
     component && elements.push(component);
 
     for (let i = 0, l = children.length; i < l; i++) {
@@ -468,10 +466,11 @@ Akili.isolateWindowFunctions = function() {
   this.__window.setTimeout = setTimeout;
   this.__window.setInterval = setInterval;
   this.__window.Promise = Promise;
-
   window.setTimeout = this.createCallbackIsolation(window.setTimeout, 0);
   window.setInterval = this.createCallbackIsolation(window.setInterval, 0);
-  window.Promise && (window.Promise.constructor = this.createCallbackIsolation(window.Promise.constructor , 0));
+  window.Promise.constructor = this.createCallbackIsolation(window.Promise.constructor);
+  window.Promise.prototype.then = this.createCallbackIsolation(window.Promise.prototype.then, [0, 'last']);
+  window.Promise.prototype.catch = this.createCallbackIsolation(window.Promise.prototype.catch);
 };
 
 /**
@@ -479,7 +478,6 @@ Akili.isolateWindowFunctions = function() {
  */
 Akili.isolateEvents = function() {
   this.__window.Element = { prototype: {} };
-
   this.__window.Element.prototype.addEventListener = Element.prototype.addEventListener;
   this.__window.Element.prototype.removeEventListener = Element.prototype.removeEventListener;
   this.__window.Element.prototype.remove = Element.prototype.remove;
@@ -542,7 +540,7 @@ Akili.isolateEvents = function() {
       delete this.__akiliListeners[name];
     }
 
-    return  Akili.__window.Element.prototype.removeEventListener.apply(this, arguments);
+    return Akili.__window.Element.prototype.removeEventListener.apply(this, arguments);
   };
 };
 
@@ -550,25 +548,36 @@ Akili.isolateEvents = function() {
  * Wrap the function callback to an isolate context
  *
  * @param {function} fn
- * @param {number|string} [pos="last"]
- * @returns {Function}
+ * @param {number|string|number[]|string[]} [pos="last"]
+ * @returns {function}
  */
 Akili.createCallbackIsolation = function(fn, pos = 'last') {
-  return function() {
+  return function () {
     let args = [].slice.call(arguments);
-    let callback = pos == 'last'? args[args.length - 1]: args[pos];
+    !Array.isArray(pos) && (pos = [pos]);
+    
+    for(let i = 0, l = pos.length; i < l; i++) {
+      let num = pos[i];
+      let index = num;
+      let callback = args[num];
 
-    if (typeof callback != 'function') {
-      return fn.apply(this, arguments);
-    }
+      if(num == 'last') {
+        index = args.length - 1;
+        callback = args[index];
+      }
 
-    args[0] = () => {
-      return Akili.unevaluated(() => {
-        return Akili.isolate(() => {
-          return callback();
+      if(typeof callback != 'function') {
+        continue;
+      }
+
+      args[index] = function() {
+        return Akili.unevaluated(() => {
+          return Akili.isolate(() => {
+            return callback.apply(callback, arguments);
+          });
         });
-      });
-    };
+      };
+    }
 
     return fn.apply(this, args);
   };

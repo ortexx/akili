@@ -11,8 +11,8 @@ describe('store.js', () => {
     store.handler = 'start';
     handler = val => elements.sectionOne.__akili.scope.linkHandler = val;
   });
-
-  describe('.link()', () => {
+  
+  describe('Component.prototype.link()', () => {
     it('should create the link by a scope property', () => {        
       elements.sectionOne.__akili.link('test', ['test']);
       elements.sectionTwo.__akili.link('test', ['tasty']);        
@@ -39,7 +39,7 @@ describe('store.js', () => {
     });    
   });
 
-  describe('.store()', () => {
+  describe('Component.prototype.store()', () => {
     it('should change sectionOne scope value by property ', () => {
       elements.sectionTwo.__akili.store('test', 'end');   
       assert.equal(elements.sectionOne.__akili.scope.test, 'end');
@@ -51,12 +51,11 @@ describe('store.js', () => {
     });
   });
 
-  describe('.unlink()', () => {
+  describe('Component.prototype.unlink()', () => {
     it('should remove all links', () => {
       elements.sectionOne.__akili.unlink('test', 'test');
       elements.sectionTwo.__akili.unlink('test', 'tasty');
       elements.sectionOne.__akili.unlink('handler', handler);
-
       assert.doesNotHaveAllKeys(elements.sectionOne.__akili.__links, ['test'], 'check component.__links for sectionOne');
       assert.doesNotHaveAllKeys(elements.sectionTwo.__akili.__links, ['tasty'], 'check component.__links for sectionTwo');
       assert.doesNotHaveAllKeys(Akili.__links, ['test', 'handler'], 'check Akili.__links for sectionOne');

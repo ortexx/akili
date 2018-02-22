@@ -11,7 +11,7 @@ export class Transition {
     this.previous = previous;
     this.path = null;
     this.routes = [];
-    this.states = [];
+    this.states = {};
     this.params = {};
     this.__cancelled = false;
   }
@@ -25,7 +25,7 @@ export class Transition {
     path.parent = this.path || null;
     this.path = path;
     this.routes.push(path);
-    this.states.push(path.state);
+    this.states[path.state.name] = path;
     this.params = !path.parent? path.params: {...path.parent.params, ...path.params};
   }
 
@@ -42,7 +42,7 @@ export class Transition {
   }
 
   hasState(state) {
-    return this.states.indexOf(state) != -1;
+    return !!this.states[state.name];
   }
 
   cancel() {

@@ -109,17 +109,10 @@ describe('akili.js', () => {
     });
 
     describe('.createCallbackIsolation()', () => {
-      it('should be in an isolation', () => {
-        let fn = (callback) => {
-          callback();
-        };
-
+      it('should be in the isolation', () => {
+        let fn = callback => callback();
         fn = Akili.createCallbackIsolation(fn);
-
-        fn(() => {
-          assert.isOk(Akili.__isolation, 'check before');
-        });
-
+        fn(() => assert.isOk(Akili.__isolation, 'check before'));
         assert.isNotOk(Akili.__isolation, 'check after');
       });
     });
