@@ -25,7 +25,6 @@ utils.class = function (obj) {
     }
 
     let val = obj[k];
-
     val && classes.push(k);
   }
 
@@ -55,7 +54,6 @@ utils.style = function(obj) {
     }
 
     let val = obj[k];
-
     val && styles.push(`${this.toDashCase(k)}:${val}`);
   }
 
@@ -70,23 +68,43 @@ utils.style = function(obj) {
  * utils.filter([1, 2, 3, 11], '1');
  *
  * @example
- * // returns [{x:1}, {x:11}]
- * utils.filter([{x:1}, {x:2}, {x:3}, {x:11}], '1', ['x']);
+ * // returns [{x: 1}, {x: 11}]
+ * utils.filter([{x: 1}, {x: 2}, {x: 3}, {x: 11}], '1', 'x');
  * 
  * @example
- * // returns [{x:{y:1}}]
- * utils.filter([{x:{y:1}}, {x:{y:2}}], '1', ['x', 'y']);
+ * // returns [{x: 1}, {x: 11}]
+ * utils.filter([{x: 1}, {x: 2}, {x: 3}, {x: 11}], '1', ['x']);
+ * 
+ * @example
+ * // returns [{x: 1}, {x: 11}]
+ * utils.filter([{x: 1}, {x: 2}, {x: 3}, {x: 11}], '1', [['x']]);
+ * 
+ * @example
+ * // returns [{x: {y: 1}}]
+ * utils.filter([{x: {y: 1}}, {x: {y: 2}}], '1', [['x', 'y']]);
+ * 
+ * @example
+ * // returns [{x:1, y: 2}, {x: 2, y:1}] * 
+ * utils.filter([{x: 1, y: 2}, {x: 3, y: 3}, {x: 2, y: 1}], '1', ['x', 'y']);
+ * 
+ * @example
+ * // returns [{x:1, y: 2}, {x: 2, y:1}]
+ * utils.filter([{x: 1, y: 2}, {x: 3, y: 3}, {x: 2, y: 1}], '1', [['x'], ['y']]);
  *
  * @param {Array} arr
  * @param {string|RegExp|function} handler - type of filtering
  * @param {string[]|string} [keys] - filter in the keys if array elements are object
  * @returns {Array} - returns other array
  */
-utils.filter = function (arr, handler, keys = []) {
+utils.filter = function (arr, handler, keys = null) {
   let res = [];
 
-  if (!Array.isArray(keys)) {
+  if (keys && !Array.isArray(keys)) {
     keys = [keys];
+  }
+
+  if(!keys) {
+    keys = [null];
   }
 
   if (!handler) {
@@ -95,20 +113,30 @@ utils.filter = function (arr, handler, keys = []) {
 
   for (let i = 0, l = arr.length; i < l; i++) {
     let item = arr[i];
-    let val = keys.length? this.getPropertyByKeys(keys, item): item;
+    let filtered = false;
 
-    if (!val) {
-      continue;
+    for(let k = 0, c = keys.length; k < c; k++) {
+      let key = keys[k];
+      key = !key || Array.isArray(key)? key: [key];
+      let val = key? this.getPropertyByKeys(key, item): item;
+
+      if (!val) {
+        continue;
+      }
+  
+      val += '';
+  
+      if ((typeof handler == 'function') && handler(item)) {
+        filtered = true;
+        continue;
+      }
+      else if (val.match(handler || '')) {
+        filtered = true;
+        continue;
+      }
     }
 
-    val += '';
-
-    if ((typeof handler == 'function') && handler(item)) {
-      res.push(item);
-    }
-    else if (val.match(handler || '')) {
-      res.push(item);
-    }
+    filtered && res.push(item);   
   }
 
   return res;
@@ -253,41 +281,37 @@ utils.isPlainObject = function(obj) {
  *
  * @param {*} value
  * @param {boolean} [nested=true] - deep copy if is true
- * @param {boolean} [enumerable=false] - including enumerable properties
+ * @param {boolean} [unenumerable=false] - including non-enumerable properties
  * @returns {*}
  */
-utils.copy = function(value, nested = true, enumerable = false) {
+utils.copy = function(value, nested = true, unenumerable = false) {
   if (typeof value != 'object' || !value) {
     return value;
   }
 
-  function next(obj) {
-    let keys = enumerable? Object.getOwnPropertyNames(obj): Object.keys(obj);
+  const next = (obj) => {
+    obj = this.isScopeProxy(obj)? obj.__target: obj;
+    let keys = unenumerable? Object.getOwnPropertyNames(obj): Object.keys(obj);
     let newObj = Array.isArray(obj)? []: {};
-
+    
     for (let i = 0, l = keys.length; i < l; i++) {
       let key = keys[i];
+      let val = obj[key];
+      val = val && typeof val == 'object' && nested? next(val): val;      
+      
+      if(!obj.propertyIsEnumerable(key)) {
+        Object.defineProperty(newObj, key, {
+          ...Object.getOwnPropertyDescriptor(obj, key),
+          value: val
+        });
 
-      newObj[key] = obj[key];
-    }
-
-    obj = newObj;
-
-    if (!nested) {
-      return obj;
-    }
-
-    for (let k in obj) {
-      if (!obj.hasOwnProperty(k)) {
         continue;
       }
 
-      if (obj[k] && typeof obj[k] == 'object') {
-        obj[k] = next(obj[k]);
-      }
+      newObj[key] = val;  
     }
 
-    return obj;
+    return newObj;
   }
 
   return next(value);
@@ -324,9 +348,10 @@ utils.makeAttributeValue = function(value) {
  *
  * @param {*} a
  * @param {*} b
+ * @param {object} [options]
  * @returns {boolean}
  */
-utils.compare = function (a, b) {
+utils.compare = function (a, b, options = {}) {
   if ((a instanceof Date) && (b instanceof Date)) {
     return a.getTime() === b.getTime();
   }
@@ -338,9 +363,26 @@ utils.compare = function (a, b) {
       return a === b;
     }
 
+    a = this.isScopeProxy(a)? a.__target: a;
+    b = this.isScopeProxy(b)? b.__target: b;
+
+    const clearUndefined = (val) => {
+      let obj = Array.isArray(val)? []: {};
+      Object.keys(val).forEach(key => val[key] !== undefined && (obj[key] = val[key]));
+      return obj;
+    }
+
+    if(options.ignoreUndefined) {
+      a = clearUndefined(a);
+      b = clearUndefined(b);
+    }
+    
     if (Object.keys(a).length != Object.keys(b).length) {
       return false;
     }
+
+    a = this.isScopeProxy(a)? a.__target: a;
+    b = this.isScopeProxy(b)? b.__target: b;
 
     for (let k in a) {
       if (!a.hasOwnProperty(k)) {
@@ -362,17 +404,16 @@ utils.compare = function (a, b) {
  * Compare the current value with the previous
  *
  * @param {*} current - the current value
- * @param {*} previous - the current value copy
+ * @param {*} previous - the previous value
  * @param {*} previousCopy - the previous value copy
- * @param {*} [currentCopy] - the current value copy
  * @returns {boolean}
  */
-utils.comparePreviousValue = function(current, previous, previousCopy, currentCopy) {
+utils.comparePreviousValue = function(current, previous, previousCopy) {
   if (current !== previous) {
     return false;
   }
 
-  return this.compare(arguments.length == 3? currentCopy: this.copy(current), previousCopy);
+  return this.compare(current, previousCopy);
 };
 
 /**
@@ -388,12 +429,10 @@ utils.comparePreviousValue = function(current, previous, previousCopy, currentCo
 utils.encodeHtmlEntities = function(html) {
   let el = document.createElement("div");
   let value;
-
   el.textContent = html;
   value = el.innerHTML;
   el.remove();
   el = null;
-
   return value;
 };
 
@@ -410,12 +449,10 @@ utils.encodeHtmlEntities = function(html) {
 utils.decodeHtmlEntities = function(html) {
   let el = document.createElement("textarea");
   let value;
-
   el.innerHTML = html;
   value = el.value;
   el.remove();
   el = null;
-
   return value;
 };
 
@@ -427,6 +464,16 @@ utils.decodeHtmlEntities = function(html) {
  */
 utils.toCamelCase = function(str) {
   return str.replace(/\W+(.)/g, (m, c) => c.toUpperCase());
+};
+
+/**
+ * Capitalize the string
+ *
+ * @param {string} str
+ * @returns {string}
+ */
+utils.capitalize = function(str) {
+  return str[0].toUpperCase() + str.slice(1);
 };
 
 /**
@@ -646,43 +693,6 @@ utils.getOwnPropertyTarget = function(target, key) {
 
   return check(target);
 };
-
-/**
- * Clear value proxy if it existent
- *
- * @param {*} value
- * @returns {*}
- */
-utils.clearScopeProxy = function (value) {
-  if (typeof value != 'object' || !value) {
-    return value;
-  }
-
-  const clear = (obj) => {
-    for (let k in obj) {
-      if (!obj.hasOwnProperty(k)) {
-        continue;
-      }
-
-      if (obj[k] && typeof obj[k] == 'object') {
-        if (obj[k].__isProxy) {
-          obj[k] = obj[k].__target;
-        }
-
-        clear(obj[k]);
-      }
-    }
-  };
-
-  if (value.__isProxy) {
-    value = value.__target;
-  }
-
-  clear(value);
-
-  return value;
-};
-
 
 /**
  * Generate random string

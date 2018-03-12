@@ -34,7 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
 </body>
 ```
 
-More examples are on the [site](http://akilijs.com).
+More simple examples are on the [site](https://akilijs.com).  
+And you can [see](https://example.akilijs.com) a complete example of the site's architecture and [get the source code](https://github.com/ortexx/akili-example).
 
 ## Installation
 You can install it via npm
@@ -43,18 +44,17 @@ You can install it via npm
 npm install akili --save
 ```
 
-or [download](http://akilijs.com/js/libs/akili.min.js) and include as script
+or [download](https://akilijs.com/js/libs/akili.min.js) and include as script
  
 ```
 <script src="/akili.min.js"></script>
 ```
 
 ## Documentation
-Documentation is [here](http://akilijs.com/docs/getting-started).
+Documentation is [here](https://akilijs.com/docs/getting-started).
 
 ## Additional components
 * [akili-tabs](https://github.com/ortexx/akili-tabs)
-
 
 ## Changelog
 A new entry will be added to the changelog after the version's first or second number changing.

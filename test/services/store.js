@@ -12,12 +12,12 @@ describe('store.js', () => {
     handler = val => elements.sectionOne.__akili.scope.linkHandler = val;
   });
   
-  describe('Component.prototype.link()', () => {
+  describe('Component.prototype.store()', () => {
     it('should create the link by a scope property', () => {        
-      elements.sectionOne.__akili.link('test', ['test']);
-      elements.sectionTwo.__akili.link('test', ['tasty']);        
-      assert.equal(elements.sectionOne.__akili.__links['test'][0].keyString, 'test', 'check the component.__links');
-      assert.equal(Akili.__links['test'][1].keyString, 'tasty', 'check Akili.__links');
+      elements.sectionOne.__akili.store('test', ['test']);
+      elements.sectionTwo.__akili.store('test', ['tasty']);        
+      assert.equal(elements.sectionOne.__akili.__storeLinks['test'][0].keyString, 'test', 'check the component.__storeLinks');
+      assert.equal(Akili.__storeLinks['test'][1].keyString, 'tasty', 'check Akili.__storeLinks');
       assert.equal(elements.sectionOne.__akili.scope.test, 'start', 'check the value for sectionOne');
       assert.equal(elements.sectionTwo.__akili.scope.tasty, 'start', 'check the value for sectionTwo');
     });
@@ -33,33 +33,33 @@ describe('store.js', () => {
     });
 
     it('should create the link by a function', () => { 
-      elements.sectionOne.__akili.link('handler', handler);       
-      assert.strictEqual(Akili.__links['handler'][0].fn, handler, 'check Akili.__links');
+      elements.sectionOne.__akili.store('handler', handler);       
+      assert.strictEqual(Akili.__storeLinks['handler'][0].fn, handler, 'check Akili.__storeLinks');
       assert.equal(elements.sectionOne.__akili.scope.linkHandler, 'start', 'check the value');
     });    
-  });
+  });  
 
-  describe('Component.prototype.store()', () => {
+  describe('store property changing', () => {
     it('should change sectionOne scope value by property ', () => {
-      elements.sectionTwo.__akili.store('test', 'end');   
+      store.test = 'end';   
       assert.equal(elements.sectionOne.__akili.scope.test, 'end');
     });
 
     it('should change sectionOne scope value by handler', () => {
-      elements.sectionTwo.__akili.store('handler', 'end');   
+      store.handler = 'end';    
       assert.equal(elements.sectionOne.__akili.scope.linkHandler, 'end');
     });
   });
 
-  describe('Component.prototype.unlink()', () => {
+  describe('Component.prototype.unstore()', () => {
     it('should remove all links', () => {
-      elements.sectionOne.__akili.unlink('test', 'test');
-      elements.sectionTwo.__akili.unlink('test', 'tasty');
-      elements.sectionOne.__akili.unlink('handler', handler);
-      assert.doesNotHaveAllKeys(elements.sectionOne.__akili.__links, ['test'], 'check component.__links for sectionOne');
-      assert.doesNotHaveAllKeys(elements.sectionTwo.__akili.__links, ['tasty'], 'check component.__links for sectionTwo');
-      assert.doesNotHaveAllKeys(Akili.__links, ['test', 'handler'], 'check Akili.__links for sectionOne');
-      assert.doesNotHaveAllKeys(Akili.__links, ['tasty'], 'check Akili.__links for sectionTwo');
+      elements.sectionOne.__akili.unstore('test', 'test');
+      elements.sectionTwo.__akili.unstore('test', 'tasty');
+      elements.sectionOne.__akili.unstore('handler', handler);
+      assert.doesNotHaveAllKeys(elements.sectionOne.__akili.__storeLinks, ['test'], 'check component.__storeLinks for sectionOne');
+      assert.doesNotHaveAllKeys(elements.sectionTwo.__akili.__storeLinks, ['tasty'], 'check component.__storeLinks for sectionTwo');
+      assert.doesNotHaveAllKeys(Akili.__storeLinks, ['test', 'handler'], 'check Akili.__storeLinks for sectionOne');
+      assert.doesNotHaveAllKeys(Akili.__storeLinks, ['tasty'], 'check Akili.__storeLinks for sectionTwo');
     });
-  });
+  });  
 });

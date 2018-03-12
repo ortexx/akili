@@ -3,6 +3,6 @@ import Akili from '../akili.js';
 
 export default class Textarea extends Text {
   static define() {
-    Akili.component('textarea', Textarea);
+    Akili.component('textarea', this);
   }
 }

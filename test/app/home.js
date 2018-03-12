@@ -36,7 +36,6 @@ export default class Home extends Component {
       this.onEventCount++;
     };
 
-    this.changedCount = 0;
     this.onEventCount = 0;
   }
   
@@ -47,10 +46,6 @@ export default class Home extends Component {
   compiled() {
     this.wasCompiled = true;
     this.scope.parentTwo = this.attrs.parentTwo;
-  }
-
-  changed() {
-    this.changedCount++;
   }
 
   removed() {

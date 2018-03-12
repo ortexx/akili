@@ -9,6 +9,6 @@ export default class Objects extends Url {
   }
 
   static define() {
-    Akili.component('object', Objects);
+    Akili.component('object', this);
   }
 }

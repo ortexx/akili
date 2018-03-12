@@ -6,16 +6,11 @@ export default class Url extends Component {
 
   constructor(...args) {
     super(...args);
-
     this.urlAttribute = 'src';
   }
 
-  changedUrl(url) {
-    this.setUrl(url);
-  }
-
   compiled() {
-    this.attrs.hasOwnProperty('url') && this.setUrl(this.attrs.url);
+    this.attr('url', this.setUrl);
   }
 
   setUrl(url) {

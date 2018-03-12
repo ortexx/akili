@@ -4,16 +4,17 @@ import utils from '../utils.js';
 
 export default class For extends Component {
   static matches = '[in]';
+  static saveAttributeProxyIn = true;  
 
   static define() {
-    Akili.component('for', For);
-    Akili.component('ol', For);
-    Akili.component('ul', For);
-    Akili.component('thead', For);
-    Akili.component('tbody', For);
-    Akili.component('tfoot', For);
-    Akili.component('tr', Loop);
-    Akili.component('loop', Loop);
+    Akili.component('for', this);
+    Akili.component('ol', this);
+    Akili.component('ul', this);
+    Akili.component('thead', this);
+    Akili.component('tbody', this);
+    Akili.component('tfoot', this);
+    Akili.component('tr', this.Loop);
+    Akili.component('loop', this.Loop);
   }
 
   constructor(...args) {
@@ -24,13 +25,9 @@ export default class For extends Component {
     this.__value = null;
     this.__index = null;
     this.__comparisonValue = null;
-    this.iterators = {};
+    this.iterators = [];
     this.iteratorRef = null;
     this.iteratorOuterHTML = null;
-  }
-
-  changedIn(data) {
-    this.draw(data);
   }
 
   created() {
@@ -38,7 +35,7 @@ export default class For extends Component {
   }
 
   compiled() {
-    this.draw(this.attrs.in);
+    this.attr('in', this.draw);
   }
 
   createIterator() {
@@ -49,7 +46,6 @@ export default class For extends Component {
 
       if (child.getAttribute('component') == 'loop') {
         el = child;
-
         break;
       }
 
@@ -73,7 +69,6 @@ export default class For extends Component {
       }
       else if (!(component.prototype instanceof For)) {
         let mask = document.createElement('loop');
-
         mask.appendChild(el);
         el = mask;
       }
@@ -87,102 +82,55 @@ export default class For extends Component {
 
   createIteratorElement() {
     let el = document.createElement('template');
-
     el.innerHTML = this.iteratorOuterHTML;
     el = el.content.firstChild;
-
     return el;
   }
 
-  loop(key, value, keys, index) {
+  loop(key, value, keys, index, dataChanged) {
     this.__index = index;
     this.__key = key;
-    this.__value = value;
+    this.__value = value;    
     this.__comparisonValue = utils.copy(value);
 
-    let hash = '';
-    let found = 0;
-
-    if (value && typeof value == 'object' && value.__hash) {
-      hash = value.__hash;
-    }
-
-    if (this.iterators[hash]) {
-      key = hash;
-      found = 2;
-    }
-    else if (this.iterators[key]) {
-      found = 1;
-    }
-
-    if (found) {
-      let iterator = this.iterators[key];
-
-      if (found == 2) {
-        let cValue = iterator.comparsion.value;
-        let cCopy = iterator.comparsion.copy;
-       
-        if (this.__index !== iterator.index) {
-          iterator.setIndex();
-        }
-
-        if (this.__key !== iterator.key) {
-          iterator.setKey();
-        }
-
-        if (!utils.comparePreviousValue(value, cValue, cCopy, this.__comparisonValue)) {
-          iterator.setValue();
-        }
-
-        keys[key] = iterator;
-        delete this.iterators[key];
-
-        return iterator;
+    if(this.iterators.length > index) {
+      let iterator = this.iterators[index];
+      let cCopy = iterator.comparsion.copy;
+      let changed = false;
+        
+      if (this.__index !== iterator.index) {
+        iterator.setIndex();
+        changed = true;
+      }
+      else {
+        iterator.setIndex(true);
       }
 
-      this.iteratorRef = iterator.el.nextSibling;
-      iterator.__destroy();
+      if (this.__key !== iterator.key) {
+        iterator.setKey();
+        changed = true;
+      }
+      else {
+        iterator.setKey(true);
+      }
+      
+      if (!utils.compare(cCopy, this.__comparisonValue, { ignoreUndefined: true })) {
+        iterator.setValue();
+        changed = true;
+      }
+      else {
+        iterator.setValue(true);
+      }
+
+      (changed || dataChanged) && Akili.compile(iterator.el, { recompile: true });
+      return iterator;
     }
-
+    
     let el = this.createIteratorElement();
-
     el.innerHTML = this.html;
     this.el.insertBefore(el, this.iteratorRef);
     Akili.compile(el);
-
-    if (value && typeof value == 'object') {
-      if (!value.__hash) {
-        hash = utils.createRandomString(32, (str) => {
-          return this.iterators[str];
-        });
-
-        Object.defineProperty(value, '__hash', {
-          configurable: false,
-          enumerable: false,
-          writable: false,
-          value: hash
-        });
-      }
-
-      keys[hash] = this.__iterator;
-      delete this.iterators[hash];
-    }
-    else {
-      if (Akili.options.debug) {
-        let eValue = typeof this.__value == 'string'? `"${this.__value}"`: this.__value;
-
-        let args = [
-          `"For" component loop items should have "object" type for higher performance.`,
-          `You can change ${eValue} to {value: ${eValue}}, for example.`
-        ];
-
-        console.warn.apply(console.warn, args);
-      }
-
-      keys[key] = this.__iterator;
-      delete this.iterators[key];
-    }
-
+    this.iterators.push(el.__akili);
     return el.__akili;
   }
 
@@ -194,51 +142,41 @@ export default class For extends Component {
       }
     }
 
+    let dataChanged = utils.compare(this.data, data);
+    this.data = data;    
     let keys = {};
-    let indexKeys = [];
-    let lastElement = null;
-    let last = this.el.children[this.el.children.length - 1];
-
-    if (last && !(last.__akili instanceof Loop)) {
-      lastElement = last;
-    }
+    let iterators = [];
+    let index = 0;
 
     if (Array.isArray(data)) {
-      for (let i = 0, l = data.length; i < l; i++) {
-        indexKeys.push(this.loop(i, data[i], keys, i));
+      for (let l = data.length; index < l; index++) {
+        iterators.push(this.loop(index, data[index], keys, index, dataChanged));
       }
     }
     else {
-      let i = 0;
-
       for (let k in data) {
         if (!data.hasOwnProperty(k)) {
           continue;
         }
 
-        indexKeys.push(this.loop(k, data[k], keys, i));
-        i++;
+        iterators.push(this.loop(k, data[k], keys, index, dataChanged));
+        index++;
       }
     }
 
-    for (let i = 0, l = indexKeys.length; i < l; i++) {
-      let iterator = indexKeys[i];
-
+    for (let i = 0, l = iterators.length; i < l; i++) {
+      let iterator = iterators[i];
       this.el.appendChild(iterator.el);
       iterator.iterate(i);
     }
 
-    lastElement && this.el.appendChild(lastElement);
-
-    for (let k in this.iterators) {
-      if (!this.iterators.hasOwnProperty(k)) {
-        continue;
-      }
-
-      this.iterators[k].__destroy();
+    for (let i = index, l = this.iterators.length; i < l; i++) {
+      let iterator = this.iterators[i];
+      iterator.__destroy();
+      this.iterators.splice(i, 1);
+      l--;
+      i--;
     }
-
-    this.iterators = keys;
   }
 };
 
@@ -264,27 +202,28 @@ export class Loop extends For {
     this.setIndex();
     this.setKey();
     this.setValue();
-
     this.isFor && super.created.apply(this, arguments);
   }
 
   compiled() {
-    this.isFor && super.compiled.apply(this, arguments);
+    if(this.isFor) {
+      return super.compiled.apply(this, arguments);
+    }
   }
 
-  setIndex() {
+  setIndex(target) {
     this.index = this.for.__index;
-    this.scope.__set('loopIndex', this.index);
+    this.scope.__set('loopIndex', this.index, false, target);
   }
 
-  setKey() {
+  setKey(target) {
     this.key = this.for.__key;
-    this.scope.__set('loopKey', this.key);
+    this.scope.__set('loopKey', this.key, false, target);
   }
 
-  setValue() {
+  setValue(target) {
     this.value = this.for.__value;
-    this.scope.__set('loopValue', this.value, true);
+    this.scope.__set('loopValue', this.value, true, target);
 
     this.comparsion = {
       copy: this.for.__comparisonValue,

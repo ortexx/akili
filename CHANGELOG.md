@@ -1,3 +1,13 @@
+# 0.5.x (March 12, 2018)
+
+* changed attributes binding system
+* changed store binding system
+* optimized a loop perfomance
+* added __debounce__ event and attribute to input
+* added __Akili.nextTick()__
+* added __router.isolate()__
+* fixed many core bugs
+
 # 0.4.x (February 21, 2018)
 
 * added store to save and distribute data

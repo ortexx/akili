@@ -14,7 +14,6 @@ describe('router.js', () => {
     let indexHref;
     let routeOptions = {};
 
-
     before(() => {
       indexHref = location.href;
       routeOptions["1"] = {
@@ -38,7 +37,6 @@ describe('router.js', () => {
         router.add('1.1', '/1-1', routeOptions["1-1"]);
         router.add('1.2', '/1-2', routeOptions["1-2"]);
         router.add('2', '/2', routeOptions["2"]);
-
         assert.equal(router.states[0].name, 'x');
       });
     });
@@ -84,7 +82,6 @@ describe('router.js', () => {
         let state = router.getState('x');
         let params = {id: 2, fix: 3};
         let query = {x: 1, y: 2};
-
         assert.equal(router.createStateUrl(state, params, query), '/x/2?x=1&y=2');
       });
     });
@@ -92,7 +89,6 @@ describe('router.js', () => {
     describe('.splitSlashes()', () => {
       it('should remove repeated slashes', () => {
         let url = '/path//to///something';
-
         assert.equal(router.splitSlashes(url), '/path/to/something');
       });
     });
@@ -101,13 +97,11 @@ describe('router.js', () => {
       it('should get content', () => {
         let url = '/x/9';
         let content = router.getPatternContent(router.getState('x'), url);
-
         assert.equal(JSON.stringify(content.params), JSON.stringify({ id: "9" }));
       });
 
       it('should not get content', () => {
         let url = '/y/9';
-
         assert.isNull(router.getPatternContent(router.getState('x'), url));
       });
     });
@@ -126,7 +120,6 @@ describe('router.js', () => {
       it('should return a necessary pattern content', () => {
         let url = '/1/1-2';
         let content = router.getArrayPatternContent(router.getStatesByLevel(1), url);
-
         assert.strictEqual(content.state, router.getState('1.2'));
       });
     });

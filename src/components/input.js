@@ -2,11 +2,11 @@ import Text from './text.js';
 import Akili from '../akili.js';
 
 export default class Input extends Text {
-  static booleanAttributes = ['checked'];
-  static events = ['change'];
+  static booleanAttributes = ['checked', 'multiple'];
+  static events = ['change', 'debounce'];
 
   static define() {
-    Akili.component('input', Input);
+    Akili.component('input', this);
   }
 
   constructor(...args) {
@@ -14,20 +14,38 @@ export default class Input extends Text {
 
     this.isCheckbox = this.el.type == 'checkbox';
     this.isRadio = this.el.type == 'radio';
-  }
-
-  changedChecked(value) {
-    this.setChecked(value);
+    this.debounceInterval = 500;
+    this.debounceTimeout = null;
   }
 
   created() {
-    (this.isRadio || this.isCheckbox) && this.el.addEventListener('click', () => {
-      this.setChecked(this.el.checked, false);
-    });
+    if(this.isRadio || this.isCheckbox) {
+      this.el.addEventListener('click', () => {
+        this.setChecked(this.el.checked, false);
+      });
+    }
+    else {
+      this.el.addEventListener('input', () => {
+        this.debounceTimeout && clearTimeout(this.debounceTimeout);
+        this.debounceTimeout = setTimeout(() => {
+          this.attrs.onDebounce.trigger(undefined, { bubbles: true })
+        }, this.debounceInterval);
+      });
+    }
+  }
+
+  compiled() {    
+    this.attr('debounce', interval => this.debounceInterval = interval);
+    return super.compiled.apply(this, arguments);
   }
 
   resolved() {
-    (this.isCheckbox || this.isRadio) && this.setChecked(this.attrs.checked);
+    (this.isCheckbox || this.isRadio) && this.attr('checked', this.setChecked);
+    return super.resolved.apply(this, arguments);
+  }
+
+  removed() {
+    this.debounceTimeout && clearTimeout(this.debounceTimeout);
   }
 
   setChecked(value, trigger = true) {

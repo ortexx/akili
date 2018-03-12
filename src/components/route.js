@@ -4,7 +4,7 @@ import request from '../services/request.js';
 
 export default class Route extends Component {
   static define() {
-    Akili.component('route', Route);
+    Akili.component('route', this);
   }
 
   constructor(...args) {
@@ -22,9 +22,8 @@ export default class Route extends Component {
     let params = transition.path.params;
     let url = transition.url;
     let query = transition.query;
-    let p = Promise.resolve();
 
-    function getParentScopeTransition(path) {
+    const getParentScopeTransition = (path) => {
       if (path.parent) {
         if (path.parent.component) {
           return path.parent.component.__scope.__transition.path;
@@ -34,6 +33,32 @@ export default class Route extends Component {
       }
 
       return null;
+    }
+
+    const compile = (html) => { 
+      this.empty();  
+      let name = 'component';
+
+      if(state.component) {
+        let exists = false;
+    
+        for(let key in Akili.__components) {
+          const component = Akili.__components[key];
+    
+          if(component === state.component) {
+            name = key;            
+            exists = true;
+            break;
+          }
+        }
+    
+        if(!exists) {
+          throw new Error(`Router state "${state.name}" has no defined component`)
+        } 
+      }
+
+      this.el.innerHTML = `<${ name }>${ html }</${ name }>`;
+      return Akili.compile(this.el, { recompile: true });
     }
 
     this.__scope.__transition = {
@@ -52,20 +77,14 @@ export default class Route extends Component {
       return Akili.compile(this.el, { recompile: true });
     }
 
-    if (state.template) {
-      this.empty();
-      this.el.innerHTML = `<component>${state.template}</component>`;
-    }
-
-    if (state.templateUrl) {
-      p = request.get(state.templateUrl).then((res) => {
-        this.empty();
-        this.el.innerHTML = `<component>${res.data}</component>`;
-      });
-    }
-
-    return p.then(() => {
-      return Akili.compile(this.el, { recompile: true });
-    });
+    return Promise.resolve().then(() => {
+      if (state.template) {
+        return state.template;
+      }
+  
+      if (state.templateUrl) {
+        return request.get(state.templateUrl).then(res => res.data);
+      }
+    }).then(html => compile(html));
   }
 }

@@ -112,6 +112,12 @@ describe('utils.js', () => {
       });
     });
 
+    describe('.capitalize()', () => {
+      it('should be in the camel case', () => {
+        assert.equal(utils.capitalize('you and me'), 'You and me');
+      });
+    });
+
     describe('.toCamelCase()', () => {
       it('should be in the camel case', () => {
         assert.equal(utils.toCamelCase('you-and-me'), 'youAndMe');
@@ -256,22 +262,6 @@ describe('utils.js', () => {
       });
     });
 
-    describe('.clearScopeProxy()', () => {
-      it('should return objects without proxy', () => {
-        let scope = elements.app.__akili.__scope;
-        let target = scope.proxy.__target;
-        let nestedTarget = scope.proxy.x.__target;
-        let current = utils.clearScopeProxy(scope.proxy);
-
-        assert.strictEqual(current, target, 'clear current');
-        assert.strictEqual(current.x, nestedTarget, 'clear nested');
-      });
-
-      it('should return primitive value', () => {
-        assert.strictEqual(utils.clearScopeProxy('1'), '1');
-      });
-    });
-
     describe('.class()', () => {
       it('should create string class attribute', () => {
         let obj = {
@@ -305,7 +295,6 @@ describe('utils.js', () => {
         ];
 
         let res = utils.filter(arr, '1');
-
         assert.equal(JSON.stringify(['1']), JSON.stringify(res));
       });
 
@@ -317,7 +306,6 @@ describe('utils.js', () => {
         ];
 
         let res = utils.filter(arr, '2', 'value');
-
         assert.equal(JSON.stringify([{value: 2}]), JSON.stringify(res));
       });
 
@@ -329,7 +317,6 @@ describe('utils.js', () => {
         ];
 
         let res = utils.filter(arr, o => o.value === 3, ['value']);
-
         assert.equal(JSON.stringify([{value: 3}]), JSON.stringify(res));
       });
 
@@ -340,9 +327,21 @@ describe('utils.js', () => {
           { x: { value: 3 } }
         ];
 
-        let res = utils.filter(arr, '1', ['x', 'value']);
-
+        let res = utils.filter(arr, '1', [['x', 'value']]);
         assert.equal(JSON.stringify([{ x: { value: 1 } }]), JSON.stringify(res));
+      });
+
+      it('should filter array with several keys', () => {
+        let arr = [
+          { x: 1, y: 2 },
+          { x: 2, y: 1 },
+          { x: 3, y: 3 }
+        ];
+
+        let res = utils.filter(arr, '1', ['x', 'y']);
+        let res2 = utils.filter(arr, '1', [['x'], ['y']]);
+        assert.equal(JSON.stringify([{ x: 1, y: 2 }, { x: 2, y: 1 }]), JSON.stringify(res), 'first option');
+        assert.equal(JSON.stringify([{ x: 1, y: 2 }, { x: 2, y: 1 }]), JSON.stringify(res2), 'second option');
       });
     });
 

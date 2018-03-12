@@ -7,17 +7,9 @@ export default class Text extends Component {
     this.valueKey = 'value';
   }
 
-  changedValue(value) {
-    this.setValue(value);
-  }
-
-  changedFocus(value) {
-    this.setFocus(value);
-  }
-
   compiled() {
-    this.attrs.hasOwnProperty('focus') && this.setFocus(this.attrs.focus);
-    this.attrs.hasOwnProperty('value') && this.setValue(this.attrs.value);
+    this.attr('focus', this.setFocus);
+    this.attr('value', this.setValue);
   }
 
   setFocus(value) {

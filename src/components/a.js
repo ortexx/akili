@@ -8,7 +8,7 @@ export default class A extends Component {
   static booleanAttributes = ['reload'];
 
   static define() {
-    Akili.component('a', A);
+    Akili.component('a', this);
   }
 
   constructor(...args) {
@@ -22,62 +22,40 @@ export default class A extends Component {
     this.isUrl = this.el.getAttribute('url');
   }
 
-  changedUrl(url) {
-    this.setUrl(url);
-    this.resetHref(url);
-  }
-
-  changedState(state) {
-    this.setState(state);
-    this.resetHref();
-  }
-
-  changedParams(params) {
-    this.setParams(params);
-    this.resetHref();
-  }
-
-  changedQuery(query) {
-    this.setQuery(query);
-    this.resetHref();
-  }
-
-  changedHash(query) {
-    this.setHash(query);
-    this.resetHref();
-  }
-
-  changedOptions(options) {
-    this.setQuery(options);
-  }
-
-  changedReload(val) {
-    this.setReload(val);
-  }
-
   created() {
     this.el.addEventListener('click', (e) => {
       e.preventDefault();
 
       if (this.isUrl) {
         router.location(this.attrs.url, this.options);
-
         return;
       }
 
       router.state(this.state.name, this.params, this.query, this.hash,  this.options);
     });
+
+    this.onStateChanged = () => this.state && this.setActivity();
+    window.addEventListener('state-changed', this.onStateChanged);
   }
 
   compiled() {
-    this.attrs.hasOwnProperty('state') && this.setState(this.attrs.state);
-    this.attrs.hasOwnProperty('params') && this.setParams(this.attrs.params);
-    this.attrs.hasOwnProperty('query') && this.setQuery(this.attrs.query);
-    this.attrs.hasOwnProperty('hash') && this.setHash(this.attrs.hash);
-    this.attrs.hasOwnProperty('options') && this.setOptions(this.attrs.options);
-    this.attrs.hasOwnProperty('reload') && this.setReload(this.attrs.reload);
-    this.attrs.hasOwnProperty('url') && this.setUrl(this.attrs.url);
-    this.resetHref(this.url);
+    this.attr('state', this.setState);
+    this.attr('params', this.setParams);
+    this.attr('query', this.setQuery);
+    this.attr('hash', this.setHash);
+    this.attr('options', this.setOptions);
+    this.attr('reload', this.setReload);
+    this.attr('url', this.setUrl);
+    this.attr('state', () => this.resetHref(), { callOnStart: false });
+    this.attr('params', () => this.resetHref(), { callOnStart: false });
+    this.attr('query', () => this.resetHref(), { callOnStart: false });
+    this.attr('hash', () => this.resetHref(), { callOnStart: false });
+    this.attr('url', () => this.resetHref(), { callOnStart: false });
+    this.resetHref();
+  }
+
+  removed() {
+    window.removeEventListener('state-changed', this.onStateChanged);
   }
 
   setUrl(url) {
@@ -86,6 +64,10 @@ export default class A extends Component {
 
   setState(name) {
     this.state = this.getState(name);
+    this.setActivity();
+  }
+
+  setActivity() {
     this.scope.isActiveState = router.isActiveState(this.state);
     this.scope.inActiveState = router.inActiveState(this.state);
   }
@@ -136,9 +118,9 @@ export default class A extends Component {
     return state;
   }
 
-  resetHref(url) {
-    if (url) {
-      this.attrs.href = url;
+  resetHref() {
+    if (this.url) {
+      this.attrs.href = this.url;
     }
     else {
       this.attrs.href = router.createStateUrl(this.state, this.params, this.query, this.hash);

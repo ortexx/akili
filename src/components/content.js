@@ -3,7 +3,7 @@ import Akili from '../akili.js';
 
 export default class Content extends Text {
   static define() {
-    Akili.component('content', Content);
+    Akili.component('content', this);
     Akili.alias('[contenteditable]', 'content');
   }
 

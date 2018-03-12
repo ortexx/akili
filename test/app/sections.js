@@ -12,8 +12,6 @@ export class SectionOneOne extends Component {
   }
 }
 
-
-
 export class SectionTwo extends Component {
   constructor(...args) {
     super(...args);

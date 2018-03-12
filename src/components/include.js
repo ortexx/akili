@@ -8,7 +8,7 @@ export default class Include extends Component {
   static events = ['load', 'error'];
 
   static define() {
-    Akili.component('include', Include);
+    Akili.component('include', this);
   }
 
   constructor(...args) {
@@ -19,12 +19,8 @@ export default class Include extends Component {
     this.connection = null;
   }
 
-  changedUrl(url) {
-    this.getTemplate(url);
-  }
-
   compiled() {
-    return this.getTemplate(this.attrs.url);
+    return this.attr('url', this.getTemplate);
   }
 
   getTemplate(url) {

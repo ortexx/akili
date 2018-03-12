@@ -13,7 +13,6 @@ Object.defineProperty(XMLHttpRequest.prototype, 'status', {
 XMLHttpRequest.prototype.open = function(method, url) {
   this.requestURL = url;
   this.requestMethod = method;
-
   return oldXMLHttpRequestOpen.apply(this, arguments);
 };
 
@@ -189,7 +188,6 @@ describe('request.js', () => {
 
       it('should be an empty object', () => {
         let obj = request.paramsFromQuery('');
-
         assert.isObject(obj, 'check type');
         assert.isNotOk(Object.keys(obj).length, 'check empty or not');
       })

@@ -10,9 +10,9 @@ export default class If extends Component {
   static booleanAttributes = ['recreate'];
 
   static define() {
-    Akili.component('if', If);
-    Akili.component('else-if', ElseIf);
-    Akili.component('else', Else);
+    Akili.component('if', this);
+    Akili.component('else-if', this.ElseIf);
+    Akili.component('else', this.Else);
   }
 
   constructor(...args) {
@@ -27,19 +27,9 @@ export default class If extends Component {
     this.display = getComputedStyle(this.el).display;
   }
 
-  changedIs(value) {
-    this.state = !!value;
-    this.setState();
-  }
-
-  changedRecreate(value) {
-    this.setRecreation(value);
-  }
-
   compiled() {
-    this.attrs.hasOwnProperty('recreate') && this.setRecreation(this.attrs.recreate);
-    this.state = !!this.attrs.is;
-    return this.setState()
+    this.attr('recreate', this.setRecreation);
+    return this.attr('is', val => (this.state = !!val, this.setState()));
   }
 
   setActivity(active) {
@@ -62,10 +52,7 @@ export default class If extends Component {
     next.__akili.setActivity(this.active || this.state);
     next.__akili.setRecreation(this.recreate);
     result = next.__akili.setState();
-
-    return Promise.resolve(res).then(() => {
-      return result;
-    });
+    return Promise.resolve(res).then(() =>  result);
   }
 
   compilation() {

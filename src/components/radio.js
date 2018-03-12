@@ -9,8 +9,8 @@ export default class Radio extends For {
   static events = ['radio'];
 
   static define() {
-    Akili.component('radio', Radio);
-    Akili.component('radio-button', RadioButton);
+    Akili.component('radio', this);
+    Akili.component('radio-button', this.RadioButton);
   }
 
   constructor(...args) {
@@ -19,22 +19,7 @@ export default class Radio extends For {
     this.iterable = this.el.hasAttribute('in');
   }
 
-  changedIn(value) {
-    super.changedIn.apply(this, arguments);
-    this.setNames(this.attrs.name);
-  }
-
-  changedName(name) {
-    this.setNames(name);
-  }
-
-  changedValue(value) {
-    this.setValue(value);
-  }
-
   created() {
-    this.iterable && super.created.apply(this, arguments);
-
     this.el.addEventListener('change', () => {
       setTimeout(() => {
         let value = this.getRadioValue();
@@ -47,11 +32,17 @@ export default class Radio extends For {
         this.attrs.onRadio.trigger(value, { bubbles: true });
       });
     });
+
+    if(this.iterable) {
+      return super.created.apply(this, arguments);
+    }
   }
 
   resolved() {
-    this.setNames(this.attrs.name);
-    this.attrs.hasOwnProperty('value') && this.setValue(this.attrs.value);
+    this.attr('in', () => this.setNames(this.attrs.name));   
+    this.attr('value', this.setValue); 
+    this.attr('name', this.setNames, { callOnStart: false });
+    return super.resolved.apply(this, arguments);
   }
 
   setNames(name) {
@@ -115,22 +106,15 @@ export default class Radio extends For {
  * The radio item component
  */
 export class RadioButton extends Loop {
-  static template = `<label><input type="radio" value="\${this.value}"/>\${this.__content}</label>`;
+  static template = '<label><input type="radio" value="${this.value}"/>${this.__content}</label>';
 
   constructor(...args) {
     super(...args);
   }
 
-  changedValue(value) {
-    this.setRadioValue(value);
-  }
-
   compiled() {
-    this.setRadioValue(this.attrs.value);
-  }
-
-  setRadioValue(value) {
-    this.scope.value = value;
+    this.attr('value', 'value');
+    return super.compiled.apply(this, arguments);
   }
 }
 

@@ -38,14 +38,15 @@ import utils from './utils.js';
 const Akili = {};
 
 Akili.options = {
-  debug: true
+  debug: true,
+  globals: {}
 };
 
 Akili.__init = null;
 Akili.__components = {};
 Akili.__aliases = {};
 Akili.__scopes = {};
-Akili.__links = {};
+Akili.__storeLinks = {};
 Akili.__window = {};
 Akili.__isolation = null;
 Akili.__evaluation = null;
@@ -174,7 +175,7 @@ Akili.createScopeName = function() {
  * @param {function} fn
  * @returns {*}
  */
-Akili.isolate = function(fn) {
+Akili.isolate = function(fn, component) { 
   if (this.__isolation) {
     return fn();
   }
@@ -190,29 +191,22 @@ Akili.isolate = function(fn) {
 
     props.push(this.__isolation[k]);
   }
-
+  
   this.__isolation = null;
 
   for (let i = 0, l = props.length; i < l; i++) {
     let prop = props[i];
+    let data = prop.component.__getBind(prop.keys);
 
     if (prop.isDeleted) {
       prop.component.__evaluateByKeys(prop.keys, undefined, true);
-
       continue;
     }
-
-    utils.setPropertyByKeys(prop.keys, prop.component.scope, (last, val) => {
-      if (!last) {
-        return val || {};
-      }
-
-      return prop.value;
-    });
+    
+    prop.component.scope.__set(prop.keys, utils.getPropertyByKeys(prop.keys, prop.component.__scope));
   }
 
   props = null;
-
   return res;
 };
 
@@ -225,11 +219,9 @@ Akili.isolate = function(fn) {
 Akili.unevaluated = function(fn) {
   let evaluation = this.__evaluation;
   let res;
-
   this.__evaluation = null;
   res = fn();
   this.__evaluation = evaluation;
-
   return res;
 };
 
@@ -240,14 +232,22 @@ Akili.unevaluated = function(fn) {
  * @returns {*}
  */
 Akili.unisolated = function(fn) {
-  let evaluation = this.__isolation;
+  let isolation = this.__isolation;
   let res;
-
   this.__isolation = null;
   res = fn();
-  this.__isolation = evaluation;
-
+  this.__isolation = isolation;
   return res;
+};
+
+/**
+ * Run the function on the next tick
+ *
+ * @param {function} fn
+ * @returns {Promise}
+ */
+Akili.nextTick = function(fn) {
+  return new Promise((res) => setTimeout(() => Promise.resolve(fn()).then(res)));
 };
 
 /**
@@ -264,7 +264,6 @@ Akili.initialize = function(el, options = {}) {
   if (component) {
     if (recompile) {
       component.__recompile();
-
       return component;
     }
 
@@ -319,7 +318,6 @@ Akili.initialize = function(el, options = {}) {
   }
 
   component.__create();
-
   return component;
 };
 
@@ -340,7 +338,6 @@ Akili.compile = function(root, options = { recompile: false }) {
 
     for (let i = 0, l = children.length; i < l; i++) {
       let child = children[i];
-
       nestedInitializing(child);
     }
   };
@@ -351,7 +348,6 @@ Akili.compile = function(root, options = { recompile: false }) {
 
   for (let i = 0, l = elements.length; i < l; i++) {
     let component = elements[i];
-
     p.push(component.__compile());
   }
 
@@ -360,7 +356,6 @@ Akili.compile = function(root, options = { recompile: false }) {
 
     for (let i = elements.length - 1; i >= 0; i--) {
       let component = elements[i];
-
       r.push(component.__resolve());
     }
 
@@ -447,12 +442,14 @@ Akili.isolateArrayPrototype = function() {
     Array.prototype[key] = function() {
       return Akili.unevaluated(() => {
         if (!this.__isProxy) {
-          return old.apply(this, arguments);
+          return Akili.unevaluated(() => {
+             return old.apply(this, arguments);
+          })
         }
-
+        
         return Akili.isolate(() => {
           return old.apply(this, arguments);
-        });
+        }, this);
       });
     };
   }
@@ -483,7 +480,6 @@ Akili.isolateEvents = function() {
 
   Element.prototype.remove = function() {
     delete this.__akiliListeners;
-
     return Akili.__window.Element.prototype.remove.apply(this, arguments);
   };
 
@@ -499,10 +495,8 @@ Akili.isolateEvents = function() {
     }
 
     args[1] = function () {
-      return Akili.unevaluated(() => {
-        return Akili.isolate(() => {
-          return fn.apply(this, arguments);
-        });
+      return Akili.isolate(() => {
+        return fn.apply(this, arguments);
       });
     };
 
@@ -530,7 +524,6 @@ Akili.isolateEvents = function() {
         this.__akiliListeners[name].splice(i, 1);
         i--;
         l--;
-
         break;
       }
     }
@@ -570,10 +563,8 @@ Akili.createCallbackIsolation = function(fn, pos = 'last') {
       }
 
       args[index] = function() {
-        return Akili.unevaluated(() => {
-          return Akili.isolate(() => {
-            return callback.apply(callback, arguments);
-          });
+        return Akili.isolate(() => {
+          return callback.apply(callback, arguments);
         });
       };
     }
@@ -635,7 +626,6 @@ Akili.triggerInit = function(status) {
  */
 Akili.serverRendering = function() {
   let server = this.__html.getAttribute('akili-server');
-
   this.__serverRendering = !!server;
 
   if (server) {

@@ -4,7 +4,14 @@ export default class All extends Component {
   constructor(...args) {
     super(...args);
 
-     this.el.innerHTML += `
+    this.el.innerHTML += `
+      <attr 
+        test="\${this.cAttr}" 
+        on-test="\${this.cAttrEvent = event.detail}"
+      ></attr>
+    `;
+
+    this.el.innerHTML += `
       <object url="\${this.cObjectValue}"></object>
     `;
 

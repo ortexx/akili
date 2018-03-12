@@ -7,8 +7,8 @@ export default class Select extends For {
   static events = ['change'];
 
   static define() {
-    Akili.component('select', Select);
-    Akili.component('option', Option);
+    Akili.component('select', this);
+    Akili.component('option', this.Option);
   }
 
   constructor(...args) {
@@ -18,32 +18,20 @@ export default class Select extends For {
     this.isMultiple = false;
   }
 
-  changedMultiple(value) {
-    this.setMultiple(value);
-  }
-
-  changedContent(value) {
-    this.setContent(value);
-  }
-
-  changedIn(value) {
-    super.changedIn.apply(this, arguments);
-    this.drawSelect();
-  }
-
   created() {
-    super.created.apply(this, arguments);
-
     this.el.addEventListener('change', () => {
       this.el.content = this.getContent();
     });
+
+    return super.created.apply(this, arguments);
   }
   
-  compiled() {
-    super.compiled.apply(this, arguments);
-    this.attrs.hasOwnProperty('multiple') && this.setMultiple(this.attrs.multiple);
-    this.attrs.hasOwnProperty('content') && this.setContent(this.attrs.content);
-    this.drawSelect();
+  compiled() { 
+    let res = super.compiled.apply(this, arguments);   
+    this.attr('multiple', this.setMultiple);
+    this.attr('content', this.setContent);
+    this.attr('in', this.drawSelect);
+    return res;
   }
 
   setMultiple(value) {
@@ -169,10 +157,6 @@ export class Option extends Loop {
 
   __getParsedExpression(expression) {
     return utils.decodeHtmlEntities(expression);
-  }
-
-  created() {
-    super.created.apply(this, arguments);
   }
 
   changedSelected(value) {

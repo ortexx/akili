@@ -84,10 +84,6 @@ describe('component.js', () => {
         assert.isOk(component.wasCompiled);
       });
 
-      it('should not run changed function', () => {
-        assert.equal(component.changedCount, 0);
-      });
-
       it('should create scope html binding', () => {
         assert.equal(component.__bindings.html.__data.length, 1);
       });
@@ -183,9 +179,9 @@ describe('component.js', () => {
 
       describe('.__evaluateNode()', () => {
         it('should change node html', () => {
-          component.__disableProxy = ['html'];
+          component.__disableKeys();
           component.scope.html = 'New World';
-          component.__disableProxy = null;
+          component.__enableKeys();
           component.__evaluateNode(node);
           assert.equal(node.nodeValue, 'New World');
         });
@@ -196,9 +192,9 @@ describe('component.js', () => {
 
         before(() => {
           node = parentComponent.__bindings.homeAttr.__data[0].node;
-          parentComponent.__disableProxy = ['homeAttr'];
+          component.__disableKeys();
           parentComponent.scope.homeAttr = 'New value';
-          parentComponent.__disableProxy = null;
+          component.__enableKeys();
         });
 
         it('should return right value', () => {
@@ -208,18 +204,14 @@ describe('component.js', () => {
         it('should change component attrs value', () => {
           assert.equal(component.attrs.parent, 'New value');
         });
-
-        it('should call changed function', () => {
-          assert.equal(component.changedCount, 1);
-        });
       });
     });
 
     describe('.__evaluateByKeys()', () => {
       before(() => {
-        component.__disableProxy = ['data'];
+        component.__disableKeys();
         component.scope.data.splice(2, 1);
-        component.__disableProxy = null;
+        component.__enableKeys();
         component.__evaluateByKeys(['data'], component.scope.data);
       });
 
@@ -251,9 +243,9 @@ describe('component.js', () => {
     describe('.__evaluateNested()', () => {
       describe('evaluation with parents', () => {
         before(() => {
-          component.__disableProxy = ['data'];
+          component.__disableKeys();
           component.scope.data[0].title = 'New value 1';
-          component.__disableProxy = null;
+          component.__enableKeys();
           component.__evaluateNested(['data', '0', 'title']);
         });
 
@@ -262,7 +254,7 @@ describe('component.js', () => {
         });
 
         it('should increment <f> element', () => {
-          assert.equal(elements.home.querySelector('f').innerHTML, '3');
+          assert.equal(elements.home.querySelector('f').innerHTML, '4');
         });
 
         it('should increment <s> element', () => {
@@ -272,9 +264,9 @@ describe('component.js', () => {
 
       describe('evaluation without parents', () => {
         before(() => {
-          component.__disableProxy = ['data'];
+          component.__disableKeys();
           component.scope.data[0].title = 'Very new value 1';
-          component.__disableProxy = null;
+          component.__enableKeys();
           component.__evaluateNested(['data', '0', 'title'], true);
         });
 
@@ -283,7 +275,7 @@ describe('component.js', () => {
         });
 
         it('should not increment <f> element', () => {
-          assert.equal(elements.home.querySelector('f').innerHTML, '3');
+          assert.equal(elements.home.querySelector('f').innerHTML, '4');
         });
 
         it('should not increment <s> element', () => {
@@ -392,7 +384,6 @@ describe('component.js', () => {
         assert.equal(obj.component, component, 'check component');
         assert.equal(obj.keys[0], 'data', 'check keys');
         assert.isNotOk(obj.isDeleted, 'check deletion');
-        assert.strictEqual(obj.value, component.__scope.data, 'check value');
       });
 
       it('should return without deletion option', () => {
@@ -423,32 +414,31 @@ describe('component.js', () => {
         let parents = [];
         let obj;
 
-        component.__bindNode(list, keys, parents, 1);
+        component.__bindNode(list, component, keys, parents, 1);
         obj = list[0];
 
         assert.equal(obj.component, component, 'check component');
-        assert.equal(obj.keysString, keys.join('.'), 'check keysString');
-        assert.equal(obj.keys.join('.'), keys.join('.'), 'check keys');
-        assert.equal(obj.parents.join('.'), parents.join('.'), 'check parents');
+        assert.equal(obj.keysString, Akili.joinBindingKeys(keys), 'check keysString');
+        assert.equal(Akili.joinBindingKeys(obj.keys), Akili.joinBindingKeys(keys), 'check keys');
+        assert.equal(Akili.joinBindingKeys(obj.parents), Akili.joinBindingKeys(parents), 'check parents');
         assert.equal(obj.value, 1, 'check value');
         assert.equal(obj.notBinding, false, 'check notBinding');
       });
 
       it('should create only 2 bindings', () => {
-        component.__bindNode(list, ['data'], [], 1);
-        component.__bindNode(list, ['data', '0'], ['data'], 1);
-        component.__bindNode(list, ['data', '0', 'title'], ['data', '0'], 1);
+        component.__bindNode(list, component, ['data'], [], 1);
+        component.__bindNode(list, component,  ['data', '0'], ['data'], 1);
+        component.__bindNode(list, component,  ['data', '0', 'title'], ['data', '0'], 1);
 
         assert.equal(list.length, 2, 'check count');
         assert.equal(list[0].keysString, 'data', 'check content one');
-        assert.equal(list[1].keysString, 'data.0.title', 'check content two');
+        assert.equal(list[1].keysString, Akili.joinBindingKeys(['data', '0', 'title']), 'check content two');
       });
 
       it('should create 3 new bindings', () => {
-        component.__bindNode(list, ['x'], [], 1);
-        component.__bindNode(list, ['y'], [], 1, true);
-        component.__bindNode(list, ['x', '0'], ['x'], 1);
-
+        component.__bindNode(list, component, ['x'], [], 1);
+        component.__bindNode(list, component, ['y'], [], 1, true);
+        component.__bindNode(list, component,  ['x', '0'], ['x'], 1);
         assert.equal(list.length, 5);
       });
     });
@@ -456,13 +446,11 @@ describe('component.js', () => {
     describe('.__getBind()', () => {
       it('should get a correct binding', () => {
         let obj = component.__getBind(['data']);
-
         assert.strictEqual(obj, component.__bindings.data);
       });
 
       it('should get null', () => {
         let obj = component.__getBind(['fakeData']);
-
         assert.isNull(obj);
       });
     });
@@ -470,13 +458,11 @@ describe('component.js', () => {
     describe('.__getBoundNode()', () => {
       it('should get a binding', () => {
         let obj = component.__getBoundNode(['data'], component.__bindings.data.__data[0].node);
-
         assert.strictEqual(obj, component.__bindings.data.__data[0]);
       });
 
       it('should get a binding', () => {
         let obj = component.__getBoundNode(['data'], 'fake');
-
         assert.isNull(obj);
       });
     });
@@ -777,5 +763,49 @@ describe('component.js', () => {
         assert.isNotOk(Object.keys(parentComponent.__bindings).length);
       });
     });
+
+    describe('attributes manipulation', () => {
+      let all, attr, fn;
+
+      before(() => {
+        fn = val => attr.scope.handlerTest = val;
+        all = Akili.root.child('all');
+        attr = all.child('attr');      
+      });
+
+      describe('.attr()', () => {
+        it('should create the link by a scope property', () => {  
+          attr.attr('test', 'test');            
+          assert.equal(attr.__attrLinks['test'][0].keyString, 'test');
+        });
+  
+        it('should create the link by a function', () => {  
+          attr.attr('test', fn);         
+          assert.strictEqual(attr.__attrLinks['test'][1].fn, fn);
+        });
+        
+        it('should have the necessary scope value', () => {  
+          all.scope.cAttr = 'link';             
+          assert.equal(attr.scope.test, 'link', 'check by a scope');
+          assert.equal(attr.scope.handlerTest, 'link', 'check by a function');
+        });
+  
+        it('should change the parent scope value', () => {  
+          attr.scope.test = 'linked';  
+          
+          return Akili.nextTick(() => {
+            assert.equal(all.scope.cAttrEvent, 'linked');
+          });          
+        });
+      });  
+    
+      describe('.unattr()', () => {
+        it('should remove all links', () => {
+          attr.unattr('test', 'test');
+          attr.unattr('test', fn);
+          assert.doesNotHaveAllKeys(attr.__attrLinks, ['test']);
+        });
+      }); 
+    });    
   });
 });

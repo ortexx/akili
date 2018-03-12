@@ -3,6 +3,6 @@ import Akili from '../akili.js';
 
 export default class Image extends Url {  
   static define() {
-    Akili.component('img', Image);
+    Akili.component('img', this);
   }
 }

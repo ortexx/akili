@@ -66,7 +66,7 @@ describe('components/', () => {
       for (let i = 0; i < 10; i++) {
         data.push(i);
       }
-
+      
       _for = component.child('for');
       _ul = component.child('ul');
       component.scope.cForData = data;
@@ -285,11 +285,11 @@ describe('components/', () => {
   describe('route.js,a.js', () => {
     function onStateChange(callback) {
       let fn = (e) => {
-        window.removeEventListener('state-change', fn);
+        window.removeEventListener('state-changed', fn);
         callback(e);
       };
 
-      window.addEventListener('state-change', fn);
+      window.addEventListener('state-changed', fn);
     }
 
     it('should set right url to a link', () => {

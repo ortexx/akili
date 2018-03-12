@@ -70,14 +70,31 @@ router.__routeSelector = c => c instanceof Route;
  * @returns {router}
  */
 router.add = function (name, pattern, options = {}) {
-  let defaultOptions = {
+  if(typeof name == 'object') {
+    options = name;
+    pattern = options.pattern;
+    name = options.state;
+    delete options.pattern;
+    delete options.state;
+  }
+
+  if(!name) {
+    throw new Error(`Router state must have a name`);
+  }
+
+  const defaultOptions = {
     template: '',
     templateUrl: '',
     abstract: false,
-    handler: (transition) => {}
+    component: null,
+    handler: (transition) => {},
   };
 
-  if (!options.template && !options.templateUrl) {
+  if(Akili.options.debug && options.component && (options.template || options.templateUrl)) {
+    console.warn(`Router state "${name}" must only have a component or template option`);
+  } 
+
+  if (!options.template && !options.templateUrl && !options.component) {
     options.abstract = true;
   }
 
@@ -199,9 +216,7 @@ router.init = function (defaultUrl = '', hashMode = true) {
 
   window.history.pushState = function() {
     let res = oldPushState.apply(this, arguments);
-
     router.changeState().catch((err) => console.error(err));
-
     return res;
   };
 
@@ -578,9 +593,22 @@ router.getStatesByLevel = function (level) {
 };
 
 /**
+ * Isolate the function to not trigger router handlers inside
+ *
+ * @param {function} fn
+ * @returns {*}
+ */
+router.isolate = function(fn) {
+  this.__disableChange = true;
+  let res = fn();
+  this.__disableChange = false;
+  return res;
+}
+
+/**
  * Change state
  */
-router.changeState = function () {
+router.changeState = function () {  
   if (this.__disableChange) {
     delete this.__disableChange;
 
@@ -593,6 +621,8 @@ router.changeState = function () {
   let prevTransition = router.transition || null;
   let transition = router.transition = new Transition(url, query, hash, prevTransition);
   let level = 0;
+
+  window.dispatchEvent(new CustomEvent('state-change', { detail: transition }));
 
   const next = (states, onEnd) => {
     if (!states.length) {
@@ -623,21 +653,18 @@ router.changeState = function () {
       let route = prevTransition.getRoute(state);
       let prev = { params: route.params, query: route.query, hash: route.hash };
       let current = { params, query, hash };
-
       isDifferent = !utils.compare(prev, current);
     }
 
-    let isHistory = this.__options.reload === undefined && !isDifferent;
-    let isReload = this.__options.reload === false;
-
-    transition.path.loaded = !(hasState && (isHistory || isReload));
-
-    Promise.resolve(state.handler(transition)).then((data) => {
+    transition.path.loaded = isDifferent && this.__options.reload !== false;
+    
+    Promise.resolve(transition.path.loaded? state.handler(transition): transition.path.data).then((data) => {
       if (transition.__cancelled) {
         return onEnd && onEnd();
       }
 
       transition.path.data = data;
+      state.title && (document.title = typeof state.title == 'function'? state.title(transition): state.title);
 
       if (state.abstract) {
         return next(state.children, onEnd);
@@ -665,7 +692,7 @@ router.changeState = function () {
             return reject(new Error(`Not found any routes`));
           }
 
-          this.hashMode && (this.__disableChange = true);
+          this.__disableChange = true;
           this.setUrl(this.defaultUrl);
           this.__redirects++;
 
@@ -692,11 +719,8 @@ router.changeState = function () {
         }
       }
 
-      window.dispatchEvent(new CustomEvent('state-change', {
-        detail: transition
-      }));
-
-      resolve();
+      window.dispatchEvent(new CustomEvent('state-changed', { detail: transition }));
+      resolve(transition);  
     });
   });
 };
