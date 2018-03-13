@@ -199,9 +199,9 @@ export class Loop extends For {
   created() {
     this.__parent.__akili.__iterator = this;
     this.for = this.__parent.__akili;
-    this.setIndex();
-    this.setKey();
-    this.setValue();
+    this.setIndex(true);
+    this.setKey(true);
+    this.setValue(true);
     this.isFor && super.created.apply(this, arguments);
   }
 
