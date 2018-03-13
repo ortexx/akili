@@ -84,7 +84,7 @@ utils.style = function(obj) {
  * utils.filter([{x: {y: 1}}, {x: {y: 2}}], '1', [['x', 'y']]);
  * 
  * @example
- * // returns [{x:1, y: 2}, {x: 2, y:1}] * 
+ * // returns [{x:1, y: 2}, {x: 2, y:1}] 
  * utils.filter([{x: 1, y: 2}, {x: 3, y: 3}, {x: 2, y: 1}], '1', ['x', 'y']);
  * 
  * @example
@@ -103,36 +103,28 @@ utils.filter = function (arr, handler, keys = null) {
     keys = [keys];
   }
 
-  if(!keys) {
-    keys = [null];
-  }
-
-  if (!handler) {
-    return [...arr];
+  if(typeof handler != 'function') {
+    const str = handler? (handler + '').toLowerCase(): '';
+    handler = val => (val? (val + '').toLowerCase(): '').match(str);
   }
 
   for (let i = 0, l = arr.length; i < l; i++) {
     let item = arr[i];
     let filtered = false;
 
-    for(let k = 0, c = keys.length; k < c; k++) {
-      let key = keys[k];
-      key = !key || Array.isArray(key)? key: [key];
-      let val = key? this.getPropertyByKeys(key, item): item;
-
-      if (!val) {
-        continue;
-      }
-  
-      val += '';
-  
-      if ((typeof handler == 'function') && handler(item)) {
-        filtered = true;
-        continue;
-      }
-      else if (val.match(handler || '')) {
-        filtered = true;
-        continue;
+    if(!keys && handler(item)) {
+      filtered = true;
+    }
+    else if(keys) {
+      for(let k = 0, c = keys.length; k < c; k++) {
+        let key = keys[k];
+        key = Array.isArray(key)? key: [key];
+        let val = key? this.getPropertyByKeys(key, item): item;
+    
+        if (handler(val)) {
+          filtered = true;
+          continue;
+        }
       }
     }
 
@@ -242,7 +234,6 @@ utils.sort = function(arr, keys = true, order = []) {
       }
 
       i++;
-
       return next();
     };
 

@@ -309,14 +309,25 @@ describe('utils.js', () => {
         assert.equal(JSON.stringify([{value: 2}]), JSON.stringify(res));
       });
 
-      it('should filter using function handler', () => {
+      it('should filter using function handler without keys', () => {
         let arr = [
           { value: 1 },
           { value: 2 },
           { value: 3 }
         ];
 
-        let res = utils.filter(arr, o => o.value === 3, ['value']);
+        let res = utils.filter(arr, o => o.value === 3);
+        assert.equal(JSON.stringify([{value: 3}]), JSON.stringify(res));
+      });
+
+      it('should filter using function handler with keys', () => {
+        let arr = [
+          { value: 1 },
+          { value: 2 },
+          { value: 3 }
+        ];
+
+        let res = utils.filter(arr, val => val === 3, ['value']);
         assert.equal(JSON.stringify([{value: 3}]), JSON.stringify(res));
       });
 
