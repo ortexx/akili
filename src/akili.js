@@ -50,9 +50,6 @@ Akili.__storeLinks = {};
 Akili.__window = {};
 Akili.__isolation = null;
 Akili.__evaluation = null;
-Akili.__html = window.document.documentElement;
-Akili.__serverPromise = Promise.resolve();
-Akili.__serverRendering = false;
 
 Akili.htmlBooleanAttributes = [
   'disabled', 'contenteditable', 'hidden'
@@ -622,43 +619,37 @@ Akili.triggerInit = function(status) {
 };
 
 /**
- * Server rendering implementation
- */
-Akili.serverRendering = function() {
-  let server = this.__html.getAttribute('akili-server');
-  this.__serverRendering = !!server;
-
-  if (server) {
-    let display = getComputedStyle(this.__html).display;
-    this.__html.style.display = 'none';
-
-    this.__serverPromise = request.get(server).then((res) => {      
-      this.__html.innerHTML = res.data;
-      this.__html.style.display = display;
-    });
-  }
-};
-
-/**
  * Initialize the application
  *
  * @param {HTMLElement} [root]
  * @returns {Promise}
  */
 Akili.init = function(root) {
-  this.__root = root || document.querySelector("html");
+  this.__root = root || document.body;
 
-  return this.__serverPromise.then(() => {
-    return this.compile(this.__root).then(() => {
-      if (router.__init) {
-        return router.changeState();
-      }
-    }).then(() => {
-      this.triggerInit(true);
-    }).catch((err) => {
-      this.triggerInit(false);
-      throw err;
-    });
+  if(root === document.documentElement) {
+    throw new Error(`"html" can't be the root element`);
+  }
+  
+  if(window.AKILI_SERVER) {
+    this.__root.removeAttribute('scope');
+    this.__root.innerHTML = window.AKILI_SERVER.html;
+  }
+  else {
+    window.AKILI_CLIENT = {
+      html: this.__root.innerHTML
+    }
+  }
+
+  return this.compile(this.__root).then(() => {
+    if (router.__init) {
+      return router.changeState();
+    }
+  }).then(() => {
+    this.triggerInit(true);
+  }).catch((err) => {
+    this.triggerInit(false);
+    throw err;
   });
 };
 
@@ -738,7 +729,6 @@ export const components = Akili.components;
 export const services = Akili.services;
 export default Akili;
 
-Akili.serverRendering();
 Akili.define();
 Akili.errorHandling();
 Akili.isolateEvents();
