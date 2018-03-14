@@ -213,7 +213,7 @@ Akili.isolate = function(fn, component) {
  * @param {function} fn
  * @returns {*}
  */
-Akili.unevaluated = function(fn) {
+Akili.unevaluate = function(fn) {
   let evaluation = this.__evaluation;
   let res;
   this.__evaluation = null;
@@ -228,7 +228,7 @@ Akili.unevaluated = function(fn) {
  * @param {function} fn
  * @returns {*}
  */
-Akili.unisolated = function(fn) {
+Akili.unisolate = function(fn) {
   let isolation = this.__isolation;
   let res;
   this.__isolation = null;
@@ -437,11 +437,9 @@ Akili.isolateArrayPrototype = function() {
     this.__window.Array.prototype[key] = old;
 
     Array.prototype[key] = function() {
-      return Akili.unevaluated(() => {
+      return Akili.unevaluate(() => {
         if (!this.__isProxy) {
-          return Akili.unevaluated(() => {
-             return old.apply(this, arguments);
-          })
+          return old.apply(this, arguments);
         }
         
         return Akili.isolate(() => {
@@ -632,12 +630,35 @@ Akili.init = function(root) {
   }
   
   if(window.AKILI_SERVER) {
-    this.__root.removeAttribute('scope');
-    this.__root.innerHTML = window.AKILI_SERVER.html;
+    if(this.__root === document.body) {
+      for (var i = this.__root.attributes.length - 1; i >= 0; i--){
+        this.__root.removeAttribute(this.__root.attributes[i].name);
+      }
+      
+      let html = window.AKILI_SERVER.html;
+      let line = html.match(/^<[^<]+>/);
+      let attrLines = (line? line[0]: '').match(/\s+[^"]+"[^"]+"/g) || [];
+
+      for(let i = 0, l = attrLines.length; i < l; i++) {
+        let line = attrLines[i];
+        let attr = line.split('=', 2);
+        let key = attr[0].trim();
+        let val = attr[1].slice(1, -1);
+        this.__root.setAttribute(key, val);
+      }
+
+      this.__root.innerHTML = window.AKILI_SERVER.html;
+    }
+    else {
+      let parent = this.__root.parentNode;
+      let index = [].slice.call(parent.children).indexOf(this.__root);    
+      this.__root.outerHTML = window.AKILI_SERVER.html;
+      this.__root = parent.children[index];
+    }
   }
   else {
     window.AKILI_CLIENT = {
-      html: this.__root.innerHTML
+      html: this.__root.outerHTML
     }
   }
 

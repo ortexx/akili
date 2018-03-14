@@ -169,7 +169,7 @@ export default class Component {
       });
 
       if (this.constructor.templateUrl) {
-        p = request.get(this.constructor.templateUrl).then((res) => {
+        p = request.get(this.constructor.templateUrl, { cache: this.constructor.templateCache }).then((res) => {
           this.el.innerHTML = this.__content;
           Akili.setTemplate(this.el, res.data);
           delete this.__content;
@@ -1150,7 +1150,7 @@ export default class Component {
       }
       
       if(link.fn) {
-        Akili.unisolated(() => link.fn.call(component, value))
+        Akili.unisolate(() => link.fn.call(component, value))
         continue;
       }
       
@@ -1230,7 +1230,7 @@ export default class Component {
     Akili.__storeLinks[name].push({ component: this, name, fn });
 
     if(call) {
-      return Akili.unisolated(() => fn.call(this, store[name]));
+      return Akili.unisolate(() => fn.call(this, store[name]));
     }
   }
 
@@ -1366,7 +1366,7 @@ export default class Component {
     for(let i = 0, l = links.length; i < l; i++) {
       const link = links[i];    
       this.__disableAttrTriggering = true;
-      link.fn? Akili.unisolated(() => link.fn.call(this, value)): this.scope.__set(link.keys, value); 
+      link.fn? Akili.unisolate(() => link.fn.call(this, value)): this.scope.__set(link.keys, value); 
       this.__disableAttrTriggering = false; 
     }
   }
@@ -1440,7 +1440,7 @@ export default class Component {
     this.__attrLinks[name].push({ name, fn });
     
     if(call) {
-      return Akili.unisolated(() => fn.call(this, this.attrs[name]));
+      return Akili.unisolate(() => fn.call(this, this.attrs[name]));
     }
   }
 
@@ -1558,12 +1558,12 @@ export default class Component {
           value.__component !== this ||
           Akili.joinBindingKeys(parents) != Akili.joinBindingKeys(value.__keys)
         ) {
-          target = utils.copy(target, false);
+          target = utils.copy(target, { nested: false });
           value = target;
         }
       }
       else if (!this.__disableProxyRedefining && !(value instanceof Scope)) {
-        target = utils.copy(target, false);          
+        target = utils.copy(target, { nested: false } );          
         value = target;
       }
 

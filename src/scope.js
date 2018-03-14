@@ -33,7 +33,7 @@ export default class Scope {
       keys = [keys];
     }
     
-    Akili.unisolated(() => {
+    Akili.unisolate(() => {
       strict && (this.__component.__disableProxyRedefining = true);
       utils.setPropertyByKeys(keys, target? this.__target: this, (last, val) => {
         if (!last) {

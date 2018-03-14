@@ -20,13 +20,19 @@ export default class Include extends Component {
   }
 
   compiled() {
+    this.attr('cache', this.setCache);
     return this.attr('url', this.getTemplate);
+  }
+
+  setCache(cache) {
+    this.cache = cache;
   }
 
   getTemplate(url) {
     this.connection && this.connection.abort();
 
     return request.get(url, {
+      cache: this.cache,
       onStart: (xhr) => {
         this.connection = xhr;
       }

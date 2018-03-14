@@ -35,7 +35,7 @@ export default class Input extends Text {
   }
 
   compiled() {    
-    this.attr('debounce', interval => this.debounceInterval = interval);
+    this.attr('debounce', this.setDebounce);
     return super.compiled.apply(this, arguments);
   }
 
@@ -46,6 +46,10 @@ export default class Input extends Text {
 
   removed() {
     this.debounceTimeout && clearTimeout(this.debounceTimeout);
+  }
+
+  setDebounce(interval) {
+    this.debounceInterval = interval;
   }
 
   setChecked(value, trigger = true) {

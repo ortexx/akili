@@ -271,24 +271,25 @@ utils.isPlainObject = function(obj) {
  * Copy the value
  *
  * @param {*} value
- * @param {boolean} [nested=true] - deep copy if is true
- * @param {boolean} [unenumerable=false] - including non-enumerable properties
+ * @param {boolean} [options] 
  * @returns {*}
  */
-utils.copy = function(value, nested = true, unenumerable = false) {
+utils.copy = function(value, options = {}) {
   if (typeof value != 'object' || !value) {
     return value;
   }
 
+  options = { nested: true, enumerable: true, ...options };
+
   const next = (obj) => {
     obj = this.isScopeProxy(obj)? obj.__target: obj;
-    let keys = unenumerable? Object.getOwnPropertyNames(obj): Object.keys(obj);
+    let keys = !options.enumerable? Object.getOwnPropertyNames(obj): Object.keys(obj);
     let newObj = Array.isArray(obj)? []: {};
     
     for (let i = 0, l = keys.length; i < l; i++) {
       let key = keys[i];
       let val = obj[key];
-      val = val && typeof val == 'object' && nested? next(val): val;      
+      val = val && typeof val == 'object' && options.nested? next(val): val;      
       
       if(!obj.propertyIsEnumerable(key)) {
         Object.defineProperty(newObj, key, {
@@ -354,12 +355,17 @@ utils.compare = function (a, b, options = {}) {
       return a === b;
     }
 
-    a = this.isScopeProxy(a)? a.__target: a;
-    b = this.isScopeProxy(b)? b.__target: b;
+    options = { enumerable: true, ...options };
 
     const clearUndefined = (val) => {
       let obj = Array.isArray(val)? []: {};
-      Object.keys(val).forEach(key => val[key] !== undefined && (obj[key] = val[key]));
+      let keys = !options.enumerable? Object.getOwnPropertyNames(): Object.keys(val);
+
+      for(let i = 0, l = keys.length; i < l; i++) {
+        let key = keys[i];
+        val[key] !== undefined && (obj[key] = val[key])
+      }
+
       return obj;
     }
 
@@ -367,20 +373,21 @@ utils.compare = function (a, b, options = {}) {
       a = clearUndefined(a);
       b = clearUndefined(b);
     }
+
+    let aKeys = !options.enumerable? Object.getOwnPropertyNames(): Object.keys(a);
+    let bKeys = !options.enumerable? Object.getOwnPropertyNames(): Object.keys(b);
     
-    if (Object.keys(a).length != Object.keys(b).length) {
+    if (aKeys.length != bKeys.length) {
       return false;
     }
 
     a = this.isScopeProxy(a)? a.__target: a;
     b = this.isScopeProxy(b)? b.__target: b;
 
-    for (let k in a) {
-      if (!a.hasOwnProperty(k)) {
-        continue;
-      }
+    for(let i = 0, l = aKeys.length; i < l; i++) {
+      let key = aKeys[i];
 
-      if (!this.compare(a[k], b[k])) {
+      if (!this.compare(a[key], b[key])) {
         return false;
       }
     }
@@ -397,14 +404,15 @@ utils.compare = function (a, b, options = {}) {
  * @param {*} current - the current value
  * @param {*} previous - the previous value
  * @param {*} previousCopy - the previous value copy
+ * @param {object} [options]
  * @returns {boolean}
  */
-utils.comparePreviousValue = function(current, previous, previousCopy) {
+utils.comparePreviousValue = function(current, previous, previousCopy, options) {
   if (current !== previous) {
     return false;
   }
 
-  return this.compare(current, previousCopy);
+  return this.compare(current, previousCopy, options);
 };
 
 /**

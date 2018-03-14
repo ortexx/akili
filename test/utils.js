@@ -49,7 +49,7 @@ describe('utils.js', () => {
       it('should be copied only root level', () => {
         let obj = { key: 1, obj: {} };
 
-        assert.strictEqual(utils.copy(obj, false).obj, obj.obj);
+        assert.strictEqual(utils.copy(obj, { nested: false }).obj, obj.obj);
       });
     });
 

@@ -1,11 +1,14 @@
 import utils from '../utils.js';
 
 export class Request {
+  __cache = {};
+
   constructor(baseUrl, defaults) {
     this.baseUrl = baseUrl? (baseUrl.replace(/\/$/, '') + '/'): '';
 
     this.defaults = {
       statusErrorsPattern: /^([^23])|404/,
+      cache: false,
       ...(defaults || {})
     };
   }
@@ -18,16 +21,17 @@ export class Request {
    */
   query(options) {
     return new Promise((resolve, reject) => {
-      let url, xhr;
+      options = {...this.defaults, ...(options || {})}; 
+      options.url = this.baseUrl? `${this.baseUrl}${options.url.replace(/^\//, '')}`: options.url;  
+      options.method = options.method || 'GET';
       
-      options = {...this.defaults, ...(options || {})};
-      xhr = new XMLHttpRequest();
-      (typeof options.onStart == 'function') && options.onStart(xhr);
-      options = this.transformBefore(options);
-      url = this.baseUrl? `${this.baseUrl}${options.url.replace(/^\//, '')}`: options.url;
-      xhr.open(options.method, url, true, options.user, options.password);
+      let xhr = new XMLHttpRequest();      
+      const before = this.transformBefore(xhr, options);
+      xhr = before.xhr;
+      options = before.options;
+      (typeof options.onStart == 'function') && options.onStart(xhr);  
       options.headers = options.headers || {};
-
+      
       if (options.json) {
         options.json !== true && (options.body = JSON.stringify(options.json));
         options.headers['content-type'] = 'application/json';
@@ -37,6 +41,38 @@ export class Request {
         options.body = this.createFormData(options.form);
         options.headers['content-type'] = 'multipart/form-data';
       }
+
+      if (options.params) {
+        let str = this.paramsToQuery(options.params);
+        str && (options.url += "?" + str);
+      }
+           
+      let hash = null;
+      let cache = typeof options.cache == 'function'? options.cache(options): options.cache;
+
+      if(options.method.toUpperCase() == 'GET' && (!options.body || typeof options.body == 'string')) {
+        hash = this.createCacheHash({ 
+          url: options.url, 
+          method: options.method,
+          user: options.user, 
+          password: options.password, 
+          body: options.body 
+        });        
+      }
+      
+      if(cache && hash) {        
+        let _cache = this.getCache(hash);
+        let now = new Date().getTime();
+
+        if(_cache && now - _cache.createdAt <= cache) {
+          return resolve(_cache.data);
+        }
+        else if(_cache) {
+          this.removeCache(hash);
+        }
+      }
+
+      xhr.open(options.method, options.url, true, options.user, options.password);
 
       if (options.hasOwnProperty('timeout')) {
         xhr.timeout = options.timeout;
@@ -60,14 +96,6 @@ export class Request {
         }
       }
 
-      if (options.params) {
-        let str = this.paramsToQuery(options.params);
-
-        if (str) {
-          url += "?" + str;
-        }
-      }
-
       if (typeof options.onProgress == 'function') {
         xhr.onprogress = () => {
           return options.onProgress(xhr);
@@ -79,12 +107,11 @@ export class Request {
 
         if ((xhr.status + '').match(options.statusErrorsPattern)) {
           let err = new Error(`Request to "${url}" returns failure status code ${xhr.status}`);
-
           err.response = response;
-
           return reject(err);
         } 
-        
+
+        cache && hash && this.createCache(hash, response);        
         resolve(response);
       };
 
@@ -98,6 +125,54 @@ export class Request {
 
       xhr.send(options.body);
     });
+  }
+
+  /**
+   * Get cache
+   * 
+   * @param {string} hash
+   * @returns {object}
+   */
+  getCache(hash) {
+    return this.__cache[hash] || null;
+  }
+
+  /**
+   * Create cache
+   * 
+   * @param {string} hash
+   * @param {object} data
+   */
+  createCache(hash, data) {
+    this.__cache[hash] = { data, createdAt: new Date().getTime() };
+  }
+
+  /**
+   * Remove cache
+   * 
+   * @param {string} hash
+   */
+  removeCache(hash) {
+    delete this.__cache[hash];
+  }
+
+  /**
+   * Create a hash to save in the cache
+   * 
+   * @param {object} data
+   * @returns {string}
+   */
+  createCacheHash(data) {
+    let hash = 0;
+    let str = JSON.stringify(data);
+
+    for (let i = 0; i < str.length; i++) {
+        let  char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; 
+    }
+
+    return hash + '';
   }
 
   /**
@@ -206,11 +281,12 @@ export class Request {
   /**
    * Transform data before a request
    *
+   * @param {XMLHttpRequest} xhr
    * @param {object} options
    * @returns {object}
    */
-  transformBefore(options) {
-    return options;
+  transformBefore(xhr, options) {
+    return { xhr, options }
   }
 
   /**
@@ -299,7 +375,6 @@ export class Request {
 }
 
 const request = new Request();
-
 request.__instances = {};
 
 /**

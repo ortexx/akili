@@ -87,7 +87,7 @@ export default class For extends Component {
     return el;
   }
 
-  loop(key, value, keys, index, dataChanged) {
+  loop(key, value, index, dataChanged) {
     this.__index = index;
     this.__key = key;
     this.__value = value;    
@@ -137,37 +137,23 @@ export default class For extends Component {
   draw(data) {
     if (typeof data != 'object' || data === null) {
       if (Akili.options.debug) {
-        console.warn(`"For" component "in" attribute value type must be an object/array`);
-        data = [];
+        console.warn(`"For" component "in" attribute value type must be an object/array`);        
       }
+
+      data = [];
     }
 
     let dataChanged = utils.compare(this.data, data);
-    this.data = data;    
-    let keys = {};
+    this.data = data;   
+    let keys = Object.keys(data);
     let iterators = [];
     let index = 0;
-
-    if (Array.isArray(data)) {
-      for (let l = data.length; index < l; index++) {
-        iterators.push(this.loop(index, data[index], keys, index, dataChanged));
-      }
-    }
-    else {
-      for (let k in data) {
-        if (!data.hasOwnProperty(k)) {
-          continue;
-        }
-
-        iterators.push(this.loop(k, data[k], keys, index, dataChanged));
-        index++;
-      }
-    }
-
-    for (let i = 0, l = iterators.length; i < l; i++) {
-      let iterator = iterators[i];
-      this.el.appendChild(iterator.el);
-      iterator.iterate(i);
+    
+    for (let l = keys.length; index < l; index++) {
+      let key = keys[index];
+      let iterator = this.loop(key, data[key], index, dataChanged);
+      iterators.push(iterator);
+      iterator.iterate(index);
     }
 
     for (let i = index, l = this.iterators.length; i < l; i++) {
