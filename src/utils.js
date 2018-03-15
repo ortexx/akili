@@ -18,12 +18,10 @@ utils.class = function (obj) {
   }
 
   let classes = [];
+  let keys = Object.keys(obj);
 
-  for (let k in obj) {
-    if (!obj.hasOwnProperty(k)) {
-      continue;
-    }
-
+  for (let i = 0, l = keys.length; i < l; i++) {
+    let k = keys[i];
     let val = obj[k];
     val && classes.push(k);
   }
@@ -47,18 +45,70 @@ utils.style = function(obj) {
   }
 
   let styles = [];
+  let keys = Object.keys(obj);
 
-  for (let k in obj) {
-    if (!obj.hasOwnProperty(k)) {
-      continue;
-    }
-
+  for (let i = 0, l = keys.length; i < l; i++) {
+    let k = keys[i];
     let val = obj[k];
     val && styles.push(`${this.toDashCase(k)}:${val}`);
   }
 
   return styles.join(';');
 };
+
+/**
+ * Split the string
+ * 
+ * @example
+ * // returns ["Hello", "World"]
+ * utils.split("Hello World", " ");
+ * 
+ * @example
+ * // returns ['x = 5', ' y = "1;2;3"']
+ * utils.split('x = 5; y = "1;2;3"', ";", ['"']);
+ * 
+ * @param {string} str 
+ * @param {string} [del]
+ * @param {string[]} [exclude] 
+ */
+utils.split = function(str, del = '', exclude = []) {
+	const exps = [];     
+  let last = '';
+
+  if(!del) {
+    return str.split('');
+  }
+  else if(del instanceof RegExp) {
+    return str.split(del);
+  }
+  else if(str.indexOf(del) == -1) {
+    last = str;
+  }
+  else {
+    const arr = str.split('');
+    let open = ''; 
+
+    for(let i = 0, l = arr.length; i < l; i++) {
+      let val = arr[i];
+      let index = exclude.indexOf(val);      
+
+      if(index > -1 && (!open || open == val)) {
+        !open? open = exclude[index]: open = '';
+      }
+
+      if(val == del && !open) {
+        exps.push(last);
+        last = '';
+        continue;
+      }
+
+      last += val;
+    }
+  }
+
+  last && exps.push(last);
+  return exps;
+}
 
 /**
  * Filter an array
@@ -501,7 +551,7 @@ utils.getPropertyByKeys = function(keys, object) {
   let length = keys.length;
   let i = 0;
 
-  keys.reduce(function(o, k) {
+  keys.reduce((o, k) => {
     i++;
 
     if (typeof o != 'object') {
@@ -535,7 +585,7 @@ utils.hasPropertyByKeys = function(keys, object) {
   let length = keys.length;
   let i = 0;
 
-  keys.reduce(function(o, k) {
+  keys.reduce((o, k) => {
     i++;
 
     if (typeof o != 'object') {
@@ -571,7 +621,7 @@ utils.setPropertyByKeys = function(keys, object, fn) {
   let length = keys.length;
   let i = 0;
 
-  keys.reduce(function(o, k) {
+  keys.reduce((o, k) => {
     i++;
 
     if (typeof o != 'object') {
@@ -614,7 +664,7 @@ utils.deletePropertyByKeys = function(keys, object, fn) {
   let value;
   let i = 0;
 
-  keys.reduce(function(o, k) {
+  keys.reduce((o, k) => {
     i++;
 
     if (typeof o != 'object') {
@@ -627,11 +677,7 @@ utils.deletePropertyByKeys = function(keys, object, fn) {
 
     if (i == length) {
       value = o[k];
-
-      if (!fn || fn(value)) {
-        delete o[k];
-      }
-
+      (!fn || fn(value)) && (delete o[k]);
       return value;
     }
 

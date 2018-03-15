@@ -284,10 +284,8 @@ Akili.initialize = function(el, options = {}) {
       break CHECK_ALIASES;
     }
 
-    for (let selector in this.__aliases) {
-      if (!this.__aliases.hasOwnProperty(selector)) {
-        continue;
-      }
+    for (let i = 0, l = selectors.length; i < l; i++) {
+      let selector = selectors[i];
 
       if (el.matches(selector)) {
         _Component = this.__components[this.__aliases[selector]];
@@ -340,7 +338,6 @@ Akili.compile = function(root, options = { recompile: false }) {
   };
 
   nestedInitializing(root);
-
   let p = [];
 
   for (let i = 0, l = elements.length; i < l; i++) {
@@ -630,29 +627,27 @@ Akili.init = function(root) {
   }
   
   if(window.AKILI_SERVER) {
+    let html = window.AKILI_SERVER.html;
+
     if(this.__root === document.body) {
       for (var i = this.__root.attributes.length - 1; i >= 0; i--){
         this.__root.removeAttribute(this.__root.attributes[i].name);
       }
-      
-      let html = window.AKILI_SERVER.html;
-      let line = html.match(/^<[^<]+>/);
-      let attrLines = (line? line[0]: '').match(/\s+[^"]+"[^"]+"/g) || [];
 
-      for(let i = 0, l = attrLines.length; i < l; i++) {
-        let line = attrLines[i];
-        let attr = line.split('=', 2);
-        let key = attr[0].trim();
-        let val = attr[1].slice(1, -1);
-        this.__root.setAttribute(key, val);
-      }
+      let parser = new DOMParser();
+      let doc = parser.parseFromString(html, "text/html");
+      let body = doc.querySelector('body');
+      this.__root.innerHTML = html;
 
-      this.__root.innerHTML = window.AKILI_SERVER.html;
+      for (var i = body.attributes.length - 1; i >= 0; i--) {
+        let attr = body.attributes[i];
+        this.__root.setAttribute(attr.name, attr.value);
+      }      
     }
     else {
       let parent = this.__root.parentNode;
       let index = [].slice.call(parent.children).indexOf(this.__root);    
-      this.__root.outerHTML = window.AKILI_SERVER.html;
+      this.__root.outerHTML = html;
       this.__root = parent.children[index];
     }
   }

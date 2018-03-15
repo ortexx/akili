@@ -38,30 +38,7 @@ export default class Component {
     globals = { utils, ...Akili.options.globals, ...globals};
     const keys = [];
     const vars = [];
-    const exps = [];
-    const symbols = ['"', "'", '`'];  
-    const arr = expression.split('');
-    let open = '';  
-    let last = '';
-
-    for(let i = 0, l = arr.length; i < l; i++) {
-      let val = arr[i];
-      let index = symbols.indexOf(val);      
-
-      if(index > -1 && (!open || open == val)) {
-        !open? open = symbols[index]: open = '';
-      }
-
-      if(val == ';' && !open) {
-        last.trim() && exps.push(last);
-        last = '';
-        continue;
-      }
-
-      last += val;
-    }
-
-    last.trim() && exps.push(last);
+    const exps = utils.split(expression.trim(), ';', ['"', "'", '`']);  
     exps[exps.length - 1] = `return ${exps[exps.length - 1]}`;
 
     for(let key in globals) {

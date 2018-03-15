@@ -35,6 +35,23 @@ describe('utils.js', () => {
       });
     });
 
+    describe('.split()', () => {
+      let opts = [
+        { val: 'string', res: ["s", "t", "r", "i", "n", "g"] },
+        { val: 'Hello World', res: ["Hello", "World"], del: ' ' },
+        { 
+          val: `x = 5; y = "1;2;3"; z = '4;5;6'`, 
+          res: [`x = 5`, ` y = "1;2;3"`, ` z = '4;5;6'`], 
+          del: ';', 
+          exclude: ["'", '"'] 
+        }
+      ];
+    
+      opts.forEach(opt => {
+        assert.equal(JSON.stringify(utils.split(opt.val, opt.del, opt.exclude)), JSON.stringify(opt.res))
+      });
+    });
+
     describe('.copy()', () => {
       it('should be equal but difference', () => {
         let obj = { key: 1, obj: utils.Component };
