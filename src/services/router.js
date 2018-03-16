@@ -52,14 +52,19 @@ export class Transition {
 
 const router = {};
 
-router.baseUrl = "/";
-router.states = [];
-router.hashMode = true;
-router.__redirects = 0;
-router.__init = false;
-router.__options = {};
-router.__paramRegex = /(:([\w\d-]+))/g;
-router.__routeSelector = c => c instanceof Route;
+/**
+ * Set router's default variables
+ */
+router.setDefaults = function () {
+  this.baseUrl = "/";
+  this.states = [];
+  this.hashMode = true;
+  this.__redirects = 0;
+  this.__init = false;
+  this.__options = {};
+  this.__paramRegex = /(:([\w\d-]+))/g;
+  this.__routeSelector = c => c instanceof Route;
+}
 
 /**
  * Add new state to the router
@@ -196,7 +201,6 @@ router.location = function(url, options = { reload: false }) {
 
   if (this.hashMode) {
     let current = window.location.hash.replace('#', '');
-
     window.location.hash = url;
     current === url && this.changeState().catch((err) => console.error(err));
   }
@@ -230,7 +234,6 @@ router.init = function (defaultUrl = '', hashMode = true) {
   this.states.sort((a, b) => {
     a = a.name.split('.').length;
     b = b.name.split('.').length;
-
     return a - b;
   });
 
@@ -446,13 +449,6 @@ router.splitSlashes = function (url) {
 };
 
 /**
- * Clear all router dependencies
- */
-router.clear = function () {
-  window.removeEventListener('popstate', this.__onStateChangeHandler);
-};
-
-/**
  * Get state url content
  *
  * @param {string|Object} state
@@ -599,9 +595,9 @@ router.getStatesByLevel = function (level) {
  * @returns {*}
  */
 router.isolate = function(fn) {
-  this.__disableChange = true;
+  this.__isolated = true;
   let res = fn();
-  this.__disableChange = false;
+  this.__isolated = false;
   return res;
 }
 
@@ -609,9 +605,12 @@ router.isolate = function(fn) {
  * Change state
  */
 router.changeState = function () {  
+  if(this.__isolated) {
+    return Promise.resolve();
+  }
+
   if (this.__disableChange) {
     delete this.__disableChange;
-
     return Promise.resolve();
   }
 
@@ -725,6 +724,14 @@ router.changeState = function () {
   });
 };
 
-router.Transition = Transition;
+/**
+ * Deinit router
+ */
+router.deinit = function () {
+  window.removeEventListener('popstate', this.__onStateChangeHandler);
+  router.setDefaults();
+};
 
+router.Transition = Transition;
 export default router;
+router.setDefaults();

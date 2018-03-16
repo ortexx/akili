@@ -37,27 +37,115 @@ import utils from './utils.js';
 
 const Akili = {};
 
-Akili.options = {
-  debug: true,
-  globals: {}
+/**
+ * Set the farmework's default variables
+ */
+Akili.setDefaults = function () {
+  this.options = {
+    debug: true,
+    globals: {}
+  };
+  
+  this.__init = null;
+  this.__cleared = false;
+  this.__components = {};
+  this.__aliases = {};
+  this.__scopes = {};
+  this.__storeLinks = {};
+  this.__window = {};
+  this.__isolation = null;
+  this.__evaluation = null;
+  this.__onError = () => this.triggerInit(false);
+  
+  this.htmlBooleanAttributes = [
+    'disabled', 'contenteditable', 'hidden'
+  ];
+
+  this.components = {};
+  this.services = {};
+
+  this.Component = Component;
+  this.EventEmitter = EventEmitter;
+  this.Scope = Scope;
+  this.utils = utils;
+  this.components.A = A;
+  this.components.Audio = Audio;
+  this.components.Content = Content;
+  this.components.For = For;
+  this.components.Embed = Embed;
+  this.components.If = If;
+  this.components.Include = Include;
+  this.components.Input = Input;
+  this.components.Iframe = Iframe;
+  this.components.Image = Image;
+  this.components.Object = Objects;
+  this.components.Radio = Radio;
+  this.components.Route = Route;
+  this.components.Select = Select;
+  this.components.Source = Source;
+  this.components.Text = Text;
+  this.components.Textarea = Textarea;
+  this.components.Track = Track;
+  this.components.Url = Url;
+  this.components.Video = Video;
+  this.services.request = request;
+  this.services.router = router;
+  this.services.store = store;
+
+  this.define();
+  this.errorHandling();
+  this.isolateEvents();
+  this.isolateArrayPrototype();
+  this.isolateWindowFunctions();
+}
+
+/**
+ * Define all default components
+ */
+Akili.define = function () {
+  A.define();
+  Audio.define();
+  Content.define();
+  Component.define();
+  Embed.define();
+  For.define();
+  Include.define();
+  Iframe.define();
+  Image.define();
+  Input.define();
+  If.define();
+  Objects.define();
+  Radio.define();
+  Route.define();
+  Select.define();
+  Source.define();
+  Textarea.define();
+  Track.define();
+  Video.define();
 };
 
-Akili.__init = null;
-Akili.__components = {};
-Akili.__aliases = {};
-Akili.__scopes = {};
-Akili.__storeLinks = {};
-Akili.__window = {};
-Akili.__isolation = null;
-Akili.__evaluation = null;
+/**
+ * Clear the global context
+ */
+Akili.clearGlobals = function() {
+  if(this.__cleared) {
+    return;
+  }
 
-Akili.htmlBooleanAttributes = [
-  'disabled', 'contenteditable', 'hidden'
-];
+  for (let key in this.__window.Element.prototype) {
+    Element.prototype[key] = this.__window.Element.prototype[key];
+  }
 
-Akili.components = {};
-Akili.decorators = {};
-Akili.services = {};
+  for (let key in this.__window.Array.prototype) {
+    Array.prototype[key] = this.__window.Array.prototype[key];
+  }
+
+  window.setTimeout = this.__window.setTimeout;
+  window.setInterval = this.__window.setInterval;
+  window.Promise = this.__window.Promise;
+  window.removeEventListener('error', this.__onError);
+  this.__cleared = true;
+};
 
 /**
  * Join binding keys
@@ -598,9 +686,7 @@ Akili.isolateFunction = function(fn, context = null) {
  * Error handling
  */
 Akili.errorHandling = function() {
-  window.addEventListener('error', () => {
-    this.triggerInit(false);
-  });
+  window.addEventListener('error', this.__onError);
 };
 
 /**
@@ -673,80 +759,18 @@ Akili.init = function(root) {
  * Deinitialize the application
  */
 Akili.deinit = function() {
-  for (let key in this.__window.Element.prototype) {
-    Element.prototype[key] = this.__window.Element.prototype[key];
+  this.clearGlobals();
+  router.deinit();
+  request.deinit();
+  let storeKeys = Object.keys(store.__target);
+  
+  for(let i = 0, l = storeKeys.length; i < l; i++) {
+    delete store.__target[storeKeys[i]];
   }
 
-  for (let key in this.__window.Array.prototype) {
-    Array.prototype[key] = this.__window.Array.prototype[key];
-  }
-
-  window.setTimeout = this.__window.setTimeout;
-  window.setInterval = this.__window.setInterval;
-  window.Promise = this.__window.Promise;
+  this.setDefaults();
 };
-
-/**
- * Define all default components
- */
-Akili.define = function() {
-  A.define();
-  Audio.define();
-  Content.define();
-  Component.define();
-  Embed.define();
-  For.define();
-  Include.define();
-  Iframe.define();
-  Image.define();
-  Input.define();
-  If.define();
-  Objects.define();
-  Radio.define();
-  Route.define();
-  Select.define();
-  Source.define();
-  Textarea.define();
-  Track.define();
-  Video.define();
-};
-
-Akili.Component = Component;
-Akili.EventEmitter = EventEmitter;
-Akili.Scope = Scope;
-Akili.utils = utils;
-Akili.components.A = A;
-Akili.components.Audio = Audio;
-Akili.components.Content = Content;
-Akili.components.For = For;
-Akili.components.Embed = Embed;
-Akili.components.If = If;
-Akili.components.Include = Include;
-Akili.components.Input = Input;
-Akili.components.Iframe = Iframe;
-Akili.components.Image = Image;
-Akili.components.Object = Objects;
-Akili.components.Radio = Radio;
-Akili.components.Route = Route;
-Akili.components.Select = Select;
-Akili.components.Source = Source;
-Akili.components.Text = Text;
-Akili.components.Textarea = Textarea;
-Akili.components.Track = Track;
-Akili.components.Url = Url;
-Akili.components.Video = Video;
-Akili.services.request = request;
-Akili.services.router = router;
-Akili.services.store = store;
 
 window.Akili = Akili;
-
-export const components = Akili.components;
-export const services = Akili.services;
 export default Akili;
-
-Akili.define();
-Akili.errorHandling();
-Akili.isolateEvents();
-Akili.isolateArrayPrototype();
-Akili.isolateWindowFunctions();
+Akili.setDefaults();

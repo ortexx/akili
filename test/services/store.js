@@ -51,6 +51,13 @@ describe('store.js', () => {
     });
   });
 
+  describe('delete store property', () => {
+    it('should set sectionOne scope value to undefined', () => {
+      delete store.test;   
+      assert.isUndefined(elements.sectionOne.__akili.scope.test);
+    });
+  });
+
   describe('Component.prototype.unstore()', () => {
     it('should remove all links', () => {
       elements.sectionOne.__akili.unstore('test', 'test');

@@ -375,7 +375,14 @@ export class Request {
 }
 
 const request = new Request();
-request.__instances = {};
+
+/**
+ * Set router's default variables
+ */
+request.setDefaults = function () {
+  this.__instances = {};
+  this.__cache = {};
+}
 
 /**
  * Add new request instance to the main service
@@ -396,6 +403,14 @@ request.removeInstance = function(name) {
   delete this.__instances[name];
 };
 
+/**
+ * Deinit router
+ */
+request.deinit = function() {
+  this.setDefaults();
+};
+
+
 Object.defineProperty(request, 'use', {
   get: () => {
     return request.__instances;
@@ -404,3 +419,4 @@ Object.defineProperty(request, 'use', {
 
 request.Request = Request;
 export default request;
+request.setDefaults();

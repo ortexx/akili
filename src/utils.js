@@ -67,7 +67,7 @@ utils.style = function(obj) {
  * // returns ['x = 5', ' y = "1;2;3"']
  * utils.split('x = 5; y = "1;2;3"', ";", ['"']);
  * 
- * @param {string} str 
+ * @param {string|RegExp} str 
  * @param {string} [del]
  * @param {string[]} [exclude] 
  */

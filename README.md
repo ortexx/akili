@@ -1,7 +1,7 @@
 # [Akili](http://akilijs.com) [beta] [![npm version](https://badge.fury.io/js/akili.svg)](https://badge.fury.io/js/akili) [![Build Status](https://travis-ci.org/ortexx/akili.svg?branch=master)](https://travis-ci.org/ortexx/akili) [![Coverage Status](https://coveralls.io/repos/github/ortexx/akili/badge.svg?branch=master)](https://coveralls.io/github/ortexx/akili?branch=master) [![Join the chat at https://gitter.im/ortexx/akili](https://badges.gitter.im/ortexx/akili.svg)](https://gitter.im/ortexx/akili?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Akili is a component-based javascript framework. 
-It includes a powerful system of components, router, functions to make ajax requests and some useful utils.
+It includes a powerful system of components, router, store to save and distribute data, functions to make ajax requests and some useful utils.
 
 * very easy for learning, using and testing
 * without any additional dependencies
@@ -14,9 +14,8 @@ It includes a powerful system of components, router, functions to make ajax requ
 
 ```js
 class HelloWorld extends Akili.Component {
-  constructor(...args) {
-    super(...args);
-    
+  created() {
+    this.scope.count = 0;
     this.scope.title = 'Hello World';
   }
 }
@@ -30,12 +29,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 ```html
 <body>
-  <hello-world>${ this.title }</hello-world>
+  <hello-world>
+    <div on-click="${ this.count++ }">
+      ${ this.title }: ${ this.count }
+    </div>
+  </hello-world>
 </body>
 ```
 
 More simple examples are on the [site](https://akilijs.com).  
-And you can [see](https://example.akilijs.com) a complete example of the site's architecture and [get the source code](https://github.com/ortexx/akili-example).
+And you can [see a complete example](https://example.akilijs.com) of the site's architecture and [get the source code](https://github.com/ortexx/akili-example).
 
 ## Installation
 You can install it via npm

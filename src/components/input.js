@@ -76,7 +76,6 @@ export default class Input extends Text {
 
     for (let i = 0, l = children.length; i < l; i++) {
       let radio = children[i];
-
       radio.setChecked(radio.el.checked);
     }
   }

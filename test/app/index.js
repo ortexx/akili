@@ -36,5 +36,7 @@ Akili.component('all', All);
 Akili.options.debug = false;
 
 describe('Application initialization', () => {
-  return Akili.init(document.body);
+  it('should be initialized', () => {
+    return Akili.init(document.body);
+  });  
 });

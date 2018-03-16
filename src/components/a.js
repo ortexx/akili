@@ -46,11 +46,11 @@ export default class A extends Component {
     this.attr('options', this.setOptions);
     this.attr('reload', this.setReload);
     this.attr('url', this.setUrl);
-    this.attr('state', () => this.resetHref(), { callOnStart: false });
-    this.attr('params', () => this.resetHref(), { callOnStart: false });
-    this.attr('query', () => this.resetHref(), { callOnStart: false });
-    this.attr('hash', () => this.resetHref(), { callOnStart: false });
-    this.attr('url', () => this.resetHref(), { callOnStart: false });
+    this.attr('state', this.resetHref, { callOnStart: false });
+    this.attr('params', this.resetHref, { callOnStart: false });
+    this.attr('query', this.resetHref, { callOnStart: false });
+    this.attr('hash', this.resetHref, { callOnStart: false });
+    this.attr('url', this.resetHref, { callOnStart: false });
     this.resetHref();
   }
 

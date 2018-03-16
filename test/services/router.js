@@ -1,4 +1,13 @@
 import router, { Transition } from '../../src/services/router';
+import Component from '../../src/component';
+
+class RouterComponent extends Component {
+  static templateUrl = "router-2.html";
+
+  static define() {    
+    Akili.component('router-component', this);
+  }
+}
 
 describe('router.js', () => {
   describe('router', () => {
@@ -14,10 +23,11 @@ describe('router.js', () => {
     let indexHref;
     let routeOptions = {};
 
-    before(() => {
+    before(() => {      
+      RouterComponent.define();
       indexHref = location.href;
       routeOptions["1"] = {
-        templateUrl: "router-1.html",
+        templateUrl: "router-1.html"
       };
       routeOptions["1-1"] = {
         templateUrl: "router-1-1.html"
@@ -26,14 +36,14 @@ describe('router.js', () => {
         templateUrl: "router-1-2.html"
       };
       routeOptions["2"] = {
-        templateUrl: "router-2.html"
+        component: RouterComponent
       };
     });
 
     describe('.add()', () => {
       it('should add new state', () => {
         router.add('x', '/x/:id');
-        router.add('1', '/1', routeOptions["1"]);
+        router.add({ state: '1', pattern: '/1', ...routeOptions["1"] });
         router.add('1.1', '/1-1', routeOptions["1-1"]);
         router.add('1.2', '/1-2', routeOptions["1-2"]);
         router.add('2', '/2', routeOptions["2"]);
@@ -108,11 +118,11 @@ describe('router.js', () => {
 
     describe('.getStatesByLevel()', () => {
       it('should return 0 level', () => {
-        assert.equal(router.getStatesByLevel(0).length, 3);
+        assert.lengthOf(router.getStatesByLevel(0), 3);
       });
 
       it('should return 1 level', () => {
-        assert.equal(router.getStatesByLevel(1).length, 2);
+        assert.lengthOf(router.getStatesByLevel(1), 2);
       });
     });
 
@@ -132,16 +142,6 @@ describe('router.js', () => {
 
       it('should has transition', () => {
         assert.instanceOf(router.transition, Transition);
-      });
-    });
-
-    describe('.isActiveState()', () => {
-      it('should be an active state', () => {
-        assert.isOk(router.isActiveState('x'));
-      });
-
-      it('should not be an active state', () => {
-        assert.isNotOk(router.isActiveState('1'));
       });
     });
 
@@ -182,6 +182,20 @@ describe('router.js', () => {
       it('should remove a state', () => {
         router.remove('x');
         assert.isNotOk(router.has('x'));
+      });
+    });
+
+    describe('.location()', () => {
+      it('should change the location', () => {
+        router.location('/x/1?y=1');
+        assert.equal(location.pathname + location.search, '/x/1?y=1');
+      });
+    });
+
+    describe('.isolate()', () => {
+      it('should isolate the code', () => {
+        router.isolate(() => window.history.pushState(null, '', `/f/a/k/e`));
+        assert.equal(location.pathname + location.search, '/f/a/k/e');
       });
     });
   });

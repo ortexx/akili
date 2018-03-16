@@ -32,22 +32,15 @@ XMLHttpRequest.prototype.send = function() {
   else if(this.requestMethod == 'GET' && this.requestURL == 'router-2.html') {
     this.response = '<w>2</w>';
   }
-  else if(this.requestURL == 'ping') {
-    this.response = 'ok';
-  }
-  else if(this.requestMethod == 'GET' && this.requestURL == 'get') {
-    this.response = 'ok';
-  }
-  else if(this.requestMethod == 'POST' && this.requestURL == 'post') {
-    this.response = 'ok';
-  }
-  else if(this.requestMethod == 'PUT' && this.requestURL == 'put') {
-    this.response = 'ok';
-  }
-  else if(this.requestMethod == 'DELETE' && this.requestURL == 'delete') {
-    this.response = 'ok';
-  }
-  else if(this.requestMethod == 'PATCH' && this.requestURL == 'patch') {
+  else if(
+    this.requestURL == 'ping' || 
+    this.requestURL == 'ping?x=1' ||
+    (this.requestMethod == 'GET' && this.requestURL == 'get') ||
+    (this.requestMethod == 'POST' && this.requestURL == 'post') ||
+    (this.requestMethod == 'PUT' && this.requestURL == 'put') ||
+    (this.requestMethod == 'DELETE' && this.requestURL == 'delete') ||
+    (this.requestMethod == 'PATCH' && this.requestURL == 'patch')
+  ) {
     this.response = 'ok';
   }
   else if(this.requestURL == 'json') {
@@ -57,7 +50,6 @@ XMLHttpRequest.prototype.send = function() {
   if(this.response) {
     this.status = 200;
     this.onload();
-
     return;
   }
 
@@ -106,9 +98,7 @@ describe('request.js', () => {
       it('should get the bad response', (done) => {
         request.query({ url: 'non-existent'}).then(() => {
           done(new Error('must be error response'))
-        }).catch(() => {
-          done();
-        });
+        }).catch(() => done());
       });
 
       it('should make GET request', () => {
@@ -157,6 +147,24 @@ describe('request.js', () => {
         return request.get('ping', { withCredentials: true }).then((res) => {
           assert.isOk(res.xhr.withCredentials);
         });
+      });
+
+      it('should create cache', () => {
+        return request.get('ping', { cache: 1000 }).then((res) => {
+          assert.lengthOf(Object.keys(request.__cache), 1);
+        });
+      });
+
+      it('should create cache', () => {
+        return request.get('ping', { cache: 1000, params: { x: 1 } }).then((res) => {
+          assert.lengthOf(Object.keys(request.__cache), 2);
+        });
+      });
+
+      it('should remove cache', () => {
+        let hash = Object.keys(request.__cache)[0];
+        request.removeCache(hash);        
+        assert.lengthOf(Object.keys(request.__cache), 1);
       });
     });
 
