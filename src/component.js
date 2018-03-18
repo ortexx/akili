@@ -52,6 +52,7 @@ export default class Component {
   constructor(el, scope = {}) {
     this.__isMounted = false;
     this.__isCompiled = false;
+    this.__isResolved = false;
     this.__cancelled = false;
     this.__prevent = false;
     this.__bindings = {};
@@ -79,7 +80,6 @@ export default class Component {
    */
   __recompile() {
     this.__isMounted = false;
-    this.__isCompiled = false;
     this.__evaluationComponent.__disableProxy = {};
     this.__compiling = {};
     this.__recompiling = {};
@@ -160,12 +160,14 @@ export default class Component {
         this.recompiled();
       });
     }
-
-    this.__isCompiled = true;
+    
     this.__recompiling = null;
     this.__compiling = null;
 
-    return p.then(() => res);
+    return p.then(() => {
+      this.__isCompiled = true;
+      return res;
+    });
   }
 
   /**
@@ -178,9 +180,13 @@ export default class Component {
     if (this.__recompiling) {
       return Promise.resolve();
     }
-
+    
     this.attrs.onResolved && this.attrs.onResolved.trigger(undefined, { bubbles: false });
-    return Promise.resolve(this.resolved());
+
+    return Promise.resolve(this.resolved()).then(res => {
+      this.__isResolved = true;
+      return res;
+    });
   }
 
   /**
@@ -525,7 +531,7 @@ export default class Component {
         component.attrs[camelAttribute] = value;
         component.__disableAttributeSetter = false;
 
-        if (component.__isCompiled) {
+        if (component.__isMounted) {
           component.__attrTriggerByName(camelAttribute, value);
         }
       }
