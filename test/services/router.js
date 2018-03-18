@@ -1,3 +1,4 @@
+import Akili from '../../src/akili';
 import router, { Transition } from '../../src/services/router';
 import Component from '../../src/component';
 

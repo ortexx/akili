@@ -150,13 +150,13 @@ describe('request.js', () => {
       });
 
       it('should create cache', () => {
-        return request.get('ping', { cache: 1000 }).then((res) => {
+        return request.get('ping', { cache: 1000 }).then(() => {
           assert.lengthOf(Object.keys(request.__cache), 1);
         });
       });
 
       it('should create cache', () => {
-        return request.get('ping', { cache: 1000, params: { x: 1 } }).then((res) => {
+        return request.get('ping', { cache: 1000, params: { x: 1 } }).then(() => {
           assert.lengthOf(Object.keys(request.__cache), 2);
         });
       });

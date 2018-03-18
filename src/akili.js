@@ -260,7 +260,7 @@ Akili.createScopeName = function() {
  * @param {function} fn
  * @returns {*}
  */
-Akili.isolate = function(fn, component) { 
+Akili.isolate = function(fn) { 
   if (this.__isolation) {
     return fn();
   }
@@ -281,7 +281,6 @@ Akili.isolate = function(fn, component) {
 
   for (let i = 0, l = props.length; i < l; i++) {
     let prop = props[i];
-    let data = prop.component.__getBind(prop.keys);
 
     if (prop.isDeleted) {
       prop.component.__evaluateByKeys(prop.keys, undefined, true);
@@ -457,8 +456,9 @@ Akili.component = function(name, fn) {
   if (!fn) {
     return this.__components[name] || null;
   }
-
-  if (this.__components[name] && Akili.options.debug) {
+  
+  if (this.__components[name] && Akili.options.debug) {  
+    // eslint-disable-next-line no-console
     console.warn(`Component ${name} already was added`);
   }
 
@@ -488,6 +488,7 @@ Akili.alias = function(selector, componentName = '') {
   }
 
   if (this.__aliases[selector] && Akili.options.debug) {
+    // eslint-disable-next-line no-console
     console.warn(`Alias with selector ${selector} already was added`);
   }
 
@@ -725,7 +726,7 @@ Akili.init = function(root) {
       let body = doc.querySelector('body');
       this.__root.innerHTML = html;
 
-      for (var i = body.attributes.length - 1; i >= 0; i--) {
+      for (let i = body.attributes.length - 1; i >= 0; i--) {
         let attr = body.attributes[i];
         this.__root.setAttribute(attr.name, attr.value);
       }      

@@ -106,7 +106,7 @@ export class Request {
         let response = this.transformAfter(xhr);
 
         if ((xhr.status + '').match(options.statusErrorsPattern)) {
-          let err = new Error(`Request to "${url}" returns failure status code ${xhr.status}`);
+          let err = new Error(`Request to "${options.url}" returns failure status code ${xhr.status}`);
           err.response = response;
           return reject(err);
         } 
@@ -116,7 +116,7 @@ export class Request {
       };
 
       xhr.ontimeout = () => {
-        reject(new Error(`Request to "${url}" timed out`));
+        reject(new Error(`Request to "${options.url}" timed out`));
       };
 
       xhr.onerror = (err) => {

@@ -88,7 +88,7 @@ export default class If extends Component {
 
     return res;
   }
-};
+}
 
 /**
  * ElseIf component

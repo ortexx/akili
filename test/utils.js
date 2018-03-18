@@ -89,6 +89,7 @@ describe('utils.js', () => {
         assert.isOk(utils.compare('1', '1'), 'check string');
         assert.isOk(utils.compare(undefined, undefined), 'check undefined');
         assert.isOk(utils.compare(null, null), 'check null');
+        // eslint-disable-next-line no-unused-vars
         assert.isOk(utils.compare(function x(a) {}, function x(a) {}), 'check function');
         assert.isOk(utils.compare(new Date(), new Date()), 'check date');
         assert.isOk(utils.compare(['1', 2, null], ['1', 2, null]), 'check array');
@@ -103,6 +104,7 @@ describe('utils.js', () => {
         assert.isNotOk(utils.compare(undefined, null), 'check undefined');
         assert.isNotOk(utils.compare(null, {}), 'check null');
         assert.isNotOk(utils.compare(new Date(), new Date(new Date().getTime + 1)), 'check date');
+        // eslint-disable-next-line no-unused-vars
         assert.isNotOk(utils.compare(function x(a) {}, function y(a) {}), 'check function');
         assert.isNotOk(utils.compare(['1', 2, null], ['1', null, 2]), 'check array');
         assert.isNotOk(utils.compare({x: 1, y: 2}, {y: 2, x: 1, z: 3}), 'check object');
@@ -215,12 +217,12 @@ describe('utils.js', () => {
         });
 
         it('should cancel deletion', () => {
-          utils.deletePropertyByKeys(['x', 'c'], obj, val => false);
+          utils.deletePropertyByKeys(['x', 'c'], obj, () => false);
           assert.property(obj.x, 'c');
         });
 
         it('should not cancel deletion', () => {
-          utils.deletePropertyByKeys(['x', 'c'], obj, val => true);
+          utils.deletePropertyByKeys(['x', 'c'], obj, () => true);
           assert.notProperty(obj.x, 'c');
         });
       });

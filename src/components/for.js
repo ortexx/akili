@@ -137,6 +137,7 @@ export default class For extends Component {
   draw(data) {
     if (typeof data != 'object' || data === null) {
       if (Akili.options.debug) {
+        // eslint-disable-next-line no-console
         console.warn(`"For" component "in" attribute value type must be an object/array`);        
       }
 
@@ -164,7 +165,7 @@ export default class For extends Component {
       i--;
     }
   }
-};
+}
 
 export class Loop extends For {
   static matches = '';
@@ -217,7 +218,7 @@ export class Loop extends For {
     };
   }
 
-  iterate(index) {}
+  iterate() {}
 }
 
 For.Loop = Loop;

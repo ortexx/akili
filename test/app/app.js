@@ -22,4 +22,4 @@ export default class App extends Component {
   compiled() {
     this.recompiledCount++;
   }
-};
+}

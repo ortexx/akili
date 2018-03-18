@@ -100,7 +100,7 @@ export default class Radio extends For {
 
     return null;
   }
-};
+}
 
 /**
  * The radio item component

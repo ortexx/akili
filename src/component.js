@@ -926,7 +926,6 @@ export default class Component {
           let notBinding = false;
           let evaluated = !utils.hasPropertyByKeys(keys, this.__scope); 
           let component = this;
-          let excluded = false;
           let excArr = keys.slice();
 
           if(target instanceof Scope) {

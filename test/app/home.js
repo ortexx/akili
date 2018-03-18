@@ -51,4 +51,4 @@ export default class Home extends Component {
   removed() {
     this.wasRemoved = true;
   }
-};
+}

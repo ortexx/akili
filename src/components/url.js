@@ -1,5 +1,4 @@
 import Component from '../component.js';
-import Akili from '../akili.js';
 
 export default class Url extends Component {
   static matches = '[url]';

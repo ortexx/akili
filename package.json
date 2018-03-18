@@ -1,6 +1,6 @@
 {
   "name": "akili",
-  "version": "0.5.6",
+  "version": "0.5.7",
   "description": "Akili - javascript framework",
   "main": "./src/akili.js",
   "author": {
@@ -22,22 +22,25 @@
   "dependencies": {},
   "devDependencies": {
     "babel-core": "^6.26.0",
-    "babel-loader": "^7.1.2",
+    "babel-eslint": "^8.2.2",
+    "babel-loader": "^7.1.4",
     "babel-preset-env": "^1.6.1",
     "babel-preset-stage-2": "^6.24.1",
     "babel-preset-stage-3": "^6.24.1",
     "chai": "^4.1.2",
     "coveralls": "^3.0.0",
+    "eslint": "^4.19.0",
+    "eslint-loader": "^2.0.0",
     "istanbul-instrumenter-loader": "^3.0.0",
     "karma": "^2.0.0",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.2.0",
-    "karma-coverage-istanbul-reporter": "^1.4.1",
+    "karma-coverage-istanbul-reporter": "^1.4.2",
     "karma-mocha": "^1.3.0",
     "karma-mocha-reporter": "^2.2.5",
     "karma-sourcemap-loader": "^0.3.7",
-    "karma-webpack": "^2.0.9",
-    "mocha": "^5.0.1",
+    "karma-webpack": "^2.0.13",
+    "mocha": "^5.0.4",
     "webpack": "^3.0.0"
   },
   "repository": {

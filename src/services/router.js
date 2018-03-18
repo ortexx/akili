@@ -92,10 +92,11 @@ router.add = function (name, pattern, options = {}) {
     templateUrl: '',
     abstract: false,
     component: null,
-    handler: (transition) => {},
+    handler: () => {},
   };
 
   if(Akili.options.debug && options.component && (options.template || options.templateUrl)) {
+    // eslint-disable-next-line no-console
     console.warn(`Router state "${name}" must only have a component or template option`);
   } 
 
@@ -202,6 +203,7 @@ router.location = function(url, options = { reload: false }) {
   if (this.hashMode) {
     let current = window.location.hash.replace('#', '');
     window.location.hash = url;
+    // eslint-disable-next-line no-console
     current === url && this.changeState().catch((err) => console.error(err));
   }
   else {
@@ -220,11 +222,13 @@ router.init = function (defaultUrl = '', hashMode = true) {
 
   window.history.pushState = function() {
     let res = oldPushState.apply(this, arguments);
+    // eslint-disable-next-line no-console
     router.changeState().catch((err) => console.error(err));
     return res;
   };
 
   this.__onStateChangeHandler = () => {
+    // eslint-disable-next-line no-console
     this.changeState().catch((err) => console.error(err));
   };
 
@@ -270,6 +274,7 @@ router.init = function (defaultUrl = '', hashMode = true) {
   }
 
   if (!this.states.length && Akili.options.debug) {
+    // eslint-disable-next-line no-console
     console.warn(`You didn't add any routes to the router`);
   }
 
@@ -445,7 +450,7 @@ router.createStateUrl = function (state, params = {}, query = {}, hash = '') {
  * @returns {string}
  */
 router.splitSlashes = function (url) {
-  return url.replace(/[\/]+/g, '/');
+  return url.replace(/[/]+/g, '/');
 };
 
 /**
@@ -498,7 +503,7 @@ router.isActiveState = function(state, includes = false) {
 
   let url = this.splitSlashes(this.getUrl().split('?')[0] + '/');
   let urlPattern = state.fullPattern.replace(this.__paramRegex, '([^\\/]*)');
-  let str = includes? urlPattern: this.splitSlashes('^' + urlPattern + '\/$');
+  let str = includes? urlPattern: this.splitSlashes('^' + urlPattern + '/$');
   let regex = new RegExp(str);
 
   return regex.test(url);
@@ -699,6 +704,7 @@ router.changeState = function () {
         }
 
         if (Akili.options.debug) {
+          // eslint-disable-next-line no-console
           console.warn(`Not found a default route. You can pass it in "router.init(defaultUrl)" function`);
         }
       }

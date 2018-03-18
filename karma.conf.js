@@ -24,12 +24,18 @@ module.exports = function(config) {
       module: {
         rules: [
           {
+            enforce: "pre",
+            test: /\.js$/,
+            exclude: /node_modules/,
+            loader: 'eslint-loader'
+          },
+          {
             test: /\.js$/,
             include: [
               path.resolve('src')
             ],
             loader: 'istanbul-instrumenter-loader'
-          },
+          },          
           {
             test: /\.js$/,
             loader: 'babel-loader',
