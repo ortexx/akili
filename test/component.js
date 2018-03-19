@@ -747,6 +747,7 @@ describe('component.js', () => {
 
     describe('.remove()', () => {
       before(() => {
+        component.store('store', () => {});
         component.remove();
       });
 
@@ -760,6 +761,10 @@ describe('component.js', () => {
 
       it('should remove parent bindings', () => {
         assert.isNotOk(Object.keys(parentComponent.__bindings).length);
+      });
+
+      it('should remove all store links', () => {
+        assert.doesNotHaveAllKeys(Akili.__storeLinks, ['store']);
       });
     });
 
@@ -805,6 +810,25 @@ describe('component.js', () => {
           assert.doesNotHaveAllKeys(attr.__attrLinks, ['test']);
         });
       }); 
-    });    
+    });  
+    
+    describe('.cancel()', () => {
+      it('should not be compiled', () => { 
+        assert.isNull(Akili.root.child('cancel'));
+      });
+    });  
+
+    describe('.prevent()', () => {
+      let prevent, all;
+
+      before(() => {
+        all = Akili.root.child('all');
+        prevent = all.child('prevent');      
+      });
+
+      it('should prevent children compilation', () => {       
+        assert.lengthOf(prevent.children(), 0);
+      });
+    });  
   });
 });

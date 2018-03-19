@@ -39,9 +39,9 @@ export default class Radio extends For {
   }
 
   resolved() {
-    this.attr('in', () => this.setNames(this.attrs.name));   
+    this.attr('in', this.setNames, { callOnStart: false });   
     this.attr('value', this.setValue); 
-    this.attr('name', this.setNames, { callOnStart: false });
+    this.attr('name', this.setNames);
     return super.resolved.apply(this, arguments);
   }
 

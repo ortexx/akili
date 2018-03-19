@@ -5,6 +5,14 @@ export default class All extends Component {
     super(...args);
 
     this.el.innerHTML += `
+      <cancel></cancel>
+      <prevent>
+        <if is="true"></if>
+        <input/>        
+      </prevent>
+    `;
+
+    this.el.innerHTML += `
       <attr 
         test="\${this.cAttr}" 
         on-test="\${this.cAttrEvent = event.detail}"
@@ -25,6 +33,7 @@ export default class All extends Component {
     
     this.el.innerHTML += `
       <for in="\${this.cForData}">\${this.loopKey}=\${this.loopValue}</for>
+      <for in="\${this.cForData}"><div component="loop">\${this.loopKey}=\${this.loopValue}</div></for>
       <ul in="\${this.cForData}"><li>\${this.loopKey}=\${this.loopValue}</li></ul>
     `;
 
@@ -32,7 +41,8 @@ export default class All extends Component {
       <input 
         value="\${this.cInputValue}" 
         focus="\${this.cInputFocus}"
-        on-input="\${this.cInputValue = event.target.value}"
+        debounce="100"
+        on-debounce="\${this.cInputValue = event.target.value}"
       />
       <textarea 
         value="\${this.cTextareaValue}" 
@@ -63,7 +73,7 @@ export default class All extends Component {
         on-radio="\${this.cRadioValue = event.detail}"
       >
         <radio-button value="radio-1"></radio-button>
-        <radio-button value="radio-2"></radio-button>
+        <input type="radio" value="radio-2"/>
       </radio>
     `
   }

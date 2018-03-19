@@ -44,7 +44,6 @@ export default class A extends Component {
     this.attr('query', this.setQuery);
     this.attr('hash', this.setHash);
     this.attr('options', this.setOptions);
-    this.attr('reload', this.setReload);
     this.attr('url', this.setUrl);
     this.attr('state', this.resetHref, { callOnStart: false });
     this.attr('params', this.resetHref, { callOnStart: false });
@@ -102,10 +101,6 @@ export default class A extends Component {
     }
 
     this.options = options;
-  }
-
-  setReload(val) {
-    this.options.reload = val;
   }
 
   getState(name) {

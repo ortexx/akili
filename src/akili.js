@@ -216,7 +216,6 @@ Akili.getAkiliParents = function (el, tree = true) {
   }
 
   check(el);
-
   return tree? arr: arr[0];
 };
 
@@ -393,9 +392,13 @@ Akili.initialize = function(el, options = {}) {
     return;
   }
 
-  component = new _Component(el, {});
-
+  component = new _Component(el, {});  
+  
   if (component.__cancelled) {
+    return;
+  }
+
+  if(Akili.getAkiliParents(el).find(p => p.__akili.__prevent)) {
     return;
   }
 

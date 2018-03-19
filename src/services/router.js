@@ -17,7 +17,7 @@ export class Transition {
   }
 
   redirect() {
-    this.cancel();
+    this.cancel();    
     router.state.apply(router, arguments);
   }
 
@@ -155,7 +155,7 @@ router.has = function(name) {
  */
 router.state = function (name, params = {}, query = {}, hash = '', options = {}) {
   let state = this.getState(name);
-
+  
   if (!state) {
     throw new Error(`Not found route state with name ${name}`);
   }
@@ -165,7 +165,7 @@ router.state = function (name, params = {}, query = {}, hash = '', options = {})
   if (!options.reload && url === this.getUrl()) {
     return;
   }
-
+  
   this.__options = options;
   this.setUrl(url);
 };
@@ -424,10 +424,8 @@ router.getHashUrlQuery = function() {
 router.createStateUrl = function (state, params = {}, query = {}, hash = '') {
   typeof state !== 'object' && (state = this.getState(state));
 
-  let url = state.fullPattern.replace(this.__paramRegex, (m, f, v) => {
-    return params[v] || '';
-  });
-
+  let url = state.fullPattern.replace(this.__paramRegex, (m, f, v) => params[v] || '');
+  url = url.replace(/^\^/, '');
   url = this.splitSlashes(url);
 
   if (Object.keys(query).length) {
@@ -472,7 +470,6 @@ router.getPatternContent = function (state, url) {
 
   let urlPattern = state.fullPattern.replace(this.__paramRegex, (m, f, v) => {
     keys.push(v);
-
     return '([^\\/]*)';
   });
 
@@ -500,12 +497,10 @@ router.getPatternContent = function (state, url) {
  */
 router.isActiveState = function(state, includes = false) {
   typeof state !== 'object' && (state = this.getState(state));
-
   let url = this.splitSlashes(this.getUrl().split('?')[0] + '/');
   let urlPattern = state.fullPattern.replace(this.__paramRegex, '([^\\/]*)');
   let str = includes? urlPattern: this.splitSlashes('^' + urlPattern + '/$');
-  let regex = new RegExp(str);
-
+  let regex = new RegExp(str);  
   return regex.test(url);
 };
 
@@ -609,7 +604,7 @@ router.isolate = function(fn) {
 /**
  * Change state
  */
-router.changeState = function () {  
+router.changeState = function () {    
   if(this.__isolated) {
     return Promise.resolve();
   }
@@ -625,10 +620,10 @@ router.changeState = function () {
   let prevTransition = router.transition || null;
   let transition = router.transition = new Transition(url, query, hash, prevTransition);
   let level = 0;
-
+ 
   window.dispatchEvent(new CustomEvent('state-change', { detail: transition }));
 
-  const next = (states, onEnd) => {
+  const next = (states, onEnd) => {    
     if (!states.length) {
       return onEnd && onEnd();
     }
@@ -645,16 +640,16 @@ router.changeState = function () {
 
     if (!route && !state.abstract) {
       throw new Error (`Not found route component for state "${state.name}"`);
-    }
+    }    
 
     transition.setPath({ state, params, query, hash, component: route, loaded: true });
     level++;
 
     let hasState = prevTransition && prevTransition.hasState(state);
     let isDifferent = true;
-
+     
     if (hasState) {
-      let route = prevTransition.getRoute(state);
+      let route = prevTransition.getRoute(state);      
       let prev = { params: route.params, query: route.query, hash: route.hash };
       let current = { params, query, hash };
       isDifferent = !utils.compare(prev, current);
@@ -662,11 +657,11 @@ router.changeState = function () {
 
     transition.path.loaded = isDifferent && this.__options.reload !== false;
     
-    Promise.resolve(transition.path.loaded? state.handler(transition): transition.path.data).then((data) => {
+    Promise.resolve(transition.path.loaded? state.handler(transition): transition.path.data).then((data) => {  
       if (transition.__cancelled) {
         return onEnd && onEnd();
       }
-
+      
       transition.path.data = data;
       state.title && (document.title = typeof state.title == 'function'? state.title(transition): state.title);
 
@@ -718,8 +713,7 @@ router.changeState = function () {
 
       if (prevTransition) {
         for (let i = level, l = prevTransition.routes.length; i < l; i++) {
-          let route = prevTransition.routes[i];
-          
+          let route = prevTransition.routes[i];          
           route.component && route.component.empty();
         }
       }

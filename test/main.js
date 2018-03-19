@@ -7,4 +7,6 @@ import './component.js';
 import './akili.js';
 import './event-emitter.js';
 import './components.js';
+import './components/a.js';
+import './components/include.js';
 import './app/end.js';

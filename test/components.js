@@ -10,7 +10,7 @@ describe('components/', () => {
     component = elements.all.__akili;
   });
 
-  describe('if.js', () => {
+  describe('If', () => {
     let _if, _elseIfOne, _elseIfTwo, _else;
 
     before(() => {
@@ -57,7 +57,7 @@ describe('components/', () => {
     });
   });
 
-  describe('for.js', () => {
+  describe('For, Loop', () => {
     let _for, _ul;
 
     before(() => {
@@ -93,7 +93,7 @@ describe('components/', () => {
     });
   });
 
-  describe('include.js', () => {
+  describe('Include', () => {
     it('should load a template', (done) => {
       let include = document.createElement('include');
 
@@ -111,7 +111,7 @@ describe('components/', () => {
     });
   });
 
-  describe('text.js,input.js,textarea.js,content.js', () => {
+  describe('Text, Input, Textarea, Content', () => {
     describe('text input manipulations', () => {
       let input;
 
@@ -124,10 +124,19 @@ describe('components/', () => {
         assert.equal(input.el.value, '1');
       });
 
-      it('should change scope input value', () => {
+      it('should change scope input value with debounce', (done) => {
+        const fn = () => {
+          assert.equal(component.scope.cInputValue, '21');
+          input.el.removeEventListener('debounce', fn);
+          done();
+        }
+
         input.el.value = '2';
         input.el.dispatchEvent(new Event('input'));
-        assert.equal(component.scope.cInputValue, '2');
+        assert.equal(component.scope.cInputValue, '1');
+        input.el.value += '1';
+        input.el.dispatchEvent(new Event('input'));
+        input.el.addEventListener('debounce', fn);        
       });
 
       it('should not be focused', () => {
@@ -137,6 +146,10 @@ describe('components/', () => {
       it('should be focused', () => {
         component.scope.cInputFocus = true;
         assert.strictEqual(input.el, document.activeElement);
+      });
+
+      it('should be removed', () => {
+        input.remove();
       });
     });
 
@@ -269,7 +282,7 @@ describe('components/', () => {
     });
   });
 
-  describe('url.js', 'object.js', () => {
+  describe('Url', 'Object', () => {
     let object;
 
     before(() => {
@@ -282,7 +295,7 @@ describe('components/', () => {
     });
   });
 
-  describe('route.js,a.js', () => {
+  describe('Route, A', () => {
     function onStateChange(callback) {
       let fn = (e) => {
         window.removeEventListener('state-changed', fn);

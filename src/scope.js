@@ -17,10 +17,6 @@ export default class Scope {
     el.setAttribute('scope', name);
   }
 
-  get __utils() {
-    return utils;
-  }
-
   /**
    * Set a scope value
    * @param {string|string[]} keys

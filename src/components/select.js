@@ -75,14 +75,6 @@ export default class Select extends For {
     return el;
   }
 
-  inContent(value) {
-    if (!this.isMultiple) {
-      return this.el.content === value;
-    }
-
-    return this.el.content.indexOf(value) != -1;
-  }
-
   getContent() {
     if (!this.isMultiple) {
       return this.el.value;

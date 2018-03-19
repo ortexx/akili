@@ -24,11 +24,11 @@ export default class Input extends Text {
         this.setChecked(this.el.checked, false);
       });
     }
-    else {
-      this.el.addEventListener('input', () => {
+    else if(this.el.hasAttribute('on-debounce')) {
+      this.el.addEventListener('input', () => {        
         this.debounceTimeout && clearTimeout(this.debounceTimeout);
         this.debounceTimeout = setTimeout(() => {
-          this.attrs.onDebounce.trigger(undefined, { bubbles: true })
+          this.attrs.onDebounce.trigger(undefined, { bubbles: true });
         }, this.debounceInterval);
       });
     }
@@ -49,7 +49,7 @@ export default class Input extends Text {
   }
 
   setDebounce(interval) {
-    this.debounceInterval = interval;
+    this.debounceInterval = +interval;
   }
 
   setChecked(value, trigger = true) {

@@ -21,14 +21,14 @@ export default class Include extends Component {
 
   compiled() {
     this.attr('cache', this.setCache);
-    return this.attr('url', this.getTemplate);
+    return this.attr('url', this.setTemplate);
   }
 
   setCache(cache) {
     this.cache = cache;
   }
 
-  getTemplate(url) {
+  setTemplate(url) {
     this.connection && this.connection.abort();
 
     return request.get(url, {

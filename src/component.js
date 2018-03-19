@@ -95,13 +95,12 @@ export default class Component {
    * @protected
    */
   __create() {
-    this.el.__akili = this;
     this.__initialize();
     this.__setEvents();
     this.__setParents();
     this.__setBooleanAttributes();
     this.__defineAttributes();
-    Akili.isolate(() => this.created(this.attrs));
+    Akili.isolate(() => this.created(this.attrs));       
   }
 
   /**
@@ -194,11 +193,12 @@ export default class Component {
    *
    * @protected
    */
-  __initialize() {
-    let parent = Akili.getAkiliParents(this.el, false);
+  __initialize() {    
+    let parent = Akili.getAkiliParents(this.el, false);     
     let Scope = this.constructor.scope || Akili.Scope;
     let scope;
     let isRoot = Akili.__root === this.el;
+    this.el.__akili = this;
 
     if (parent) {
       scope = new Scope(this.el.getAttribute('scope') || Akili.createScopeName(), this.el, this);
@@ -230,6 +230,7 @@ export default class Component {
 
     Akili.addScope(scope);
     this.scope = this.__nestedObserve(_scope, []);
+    return true;
   }
 
   /**

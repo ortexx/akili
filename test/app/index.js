@@ -3,6 +3,8 @@ import App from './app';
 import { SectionOne, SectionTwo, SectionOneOne, SectionEmpty } from './sections';
 import Abstract from './abstract';
 import Attribute from './attribute';
+import Prevent from './prevent';
+import Cancel from './cancel';
 import All from './all';
 import elements from './elements';
 
@@ -25,6 +27,8 @@ elements.app.appendChild(elements.sectionTwo);
 elements.sectionOne.appendChild(elements.sectionOneOne);
 
 Akili.component('attr', Attribute);
+Akili.component('cancel', Cancel);
+Akili.component('prevent', Prevent);
 Akili.component('app', App);
 Akili.component('abstract', Abstract);
 Akili.component('section-one', SectionOne);

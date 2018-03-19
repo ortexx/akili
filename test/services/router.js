@@ -12,42 +12,66 @@ class RouterComponent extends Component {
 
 describe('router.js', () => {
   describe('router', () => {
-    function onStateChange(callback) {
-      let fn = (e) => {
+    function onStateChange(callback, event = 'popstate') {
+      const fn = (e) => {
         callback(e);
-        window.removeEventListener('popstate', fn);
+        window.removeEventListener(event, fn);
       };
 
-      window.addEventListener('popstate', fn);
+      window.addEventListener(event, fn);
     }
 
     let indexHref;
-    let routeOptions = {};
+    let routeOptions;
 
     before(() => {      
       RouterComponent.define();
       indexHref = location.href;
-      routeOptions["1"] = {
-        templateUrl: "router-1.html"
-      };
-      routeOptions["1-1"] = {
-        templateUrl: "router-1-1.html"
-      };
-      routeOptions["1-2"] = {
-        templateUrl: "router-1-2.html"
-      };
-      routeOptions["2"] = {
-        component: RouterComponent
-      };
+
+      routeOptions = [
+        {
+          state: '1',
+          pattern: '^/1',
+          templateUrl: "router-1.html"
+        },
+        {
+          state: '1.1',
+          pattern: '/1-1',
+          templateUrl: "router-1-1.html"
+        },
+        {
+          state: '1.2',
+          pattern: '/1-2',
+          templateUrl: "router-1-2.html"
+        },
+        {
+          state: '2',
+          pattern: '^/2',
+          component: RouterComponent
+        },
+        {
+          state: '3',
+          pattern: '^/3',
+          handler: transition => {
+            if(transition.path.query.type == 1) {
+              transition.redirect('4');
+            }
+            else if(transition.path.query.type == 2) {
+              transition.cancel();
+            }
+          }
+        },
+        {
+          state: '4',
+          pattern: '^/4',
+        }
+      ];
     });
 
     describe('.add()', () => {
       it('should add new state', () => {
         router.add('x', '/x/:id');
-        router.add({ state: '1', pattern: '/1', ...routeOptions["1"] });
-        router.add('1.1', '/1-1', routeOptions["1-1"]);
-        router.add('1.2', '/1-2', routeOptions["1-2"]);
-        router.add('2', '/2', routeOptions["2"]);
+        routeOptions.forEach((route) => router.add(route));
         assert.equal(router.states[0].name, 'x');
       });
     });
@@ -119,7 +143,7 @@ describe('router.js', () => {
 
     describe('.getStatesByLevel()', () => {
       it('should return 0 level', () => {
-        assert.lengthOf(router.getStatesByLevel(0), 3);
+        assert.lengthOf(router.getStatesByLevel(0), 5);
       });
 
       it('should return 1 level', () => {
@@ -197,6 +221,17 @@ describe('router.js', () => {
       it('should isolate the code', () => {
         router.isolate(() => window.history.pushState(null, '', `/f/a/k/e`));
         assert.equal(location.pathname + location.search, '/f/a/k/e');
+      });
+    });
+
+    describe('Transition.prototype.redirect()', () => {
+      it('should redirect', (done) => {
+        onStateChange(() => {
+          assert.equal(location.pathname + location.search, '/4');
+          done();
+        }, 'state-changed');
+
+        router.state('3', {},  { type: 1 });       
       });
     });
   });
