@@ -13,6 +13,18 @@ export default class All extends Component {
     `;
 
     this.el.innerHTML += `
+      <a 
+        url="/"
+        on-compiled="\${ this.compiled = true }"
+        on-recompiled="\${ this.recompiled = true }"
+        on-resolved="\${ this.resolved = true }"
+        on-removed="\${ this.removed = true }"
+      >
+        location link
+      </a>
+    `;
+
+    this.el.innerHTML += `
       <attr 
         test="\${this.cAttr}" 
         on-test="\${this.cAttrEvent = event.detail}"
@@ -33,7 +45,11 @@ export default class All extends Component {
     
     this.el.innerHTML += `
       <for in="\${this.cForData}">\${this.loopKey}=\${this.loopValue}</for>
-      <for in="\${this.cForData}"><div component="loop">\${this.loopKey}=\${this.loopValue}</div></for>
+      <for in="\${this.cForData}">
+        <div component="loop" in="\${[1]}">
+          \${this.loopKey}=\${this.loopValue}
+        </div>
+      </for>
       <ul in="\${this.cForData}"><li>\${this.loopKey}=\${this.loopValue}</li></ul>
     `;
 
@@ -52,6 +68,7 @@ export default class All extends Component {
         focus="true"
         value="\${this.cContentValue}" 
         on-input="\${this.cContentValue = event.target.innerHTML}"></content>
+      <div contenteditable></div>
       <input type="checkbox" checked="\${this.cCheckboxChecker}"/>
     `;
 

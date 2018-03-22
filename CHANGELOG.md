@@ -1,3 +1,15 @@
+# 0.6.x (March 22, 2018)
+
+* improved router initialization
+* improved an error catching in templates
+* improved __deinit__ functions
+* improved __utils.filter__
+* added request cache system
+* added a lot of tests
+* added __eslint__
+* changed server rendering approach
+* sped up the loops
+
 # 0.5.x (March 12, 2018)
 
 * changed attributes binding system

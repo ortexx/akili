@@ -109,7 +109,6 @@ router.add = function (name, pattern, options = {}) {
   }
 
   this.setState(name, pattern, {...defaultOptions, ...options});
-
   return this;
 };
 
@@ -241,36 +240,8 @@ router.init = function (defaultUrl = '', hashMode = true) {
     return a - b;
   });
 
-  let states = {};
-
   for (let i = 0, l = this.states.length; i < l; i++) {
-    let state = this.states[i];
-    let parents = [];
-
-    states[state.name] = state;
-    state.children = [];
-    parents = state.name.split('.');
-    parents.pop();
-    state.level = state.abstract? null: parents.length;
-
-    if (parents.length) {
-      let parentName = parents.join('.');
-      let parent = states[parentName];
-
-      if (!parent) {
-        throw new Error(`Not found parent route state "${parentName}" for "${state.name}"`)
-      }
-
-      if (state.level !== null && parent.abstract) {
-        state.level--;
-      }
-
-      state.fullPattern = this.splitSlashes(parent.fullPattern + '/' + state.pattern);
-      parent.children.push(state);
-    }
-    else {
-      state.fullPattern = state.pattern;
-    }
+    this.initState(this.states[i]);
   }
 
   if (!this.states.length && Akili.options.debug) {
@@ -281,6 +252,38 @@ router.init = function (defaultUrl = '', hashMode = true) {
   window.addEventListener('popstate', this.__onStateChangeHandler);
   this.__init = true;
 };
+
+/**
+ * Initialize the state 
+ * 
+ * @param {object} state 
+ */
+router.initState = function (state) {
+  let parents = [];
+  state.children = [];
+  parents = state.name.split('.');
+  parents.pop();
+  state.level = state.abstract? null: parents.length;
+
+  if (parents.length) {
+    let parentName = parents.join('.');
+    let parent = this.getState(parentName);
+
+    if (!parent) {
+      throw new Error(`Not found parent route state "${parentName}" for "${state.name}"`)
+    }
+
+    if (state.level !== null && parent.abstract) {
+      state.level--;
+    }
+
+    state.fullPattern = this.splitSlashes(parent.fullPattern + '/' + state.pattern);
+    parent.children.push(state);
+  }
+  else {
+    state.fullPattern = state.pattern;
+  }
+}
 
 /**
  * Get state by name
@@ -309,9 +312,8 @@ router.getState = function (name) {
  */
 router.setState = function (name, pattern, options = {}) {
   let state = {...options, name, pattern};
-
-  router.states.push(state);
-
+  this.states.push(state);
+  this.__init && this.initState(state);
   return state;
 };
 

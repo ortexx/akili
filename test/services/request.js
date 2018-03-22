@@ -35,6 +35,7 @@ XMLHttpRequest.prototype.send = function() {
   else if(
     this.requestURL == 'ping' || 
     this.requestURL == 'ping?x=1' ||
+    this.requestURL == 'form' ||
     (this.requestMethod == 'GET' && this.requestURL == 'get') ||
     (this.requestMethod == 'POST' && this.requestURL == 'post') ||
     (this.requestMethod == 'PUT' && this.requestURL == 'put') ||
@@ -134,6 +135,12 @@ describe('request.js', () => {
       it('should make JSON request', () => {
         return request.get('json', { json: { id: 1 } }).then((res) => {
           assert.equal(JSON.stringify(res.data), JSON.stringify({ success: true }));
+        });
+      });
+
+      it('should make request with form', () => {
+        return request.get('form', { form: { id: 1, file: new Blob([1, 0]) } }).then((res) => {
+          assert.equal(res.data, 'ok');
         });
       });
 

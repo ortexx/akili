@@ -189,7 +189,10 @@ export class Loop extends For {
     this.setIndex(true);
     this.setKey(true);
     this.setValue(true);
-    this.isFor && super.created.apply(this, arguments);
+
+    if(this.isFor) {
+      return super.created.apply(this, arguments);
+    }
   }
 
   compiled() {

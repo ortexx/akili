@@ -30,7 +30,7 @@ export default class EventEmitter {
    * @param {boolean} [force]
    * @returns {Promise}
    */
-  dispatch(_Event, options = { bubbles: true }, force = false) {
+  dispatch(_Event, options = {}, force = false) {
     if (force || !this.inEvaluating()) {
       this.el.dispatchEvent(new _Event(this.name, this.prepareOptions(options)));
     }

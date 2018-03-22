@@ -326,7 +326,7 @@ export default class Component {
   /**
    * Add child element to the list
    *
-   * @param {HTMLElement} el
+   * @param {Element} el
    * @protected
    */
   __addChild(el) {
@@ -336,7 +336,7 @@ export default class Component {
   /**
    * Splice child from the list
    *
-   * @param {HTMLElement} el
+   * @param {Element} el
    * @protected
    */
   __spliceChild(el) {
@@ -441,7 +441,15 @@ export default class Component {
         evaluate = this.constructor.parse(this.__evaluationComponent.scope, parseValue);
       }
       catch (err) {
-        throw err;
+        let tagName = node.__component.el.tagName;
+        let attrName = node.__component.el.getAttribute('component');
+        let componentName = (attrName || tagName).toLowerCase();
+        let elementName = node.__element.tagName.toLowerCase();
+        let attributeName = (node instanceof window.Attr)? node.name.toLowerCase(): '';        
+        let messages =  [ err.message, node.__expression.trim() ];
+        attributeName && messages.push(`[attribute ${attributeName}]`);
+        messages = messages.concat([ `[element ${elementName}]`, `[component ${componentName}]` ]);
+        throw `Expression error: ` + messages.join('\n\tat ');
       }
 
       if(Akili.__evaluation) {
@@ -679,7 +687,7 @@ export default class Component {
    * Evaluate event expression
    *
    * @param {Node} node
-   * @param {HTMLElement} el
+   * @param {Element} el
    * @param {Event} e
    * @protected
    */
@@ -724,7 +732,7 @@ export default class Component {
    * Attribute node initializing
    *
    * @param {Node} node
-   * @param {HTMLElement} el
+   * @param {Element} el
    * @param {Component} attributeOf - if node is linked with parent scope
    * @protected
    */
@@ -775,7 +783,7 @@ export default class Component {
    * Initialize the node
    *
    * @param {Node} node
-   * @param {HTMLElement} el
+   * @param {Element} el
    * @returns {boolean}
    * @protected
    */
@@ -800,7 +808,7 @@ export default class Component {
   /**
    * Interpolate attributes of the element
    *
-   * @param {HTMLElement} el
+   * @param {Element} el
    * @param {Component} [attributeOf=null] - if node is linked with parent scope
    * @protected
    */
@@ -2262,7 +2270,7 @@ export default class Component {
   /**
    * Change element parent
    *
-   * @param {HTMLElement} parent
+   * @param {Element} parent
    */
   appendTo(parent) {
     parent.appendChild(this.el);

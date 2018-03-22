@@ -43,7 +43,7 @@ describe('component.js', () => {
           assert.isArray(component.__parents, 'check parents existent');
           assert.strictEqual(component.__parents[0], elements.abstract, 'check first parent');
           assert.strictEqual(component.__parents[1], elements.app, 'check second parent');
-          assert.strictEqual(component.__parents[2], document.body, 'check root parent');
+          assert.strictEqual(component.__parents[2], Akili.__root, 'check root parent');
         });
 
         it('should has evaluate parent', () => {
@@ -283,7 +283,7 @@ describe('component.js', () => {
       });
     });
 
-    describe('.__evaluateEvent', () => {
+    describe('.__evaluateEvent()', () => {
       let el;
 
       before(() => {
@@ -296,7 +296,7 @@ describe('component.js', () => {
       });
     });
 
-    describe('.__clearEmptyBindings', () => {
+    describe('.__clearEmptyBindings()', () => {
       it('should clear empty bindings', () => {
         let obj = {
           data: {
@@ -590,7 +590,7 @@ describe('component.js', () => {
       });
 
       it('should return by selector', () => {
-        assert.strictEqual(component.parent('body').el, document.body);
+        assert.strictEqual(component.parent('[scope=root]').el, Akili.__root);
       });
 
       it('should return null', () => {
@@ -604,11 +604,11 @@ describe('component.js', () => {
 
         assert.strictEqual(parents.length, 2, 'check count');
         assert.strictEqual(parents[0].el, elements.sectionEmpty, 'check nearest');
-        assert.strictEqual(parents[1].el, document.body, 'check body');
+        assert.strictEqual(parents[1].el, Akili.__root, 'check root');
       });
 
       it('should return only one parent in the list', () => {
-        assert.strictEqual(component.parents('body')[0].el, document.body);
+        assert.strictEqual(component.parents('[scope=root]')[0].el, Akili.__root);
       });
 
       it('should return empty array', () => {
@@ -620,11 +620,11 @@ describe('component.js', () => {
 
     describe('.child()', () => {
       it('should return nearest child', () => {
-        assert.strictEqual(document.body.__akili.child().el, elements.app);
+        assert.strictEqual(Akili.root.child().el, elements.app);
       });
 
       it('should return by selector', () => {
-        assert.strictEqual(document.body.__akili.child('section-one').el, elements.sectionOne);
+        assert.strictEqual(Akili.root.child('section-one').el, elements.sectionOne);
       });
 
       it('should return null', () => {
@@ -778,6 +778,10 @@ describe('component.js', () => {
       });
 
       describe('.attr()', () => {
+        it('should throw an error', () => {          
+          assert.throws(() => attr.attr('test'));
+        });
+
         it('should create the link by a scope property', () => {  
           attr.attr('test', 'test');            
           assert.equal(attr.__attrLinks['test'][0].keyString, 'test');
@@ -804,6 +808,10 @@ describe('component.js', () => {
       });  
     
       describe('.unattr()', () => {
+        it('should throw an error', () => {          
+          assert.throws(() => attr.unattr('test'));
+        });
+
         it('should remove all links', () => {
           attr.unattr('test', 'test');
           attr.unattr('test', fn);
@@ -829,6 +837,14 @@ describe('component.js', () => {
       it('should prevent children compilation', () => {       
         assert.lengthOf(prevent.children(), 0);
       });
-    });  
+    });
+    
+    describe('set nonexistend nested scope value()', () => {
+      it('should create parent object for the  key', () => {   
+        component.scope.__set(['unex', 'key'], 1)    
+        assert.isObject(component.scope.unex, 'check an object');
+        assert.equal(component.scope.unex.key, 1, 'check the key');
+      });
+    });
   });
 });

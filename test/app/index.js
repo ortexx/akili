@@ -1,3 +1,4 @@
+import { assert } from 'chai';
 import Akili from '../../src/akili.js';
 import App from './app';
 import { SectionOne, SectionTwo, SectionOneOne, SectionEmpty } from './sections';
@@ -8,6 +9,7 @@ import Cancel from './cancel';
 import All from './all';
 import elements from './elements';
 
+elements.root = document.createElement('root');
 elements.home = document.createElement('home');
 elements.app = document.createElement('app');
 elements.abstract = document.createElement('abstract');
@@ -18,13 +20,7 @@ elements.sectionEmpty = document.createElement('section-empty');
 elements.all = document.createElement('all');
 elements.forCompile = document.createElement('for-compile');
 
-document.body.appendChild(elements.app);
-document.body.appendChild(elements.sectionEmpty);
-document.body.appendChild(elements.all);
-elements.app.appendChild(elements.abstract);
-elements.app.appendChild(elements.sectionOne);
-elements.app.appendChild(elements.sectionTwo);
-elements.sectionOne.appendChild(elements.sectionOneOne);
+document.body.appendChild(elements.root);
 
 Akili.component('attr', Attribute);
 Akili.component('cancel', Cancel);
@@ -40,7 +36,23 @@ Akili.component('all', All);
 Akili.options.debug = false;
 
 describe('Application initialization', () => {
+  it('should not be initialized', () => {
+    assert.throws(() => Akili.init(document.documentElement), '',  'by html element');
+    assert.throws(() => Akili.init({}), '',  'by non-element');
+  }); 
+
   it('should be initialized', () => {
-    return Akili.init(document.body);
+    window.AKILI_SERVER = { html: elements.root.outerHTML };   
+
+    return Akili.init(elements.root).then(() => {
+      elements.root.appendChild(elements.app);
+      elements.root.appendChild(elements.sectionEmpty);
+      elements.root.appendChild(elements.all);
+      elements.app.appendChild(elements.abstract);
+      elements.app.appendChild(elements.sectionOne);
+      elements.app.appendChild(elements.sectionTwo);
+      elements.sectionOne.appendChild(elements.sectionOneOne);      
+      Akili.compile(elements.root);
+    });
   });  
 });

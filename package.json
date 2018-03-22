@@ -1,6 +1,6 @@
 {
   "name": "akili",
-  "version": "0.5.8",
+  "version": "0.6.0",
   "description": "Akili - javascript framework",
   "main": "./src/akili.js",
   "author": {
@@ -11,7 +11,8 @@
   "scripts": {
     "start": "webpack",
     "build": "BUILD=true MINIMIZE=true webpack",
-    "test": "karma start"
+    "test": "karma start",
+    "eslint": "eslint src test"
   },
   "keywords": [
     "akili",

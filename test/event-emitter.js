@@ -80,14 +80,14 @@ describe('event-emitter.js', () => {
 
     describe('.trigger()', () => {
       it('should trigger the event', () => {
-        emitter.trigger(1, {});
+        emitter.trigger(1, {}, false);
         assert.equal(counter, 1);
       });
     });
 
     describe('.dispatch()', () => {
       it('should dispatch the event', () => {
-        emitter.dispatch(Event, {});
+        emitter.dispatch(Event, {}, true);
         assert.equal(counter, 2);
       });
     });

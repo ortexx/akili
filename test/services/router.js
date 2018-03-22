@@ -32,7 +32,8 @@ describe('router.js', () => {
         {
           state: '1',
           pattern: '^/1',
-          templateUrl: "router-1.html"
+          templateUrl: "router-1.html",
+          title: 'Router title'
         },
         {
           state: '1.1',
@@ -74,11 +75,23 @@ describe('router.js', () => {
         routeOptions.forEach((route) => router.add(route));
         assert.equal(router.states[0].name, 'x');
       });
+
+      it('should not add an empty state', () => {
+        assert.throws(() => router.add('', '/empty'));
+      });      
+
+      it('should not add an existent state', () => {
+        assert.throws(() => router.add('x', '/x2'));
+      });
     });
 
     describe('.init()', () => {
       it('should initialize router', () => {
         router.init('', false);
+      });
+
+      it('should not add state with wrong parent after the initializtion', () => {
+        assert.throws(() => router.add('noparent.x', '/noparent'));
       });
     });
 
@@ -165,6 +178,10 @@ describe('router.js', () => {
         assert.equal(location.pathname + location.search, '/x/1?y=2');
       });
 
+      it('should not change the state with nonexistent state', () => {
+        assert.throws(() => router.state('y'));
+      });
+
       it('should has transition', () => {
         assert.instanceOf(router.transition, Transition);
       });
@@ -232,6 +249,44 @@ describe('router.js', () => {
         }, 'state-changed');
 
         router.state('3', {},  { type: 1 });       
+      });
+    });
+
+    describe('wrong url', () => {
+      it('should set the default url', (done) => {   
+        router.defaultUrl = '/3';  
+
+        onStateChange(() => {
+          assert.equal(location.pathname + location.search, '/3');
+          done();
+        }, 'state-changed'); 
+
+        window.history.pushState(null, '', `/f/a/k/e`);
+      });
+    });
+
+    describe('enable hash mode', () => {
+      before(() => {
+        router.hashMode = true;
+      });
+
+      after(() => {
+        router.hashMode = false;
+        window.location.hash = '';
+      });
+
+      describe('.state()', () => {
+        it('should change the state', () => { 
+          router.state('4');
+          assert.equal(location.hash, '#/4');
+        });
+      });
+
+      describe('.location()', () => {
+        it('should change url', () => { 
+          router.state('3');
+          assert.equal(location.hash, '#/3');
+        });
       });
     });
   });

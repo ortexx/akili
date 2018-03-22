@@ -38,6 +38,7 @@ describe('utils.js', () => {
     describe('.split()', () => {
       let opts = [
         { val: 'string', res: ["s", "t", "r", "i", "n", "g"] },
+        { val: 'Hello World', res: ["Hello", "World"], del: /\s+/ },
         { val: 'Hello World', res: ["Hello", "World"], del: ' ' },
         { 
           val: `x = 5; y = "1;2;3"; z = '4;5;6'`, 
@@ -56,17 +57,29 @@ describe('utils.js', () => {
       it('should be equal but difference', () => {
         let obj = { key: 1, obj: utils.Component };
         let arr = ['1', '2'];
-
         assert.equal(JSON.stringify(utils.copy(obj)), JSON.stringify(obj), 'check object');
         assert.equal(JSON.stringify(utils.copy(arr)), JSON.stringify(arr), 'check array');
         assert.equal(utils.copy(1), 1, 'check primitive');
         assert.notStrictEqual(utils.copy(obj), obj, 'check difference');
       });
 
-      it('should be copied only root level', () => {
+      it('should copy only root level', () => {
         let obj = { key: 1, obj: {} };
-
         assert.strictEqual(utils.copy(obj, { nested: false }).obj, obj.obj);
+      });
+
+      it('should not copy non-enumerable values', () => {
+        let obj = { key: 1 };
+        Object.defineProperty(obj, 'nonen', { enumerable: false, value: true });
+        let copy = utils.copy(obj);
+        assert.lengthOf(Object.getOwnPropertyNames(copy), 1);
+      });
+
+      it('should copy non-enumerable values', () => {
+        let obj = { key: 1 };
+        Object.defineProperty(obj, 'nonen', { enumerable: false, value: true });
+        let copy = utils.copy(obj, { enumerable: false });
+        assert.lengthOf(Object.getOwnPropertyNames(copy), 2);
       });
     });
 
@@ -94,6 +107,7 @@ describe('utils.js', () => {
         assert.isOk(utils.compare(new Date(), new Date()), 'check date');
         assert.isOk(utils.compare(['1', 2, null], ['1', 2, null]), 'check array');
         assert.isOk(utils.compare({x: 1, y: 2}, {y: 2, x: 1}), 'check object');
+        assert.isOk(utils.compare({x: 1, y: undefined}, {x: 1}, { ignoreUndefined: true }), 'check object ignoring undefined values');
         assert.isOk(utils.compare({x: {y: 2}, y: '&'}, {x: {y: 2}, y: '&'}), 'check nested object');
         assert.isOk(utils.compare({y: Akili.Component}, {y: Akili.Component}), 'check non-plain object');
       });
@@ -108,6 +122,7 @@ describe('utils.js', () => {
         assert.isNotOk(utils.compare(function x(a) {}, function y(a) {}), 'check function');
         assert.isNotOk(utils.compare(['1', 2, null], ['1', null, 2]), 'check array');
         assert.isNotOk(utils.compare({x: 1, y: 2}, {y: 2, x: 1, z: 3}), 'check object');
+        assert.isNotOk(utils.compare({x: 1, y: undefined}, {x: 1}), 'check object including undefined values');
         assert.isNotOk(utils.compare({x: {y: 2}, y: '&'}, {x: {y: 2, i: {}}, y: '&'}), 'check nested object');
         assert.isNotOk(utils.compare({y: Akili.Component}, {y: Akili.Scope}), 'check non-plain object');
       });
@@ -291,6 +306,10 @@ describe('utils.js', () => {
 
         assert.equal('red active', utils.class(obj));
       });
+
+      it('should return an empty string', () => {
+        assert.isEmpty(utils.class());
+      });
     });
 
     describe('.style()', () => {
@@ -302,6 +321,10 @@ describe('utils.js', () => {
         };
 
         assert.equal('color:red;width:10px', utils.style(obj));
+      });
+
+      it('should return an empty string', () => {
+        assert.isEmpty(utils.style());
       });
     });
 
@@ -369,7 +392,7 @@ describe('utils.js', () => {
         ];
 
         let res = utils.filter(arr, '1', ['x', 'y']);
-        let res2 = utils.filter(arr, '1', [['x'], ['y']]);
+        let res2 = utils.filter(arr, '1', [['x'], ['y']]);        
         assert.equal(JSON.stringify([{ x: 1, y: 2 }, { x: 2, y: 1 }]), JSON.stringify(res), 'first option');
         assert.equal(JSON.stringify([{ x: 1, y: 2 }, { x: 2, y: 1 }]), JSON.stringify(res2), 'second option');
       });
@@ -379,21 +402,29 @@ describe('utils.js', () => {
       it('should sort array of primitive', () => {
         let arr = [3, 2, 1, 2];
         let res = utils.sort(arr, true);
-
         assert.equal(JSON.stringify([1, 2, 2, 3]), JSON.stringify(res));
+      });
+
+      it('should sort dates', () => {
+        let now = new Date();
+        let after = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
+        let before = new Date(new Date().getTime() - 24 * 60 * 60 * 1000);
+        let arr = [after, before, now];
+        let res = utils.sort(arr, true);
+        assert.equal(res[0], before, 'before');
+        assert.equal(res[1], now, 'now');
+        assert.equal(res[2], after, 'after');
       });
 
       it('should reverse array of primitive', () => {
         let arr = [1, 2, 3, 2];
         let res = utils.sort(arr, false);
-
         assert.equal(JSON.stringify([3, 2, 2, 1]), JSON.stringify(res));
       });
 
       it('should sort array by property "x"', () => {
         let arr = [{x: 3}, {x: 2}, {x: 1}, {x: 2}];
         let sorted = [{x: 1}, {x: 2}, {x: 2}, {x: 3}];
-
         assert.equal(JSON.stringify(sorted), JSON.stringify(utils.sort(arr, 'x')), 'check string,default');
         assert.equal(JSON.stringify(sorted), JSON.stringify(utils.sort(arr, ['x'], true)), 'check array,boolean');
         assert.equal(JSON.stringify(sorted), JSON.stringify(utils.sort(arr, [['x']], [true])), 'check array[],boolean[]');
@@ -402,7 +433,6 @@ describe('utils.js', () => {
       it('should reverse array by property "x"', () => {
         let arr = [{x: 3}, {x: 2}, {x: 1}, {x: 2}];
         let sorted = [{x: 3}, {x: 2}, {x: 2}, {x: 1}];
-
         assert.equal(JSON.stringify(sorted), JSON.stringify(utils.sort(arr, ['x'], false)), 'check array,boolean');
         assert.equal(JSON.stringify(sorted), JSON.stringify(utils.sort(arr, [['x']], [false])), 'check array[],boolean[]');
       });
@@ -410,14 +440,12 @@ describe('utils.js', () => {
       it('should order by two keys', () => {
         let arr = [{x: 3, y: 1}, {x: 2, y: 2}, {x: 2, y: 1}, {x: 2, y: 3}];
         let sorted = [{x: 2, y: 1}, {x: 2, y: 2}, {x: 2, y: 3}, {x: 3, y: 1}];
-
         assert.equal(JSON.stringify(sorted), JSON.stringify(utils.sort(arr, ['x', 'y'], [true, true])));
       });
 
       it('should order nested keys', () => {
         let arr = [{x: {y: 2}}, {x: {y: 1}}];
         let sorted = [{x: {y: 1}}, {x: {y: 2}}];
-
         assert.equal(JSON.stringify(sorted), JSON.stringify(utils.sort(arr, [['x', 'y']], [true])));
       });
     });

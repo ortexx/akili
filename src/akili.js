@@ -192,9 +192,9 @@ Akili.removeScope = function(name) {
 /**
  * Get all elements with attached Akili components
  *
- * @param {HTMLElement} el
+ * @param {Element} el
  * @param {boolean} [tree=true] - return array of the parents if true, closest parent if false
- * @returns {Array|HTMLElement|null}
+ * @returns {Array|Element|null}
  */
 Akili.getAkiliParents = function (el, tree = true) {
   let arr = [];
@@ -227,7 +227,7 @@ Akili.getAkiliParents = function (el, tree = true) {
  * el.innerHTML = "<b>World</b>";
  * Akili.setTemplate(el, "<i>Hello</i>${this.__children}");
  *
- * @param {HTMLElement} el
+ * @param {Element} el
  * @param {string} template
  * @returns {string}
  */
@@ -336,7 +336,7 @@ Akili.nextTick = function(fn) {
 /**
  * Initialize element
  *
- * @param {HTMLElement} el
+ * @param {Element} el
  * @param {object} [options={}]
  * @returns {*}
  */
@@ -409,7 +409,7 @@ Akili.initialize = function(el, options = {}) {
 /**
  * Compile the element
  *
- * @param {HTMLElement} root
+ * @param {Element} root
  * @param {object} [options]
  * @returns {Promise}
  */
@@ -504,7 +504,7 @@ Akili.alias = function(selector, componentName = '') {
  * @param {string} selector
  */
 Akili.unregisterAlias = function(selector) {
-  delete this.__components[selector];
+  delete this.__aliases[selector];
 };
 
 /**
@@ -706,47 +706,45 @@ Akili.triggerInit = function(status) {
 /**
  * Initialize the application
  *
- * @param {HTMLElement} [root]
+ * @param {Element} [root]
  * @returns {Promise}
  */
 Akili.init = function(root) {
-  this.__root = root || document.body;
+  root = root || document.body;
+
+  if(!(root instanceof Element)) {
+    throw new Error(`Root element must be an html element`);
+  }
 
   if(root === document.documentElement) {
     throw new Error(`"html" can't be the root element`);
   }
+
+  this.__root = root;
   
   if(window.AKILI_SERVER) {
     let html = window.AKILI_SERVER.html;
 
-    if(this.__root === document.body) {
-      for (var i = this.__root.attributes.length - 1; i >= 0; i--){
-        this.__root.removeAttribute(this.__root.attributes[i].name);
-      }
-
-      let parser = new DOMParser();
-      let doc = parser.parseFromString(html, "text/html");
-      let body = doc.querySelector('body');
-      this.__root.innerHTML = html;
-
-      for (let i = body.attributes.length - 1; i >= 0; i--) {
-        let attr = body.attributes[i];
-        this.__root.setAttribute(attr.name, attr.value);
-      }      
+    for (let i = this.__root.attributes.length - 1; i >= 0; i--){
+      this.__root.removeAttribute(this.__root.attributes[i].name);
     }
-    else {
-      let parent = this.__root.parentNode;
-      let index = [].slice.call(parent.children).indexOf(this.__root);    
-      this.__root.outerHTML = html;
-      this.__root = parent.children[index];
-    }
+
+    let parser = new DOMParser();
+    let doc = parser.parseFromString(html, "text/html");
+    let el = doc.querySelector(this.__root === document.body? 'body': 'body > *');    
+    this.__root.innerHTML = el.innerHTML;
+
+    for (let i = el.attributes.length - 1; i >= 0; i--) {
+      let attr = el.attributes[i];
+      this.__root.setAttribute(attr.name, attr.value);
+    }  
   }
   else {
     window.AKILI_CLIENT = {
       html: this.__root.outerHTML
     }
   }
-
+  
   return this.compile(this.__root).then(() => {
     if (router.__init) {
       return router.changeState();

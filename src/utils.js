@@ -629,12 +629,11 @@ utils.setPropertyByKeys = function(keys, object, fn) {
     }
 
     if (!o.hasOwnProperty(k)) {
-      return current = o[k] = fn(i == length);
+      o[k] = undefined;
     }
 
     o[k] = fn(i == length, o[k]);
     current = o;
-
     return o[k];
   }, object);
 

@@ -5,7 +5,6 @@ import Akili from '../akili.js';
 export default class A extends Component {
   static matches = '[state]:not([url]),[url]:not([state])';
   static controlAttributes = true;
-  static booleanAttributes = ['reload'];
 
   static define() {
     Akili.component('a', this);

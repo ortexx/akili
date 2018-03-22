@@ -27,7 +27,7 @@ describe('a.js', () => {
 
       it('should set the defined state', () => {
         let state = 'a-test';
-        router.add(state, '/a-test', { fullPattern: '/a-test/:param' });
+        router.add(state, '/a-test/:id');
         component.setState(state);
         assert.equal(component.state.name, state);
       });
@@ -47,7 +47,7 @@ describe('a.js', () => {
       });
 
       it('should set right params', () => {
-        let params = { param: 1 };
+        let params = { id: 1 };
         component.setParams(params);
         assert.equal(JSON.stringify(component.params), JSON.stringify(params));
       });

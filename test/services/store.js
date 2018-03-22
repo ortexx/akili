@@ -13,7 +13,12 @@ describe('store.js', () => {
   });
   
   describe('Component.prototype.store()', () => {
+    it('should throw an error', () => {          
+      assert.throws(() => elements.sectionOne.__akili.store('test'));
+    });
+
     it('should create the link by a scope property', () => {        
+      store.test = 'start';  
       elements.sectionOne.__akili.store('test', ['test']);
       elements.sectionTwo.__akili.store('test', ['tasty']);        
       assert.equal(elements.sectionOne.__akili.__storeLinks['test'][0].keyString, 'test', 'check the component.__storeLinks');
@@ -59,6 +64,10 @@ describe('store.js', () => {
   });
 
   describe('Component.prototype.unstore()', () => {
+    it('should throw an error', () => {          
+      assert.throws(() => elements.sectionOne.__akili.unstore('test'));
+    });
+
     it('should remove all links', () => {
       elements.sectionOne.__akili.unstore('test', 'test');
       elements.sectionTwo.__akili.unstore('test', 'tasty');

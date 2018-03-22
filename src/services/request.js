@@ -86,14 +86,12 @@ export class Request {
         xhr.withCredentials = options.withCredentials;
       }
 
-      if (options.headers) {
-        for (let k in options.headers) {
-          if (!options.headers.hasOwnProperty(k)) {
-            continue;
-          }
-
-          xhr.setRequestHeader(k, options.headers[k]);
+      for (let k in options.headers) {
+        if (!options.headers.hasOwnProperty(k)) {
+          continue;
         }
+
+        xhr.setRequestHeader(k, options.headers[k]);
       }
 
       if (typeof options.onProgress == 'function') {
@@ -252,8 +250,7 @@ export class Request {
    *
    * @param {object} obj
    * @param {FormData} [data]
-   * @param {string} [namespace]
-   *
+   * @param {string} [namespace]   *
    * @returns {FormData}
    */
   createFormData(obj, data = null, namespace = '') {

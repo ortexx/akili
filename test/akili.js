@@ -77,22 +77,44 @@ describe('akili.js', () => {
     });
 
     describe('.component()', () => {
-      it('should add a component to a list', () => {
+      it('should add a component to the list', () => {
         Akili.component('for-compile', ForCompile);
         assert.property(Akili.__components, 'for-compile');
+      });
+
+      it('should get a component from the list', () => {        
+        assert.strictEqual(Akili.component('for-compile'), ForCompile);
       });
     });
 
     describe('.unregisterComponent()', () => {
-      it('should remove a component from a list', () => {
+      it('should remove a component from the list', () => {
         Akili.unregisterComponent('for-compile');
         assert.notProperty(Akili.__components, 'for-compile');
-        Akili.component('for-compile', ForCompile);
+      });
+    });
+
+    describe('.alias()', () => {
+      it('should add an alias to the list', () => {
+        Akili.alias('alias', 'component');
+        assert.property(Akili.__aliases, 'alias');
+      });
+
+      it('should get an alias from the list', () => {        
+        assert.strictEqual(Akili.alias('alias'), 'component');
+      });
+    });
+
+    describe('.unregisterAlias()', () => {
+      it('should remove an alias from the list', () => {
+        Akili.unregisterAlias('alias');
+        assert.notProperty(Akili.__aliases, 'alias');
       });
     });
 
     describe('.compile()', () => {
       it('should create component for the element', () => {
+        Akili.component('for-compile', ForCompile);
         Akili.compile(elements.forCompile);
         assert.instanceOf(elements.forCompile.__akili, Akili.Component);
       });

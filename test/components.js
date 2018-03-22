@@ -305,6 +305,15 @@ describe('components/', () => {
       window.addEventListener('state-changed', fn);
     }
 
+    it('should set the default url', (done) => {
+      onStateChange(() => {
+        assert.equal(location.pathname + location.search, '/3');
+        done();
+      });
+
+      component.child('a[url]').el.click();
+    });
+
     it('should set right url to a link', () => {
       let a = document.createElement('a');
       let route = document.createElement('route');
@@ -332,7 +341,7 @@ describe('components/', () => {
           done();
         });
 
-        component.child('a').el.click();
+        component.child('a[state]').el.click();
       });
 
       it('should change to 1-1', (done) => {
@@ -367,6 +376,18 @@ describe('components/', () => {
 
         router.state('2');
       });
+    });
+  });
+
+  describe('event stages', () => {
+    it('should be triggered the events', () => {
+      let a = component.child('a[url]');
+      assert.isTrue(a.scope.compiled, 'on-compiled');
+      assert.isTrue(a.scope.resolved, 'on-resolved');
+      Akili.compile(a.el, { recompile: true });
+      assert.isTrue(a.scope.recompiled, 'on-recompiled');        
+      a.remove();
+      assert.isTrue(a.scope.removed, 'on-removed');
     });
   });
 });
