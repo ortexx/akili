@@ -7,7 +7,7 @@ It includes a powerful system of components, router, store to save and distribut
 * without any additional dependencies
 * can be used without javascript compilation in all modern browsers
 * pure, lightweight, expandable and powerful framework
-* supports [server rendering](https://github.com/ortexx/akili-connect)
+* supports [server-side rendering](https://github.com/ortexx/akili-connect)
 * javascript way, without magic
 
 ## Examples
