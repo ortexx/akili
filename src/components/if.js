@@ -2,7 +2,14 @@ import Component from '../component.js';
 import Akili from '../akili.js';
 
 /**
- * If component
+ * Component for conditional statements.
+ * 
+ * {@link https://akilijs.com/docs/components#docs_conditional_statements}
+ * 
+ * @tag if
+ * @selector if[is]
+ * @attr {boolean} is - show the element content or not
+ * @attr {boolean} recreate - delete the content and recreate or just show/hide 
  */
 export default class If extends Component {
   static transparent = true;
@@ -81,17 +88,21 @@ export default class If extends Component {
 
   compile() {
     let res;
-
     this.el.innerHTML = this.html;
     res = Akili.compile(this.el, { recompile: true });
     this.isCompiled = true;
-
     return res;
   }
 }
 
 /**
- * ElseIf component
+ * Component for conditional statements.
+ * 
+ * {@link https://akilijs.com/docs/components#docs_conditional_statements}
+ * 
+ * @tag else-if
+ * @selector else-if[is]
+ * @attr {boolean} is @see If
  */
 export class ElseIf extends If {
   constructor(...args) {
@@ -102,7 +113,11 @@ export class ElseIf extends If {
 }
 
 /**
- * Else component
+ * Component for conditional statements.
+ * 
+ * {@link https://akilijs.com/docs/components#docs_conditional_statements}
+ * 
+ * @tag else
  */
 export class Else extends ElseIf {
   static matches = '';

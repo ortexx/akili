@@ -2,6 +2,13 @@ import Component from '../component.js';
 import Akili from '../akili.js';
 import request from '../services/request.js';
 
+/**
+ * Component to work with router templates.
+ * 
+ * {@link https://akilijs.com/docs/routing#docs_templates}
+ * 
+ * @tag route
+ */
 export default class Route extends Component {
   static define() {
     Akili.component('route', this);

@@ -2,6 +2,15 @@ import Component from '../component.js';
 import Akili from '../akili.js';
 import utils from '../utils.js';
 
+/**
+ * Component for loops.
+ * 
+ * {@link https://akilijs.com/docs/components#docs_loops}
+ * 
+ * @tag for
+ * @selector for[in],ol[in],ul[in],thead[in],tbody[in],tfoot[in]
+ * @attr {object|array} in - data to create the loop
+ */
 export default class For extends Component {
   static matches = '[in]';
   static saveAttributeProxyIn = true;  
@@ -167,6 +176,18 @@ export default class For extends Component {
   }
 }
 
+/**
+ * Component for loops.
+ * 
+ * {@link https://akilijs.com/docs/components#docs_loops}
+ * 
+ * @tag loop
+ * @selector loop,tr
+ * @attr @see For
+ * @scope {*} loopValue - data item's value of the current iteration 
+ * @scope {string|number} loopKey - key of the iteration
+ * @scope {number} loopIndex - index of the iteration
+ */
 export class Loop extends For {
   static matches = '';
   static controlAttributes = true;

@@ -3,8 +3,10 @@ import utils from './utils.js';
 
 /**
  * Scope class.
+ * 
+ * {@link https://akilijs.com/docs/scope}
  *
- * All properties starting with __ will not be watching.
+ * All properties starting with __ are not monitored.
  * You can use them for internal manipulations.
  */
 export default class Scope {

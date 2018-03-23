@@ -2,7 +2,16 @@ import For, { Loop } from './for.js';
 import Akili from '../akili.js';
 
 /**
- * The radio group component
+ * Component to work with radio group.
+ * 
+ * {@link https://akilijs.com/docs/components#docs_radio_group}
+ * 
+ * @tag radio
+ * @selector radio[name]
+ * @attr {string} name - name of the group
+ * @attr {string|null} value - selected value
+ * @attr [in] @see For
+ * @message {string} radio - sent on value change
  */
 export default class Radio extends For {
   static matches = '[name]';
@@ -103,7 +112,12 @@ export default class Radio extends For {
 }
 
 /**
- * The radio item component
+ * Component to work with radio group item.
+ * 
+ * {@link https://akilijs.com/docs/components#docs_radio_group}
+ * 
+ * @tag radio-button
+ * @attr {string} value - value
  */
 export class RadioButton extends Loop {
   static template = '<label><input type="radio" value="${this.value}"/>${this.__content}</label>';

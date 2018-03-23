@@ -1,6 +1,16 @@
 import Text from './text.js';
 import Akili from '../akili.js';
 
+/**
+ * Component for elements with contenteditable attribute.
+ * 
+ * {@link https://akilijs.com/docs/components#docs_contenteditable}
+ * 
+ * @tag content
+ * @selector content,[contenteditable]
+ * @attr @see Text
+ * @attr {boolean} [editable] - editable or not
+ */
 export default class Content extends Text {
   static define() {
     Akili.component('content', this);

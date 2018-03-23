@@ -1,5 +1,11 @@
 import utils from './utils';
 
+/**
+ * Class for working with events.
+ * An instance of this class allows you to trigger custom javascript events.
+ * 
+ * {@link https://akilijs.com/docs/events}
+ */
 export default class EventEmitter {
   constructor(name, el, component) {
     this.name = name;
@@ -36,7 +42,12 @@ export default class EventEmitter {
     }
   }
 
-  prepareOptions(options) {
+  /**
+   * Prepere an event options
+   * 
+   * @param {object} [options] 
+   */
+  prepareOptions(options = {}) {
     options = { bubbles: true, ...options };  
     this.elComponent && !this.elComponent.__saveAttributeProxyOut && (options.detail = utils.copy(options.detail));
     return options;

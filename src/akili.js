@@ -35,10 +35,15 @@ import router from './services/router.js';
 import store from './services/store.js';
 import utils from './utils.js';
 
+/**
+ * The framework object
+ * 
+ * {@link https://akilijs.com/docs/getting-started}
+ */
 const Akili = {};
 
 /**
- * Set the farmework's default variables
+ * Set the framework's default variables
  */
 Akili.setDefaults = function () {
   this.options = {

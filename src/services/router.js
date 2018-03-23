@@ -3,6 +3,12 @@ import utils from '../utils.js';
 import request from './request.js';
 import Route from '../components/route.js';
 
+/**
+ * Transition class.
+ * An instance of this class consists the last actual router transition information.
+ * 
+ * {@link https://akilijs.com/docs/routing#docs_transition}
+ */
 export class Transition {
   constructor(url, query, hash = '', previous = null) {
     this.url = url;
@@ -16,11 +22,21 @@ export class Transition {
     this.__cancelled = false;
   }
 
+  /**
+   * Redirect to another state
+   * 
+   * @see router.state
+   */
   redirect() {
     this.cancel();    
     router.state.apply(router, arguments);
   }
 
+  /**
+   * Set the current path
+   * 
+   * @param {object} path 
+   */
   setPath(path) {
     path.parent = this.path || null;
     this.path = path;
@@ -29,6 +45,11 @@ export class Transition {
     this.params = !path.parent? path.params: {...path.parent.params, ...path.params};
   }
 
+  /**
+   * Get a route by the state
+   *  
+   * @param {*} state 
+   */
   getRoute(state) {
     for (let i = 0, l = this.routes.length; i < l; i++) {
       let route = this.routes[i];
@@ -41,15 +62,28 @@ export class Transition {
     return null;
   }
 
+  /**
+   * Check if it has the state
+   * 
+   * @param {object} state 
+   */
   hasState(state) {
     return !!this.states[state.name];
   }
 
+  /**
+   * Cancel the current transition
+   */
   cancel() {
     this.__cancelled = true;
   }
 }
 
+/**
+ * Akili router
+ * 
+ * {@link https://akilijs.com/docs/routing}
+ */
 const router = {};
 
 /**

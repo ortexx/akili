@@ -2,6 +2,18 @@ import Component from '../component.js';
 import Akili from '../akili.js';
 import request from '../services/request.js';
 
+/**
+ * Component to include templates by url.
+ * 
+ * {@link https://akilijs.com/docs/components#docs_html_templates}
+ * 
+ * @tag include
+ * @selector include[url]
+ * @attr {string} url - template path
+ * @attr {number|function} [cache] - request cache {@link https://akilijs.com/docs/requests#docs_cache}
+ * @message {void} load - sent on the template load
+ * @message {Error} error - sent on error
+ */
 export default class Include extends Component {
   static transparent = true;
   static matches = '[url]';

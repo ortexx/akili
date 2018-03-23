@@ -1,5 +1,10 @@
 import EventEmitter from './event-emitter.js'
 
+/**
+ * An object with a lot of useful functions
+ * 
+ * {@link https://akilijs.com/docs/utils}
+ */
 const utils = {};
 
 /**

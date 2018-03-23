@@ -2,6 +2,15 @@ import For, { Loop } from './for.js';
 import utils from '../utils.js';
 import Akili from '../akili.js';
 
+/**
+ * Component to work with select.
+ * 
+ * {@link https://akilijs.com/docs/components#docs_select}
+ * 
+ * @tag select  
+ * @attr {string} value - actual value
+ * @attr [in] @see For
+ */
 export default class Select extends For {
   static booleanAttributes = ['multiple'];
   static events = ['change'];

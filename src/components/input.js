@@ -1,6 +1,16 @@
 import Text from './text.js';
 import Akili from '../akili.js';
 
+/**
+ * Component to work with input elements.
+ * 
+ * {@link https://akilijs.com/docs/components#docs_input}
+ * {@link https://akilijs.com/docs/components#docs_checkbox_and_radio}
+ * 
+ * @tag input
+ * @attr @see Text
+ * @message @see Text
+ */
 export default class Input extends Text {
   static booleanAttributes = ['checked', 'multiple'];
   static events = ['change'];

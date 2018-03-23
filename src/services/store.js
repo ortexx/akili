@@ -1,6 +1,11 @@
 import Akili from '../akili.js';
 import utils from '../utils.js';
 
+/**
+ * Store allows you to save and distribute data.
+ * 
+ * {@link https://akilijs.com/docs/store}
+ */
 const store = new Proxy({}, {
   get: (target, key) => {
     if (key == "__target") {

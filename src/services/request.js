@@ -1,8 +1,20 @@
 import utils from '../utils.js';
 
+/**
+ * Request class.
+ * An instance of this class allows you to make requests.
+ * 
+ * {@link https://akilijs.com/docs/requests}
+ */
 export class Request {
   __cache = {};
 
+  /**
+   * Constructor
+   * 
+   * @param {string} baseUrl
+   * @param {object} [defaults] 
+   */
   constructor(baseUrl, defaults) {
     this.baseUrl = baseUrl? (baseUrl.replace(/\/$/, '') + '/'): '';
 

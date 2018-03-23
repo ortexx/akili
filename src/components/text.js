@@ -1,5 +1,17 @@
 import Component from '../component.js';
 
+/**
+ * Base component to work with text elements.
+ * 
+ * {@link https://akilijs.com/docs/components#docs_input}
+ * {@link https://akilijs.com/docs/components#docs_textarea}
+ * {@link https://akilijs.com/docs/components#docs_contenteditable}
+ * 
+ * @attr {string} value - actual value
+ * @attr {boolean} focus - set the focus or not
+ * @attr {number} debounce - debounce delay
+ * @message {void} debounce - sent on the debounce {@link https://akilijs.com/docs/components#docs_input}
+ */
 export default class Text extends Component {
   constructor(...args) {
     super(...args);

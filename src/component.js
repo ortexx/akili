@@ -8,6 +8,9 @@ export const evaluationRegex = /\${(((?!\${).)*)}/;
 export const evaluationRegexGlobal = new RegExp(evaluationRegex.source, "g");
 export const systemAttributes = ['component', 'scope'];
 
+/**
+ * Base class from which all components are inherited
+ */
 export default class Component {
   static matches = '';
   static booleanAttributes = [];
@@ -49,6 +52,12 @@ export default class Component {
     return new Function(...keys, `${exps.join('; ')}`).apply(context, vars);
   }
 
+  /**
+   * Constructor
+   * 
+   * @param {Element} el 
+   * @param {object} [scope] 
+   */
   constructor(el, scope = {}) {
     this.__isMounted = false;
     this.__isCompiled = false;

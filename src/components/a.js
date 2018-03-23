@@ -2,6 +2,23 @@ import Component from '../component.js';
 import router from '../services/router.js';
 import Akili from '../akili.js';
 
+/**
+ * Component for links.
+ * It works with router too. 
+ * 
+ * {@link https://akilijs.com/docs/components#docs_links}
+ * 
+ * @tag a
+ * @selector a[state]:not([url]),a[url]:not([state])
+ * @attr {string} [url] - url to go on click
+ * @attr {string} [state] - state of router to go on click {@link https://akilijs.com/docs/routing}
+ * @attr {object} [params] - params for the state {@link https://akilijs.com/docs/routing#docs_state_params}
+ * @attr {object} [query] - query for the state {@link https://akilijs.com/docs/routing#docs_state_query}
+ * @attr {string} [hash] - hash for the state {@link https://akilijs.com/docs/routing#docs_state_hash}
+ * @attr {object} [options] - options for the state {@link https://akilijs.com/docs/routing#docs_router.location}
+ * @scope {boolean} isActiveState - the state is active or not 
+ * @scope {boolean} inActiveState - the state is part of the active state or not
+ */
 export default class A extends Component {
   static matches = '[state]:not([url]),[url]:not([state])';
   static controlAttributes = true;
