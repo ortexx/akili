@@ -10,7 +10,7 @@ import request from '../services/request.js';
  * @tag include
  * @selector include[url]
  * @attr {string} url - template path
- * @attr {number|function} [cache] - request cache {@link https://akilijs.com/docs/requests#docs_cache}
+ * @attr {number|function|boolean} [cache] - request cache {@link https://akilijs.com/docs/requests#docs_cache}
  * @message {void} load - sent on the template load
  * @message {Error} error - sent on error
  */

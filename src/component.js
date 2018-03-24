@@ -59,6 +59,10 @@ export default class Component {
    * @param {object} [scope] 
    */
   constructor(el, scope = {}) {
+    if(!(el instanceof Element)) {
+      throw new Error(`You must pass an html element to the component constructor`);
+    }
+
     this.__isMounted = false;
     this.__isCompiled = false;
     this.__isResolved = false;
@@ -1378,7 +1382,7 @@ export default class Component {
    * @param {string|string[]} keys
    * @protected
    */
-  __attrByKeys(name, keys) {
+  __attrByKeys(name, keys) {    
     if(!keys) {
       throw new Error(`Attribute link "${name}" must have the scope property name`);
     }
@@ -2145,6 +2149,10 @@ export default class Component {
    * @param {string|string[]|function} handler
    */
   store(name, handler) {
+    if(!this.__isMounted) {
+      throw new Error(`Method "store" must be called after the compilation. For example, in "compiled" method.`);
+    }
+
     return typeof handler === 'function'? this.__storeByFunction(...arguments): this.__storeByKeys(...arguments);
   }
 
@@ -2155,6 +2163,10 @@ export default class Component {
    * @param {string|string[]|function} handler
    */
   attr(name, handler) {
+    if(!this.__isMounted) {
+      throw new Error(`Method "attr" must be called after the compilation. For example, in "compiled" method.`);
+    }
+
     return typeof handler === 'function'? this.__attrByFunction(...arguments): this.__attrByKeys(...arguments);
   }
 
@@ -2165,6 +2177,10 @@ export default class Component {
    * @param {string|string[]|function} handler
    */
   unstore(name, handler) {
+    if(!this.__isMounted) {
+      throw new Error(`Method "unstore" must be called after the compilation. For example, in "compiled" method.`);
+    }
+
     return typeof handler === 'function'? this.__unstoreByFunction(...arguments): this.__unstoreByKeys(...arguments);
   }
 
@@ -2175,6 +2191,10 @@ export default class Component {
    * @param {string|string[]|function} handler
    */
   unattr(name, handler) {
+    if(!this.__isMounted) {
+      throw new Error(`Method "unattr" must be called after the compilation. For example, in "compiled" method.`);
+    }
+
     return typeof handler === 'function'? this.__unattrByFunction(...arguments): this.__unattrByKeys(...arguments);
   }
 

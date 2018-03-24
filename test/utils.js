@@ -83,6 +83,22 @@ describe('utils.js', () => {
       });
     });
 
+    describe('.includeKeys()', () => {
+      it('should include the specified keys', () => {
+        let obj = {x: 1, y: 1, z: 1};
+        let res = {x: 1, y: 1};
+        assert.equal(JSON.stringify(utils.includeKeys(obj, ['x', 'y'])), JSON.stringify(res));
+      });
+    });
+
+    describe('.excludeKeys()', () => {
+      it('should exclude the specified keys', () => {
+        let obj = {x: 1, y: 1, z: 1};
+        let res = {x: 1, z: 1};
+        assert.equal(JSON.stringify(utils.excludeKeys(obj, ['y'])), JSON.stringify(res));
+      });
+    });
+
     describe('.makeAttributeValue()', () => {
       it('should be appropriate', () => {
         assert.equal(utils.makeAttributeValue([]), '[object Array]',  'check array');

@@ -45,7 +45,7 @@ export default class All extends Component {
     
     this.el.innerHTML += `
       <for in="\${this.cForData}">\${this.loopKey}=\${this.loopValue}</for>
-      <for in="\${this.cForData}">
+      <for in="\${ {x: 1, y: 2} }">
         <div component="loop" in="\${[1]}">
           \${this.loopKey}=\${this.loopValue}
         </div>

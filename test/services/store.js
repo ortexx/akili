@@ -5,6 +5,11 @@ import elements from '../app/elements.js';
 
 describe('store.js', () => {
   let handler;
+  class TestStore extends Akili.Component {
+    created() {
+      this.checkStore? this.store('test', 'test'): this.unstore('test', 'test');     
+    }
+  } 
 
   before(() => {
     store.test = 'start';
@@ -13,8 +18,11 @@ describe('store.js', () => {
   });
   
   describe('Component.prototype.store()', () => {
-    it('should throw an error', () => {          
-      assert.throws(() => elements.sectionOne.__akili.store('test'));
+    it('should throw an error', () => {        
+      let testStore = new TestStore(document.createElement('test-store')); 
+      testStore.checkStore = true;
+      assert.throws(() => elements.sectionOne.__akili.store('test'), '', 'nonexistent handler');
+      assert.throws(() => testStore.created(), '', 'before the compilation');
     });
 
     it('should create the link by a scope property', () => {        
@@ -64,8 +72,10 @@ describe('store.js', () => {
   });
 
   describe('Component.prototype.unstore()', () => {
-    it('should throw an error', () => {          
-      assert.throws(() => elements.sectionOne.__akili.unstore('test'));
+    it('should throw an error', () => {        
+      let testStore = new TestStore(document.createElement('test-store'));  
+      assert.throws(() => elements.sectionOne.__akili.unstore('test'), '', 'nonexistent handler');
+      assert.throws(() => testStore.created(), '', 'before the compilation');
     });
 
     it('should remove all links', () => {

@@ -62,7 +62,7 @@ utils.style = function(obj) {
 };
 
 /**
- * Split the string
+ * Extended split of the string
  * 
  * @example
  * // returns ["Hello", "World"]
@@ -301,6 +301,56 @@ utils.sort = function(arr, keys = true, order = []) {
 
   return arr;
 };
+
+/**
+ * Return new object with the specified keys
+ * 
+ * @example
+ * // returns {x: 1, z: 1}
+ * utils.includeKeys({x: 1, y: 1, z: 1}, ['x', 'z']);
+ * 
+ * @param {object} obj
+ * @param {string[]} keys
+ */
+utils.includeKeys = function(obj, keys) {
+  let newObj = {};
+  let objKeys = Object.keys(obj);
+
+  for(let i = 0, l = objKeys.length; i < l; i++) {
+    let key = objKeys[i];
+
+    if(keys.indexOf(key) != -1) {
+      newObj[key] = obj[key];
+    }
+  }
+
+  return newObj;
+}
+
+/**
+ * Return new object without the specified keys
+ * 
+ * @example
+ * // returns {x: 1, z: 1}
+ * utils.includeKeys({x: 1, y: 1, z: 1}, ['y']);
+ * 
+ * @param {object} obj
+ * @param {string[]} keys
+ */
+utils.excludeKeys = function(obj, keys) {
+  let newObj = {};
+  let objKeys = Object.keys(obj);
+
+  for(let i = 0, l = objKeys.length; i < l; i++) {
+    let key = objKeys[i];
+
+    if(keys.indexOf(key) == -1) {
+      newObj[key] = obj[key];
+    }
+  }
+
+  return newObj;
+}
 
 /**
  * Check the value is component scope proxy object

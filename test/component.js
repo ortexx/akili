@@ -10,8 +10,15 @@ describe('component.js', () => {
     let component;
     let parentComponent;
 
-    before(() => {
-      component = new Home(elements.home, {});
+    describe('.__constructor()', () => {
+      it('should throw an error', () => {
+        assert.throws(() => new Home());
+      });
+
+      it('should create an instance', () => {
+        component = new Home(elements.home);
+        assert.instanceOf(component, Home);
+      });
     });
 
     describe('.__create()', () => {
@@ -747,7 +754,7 @@ describe('component.js', () => {
 
     describe('.remove()', () => {
       before(() => {
-        component.store('store', () => {});
+        component.__storeByFunction('store', () => {});
         component.remove();
       });
 
@@ -770,6 +777,11 @@ describe('component.js', () => {
 
     describe('attributes manipulation', () => {
       let all, attr, fn;
+      class TestAttr extends Akili.Component {
+        created() {
+          this.checkAttr? this.attr('test', 'test'): this.unattr('test', 'test');     
+        }
+      } 
 
       before(() => {
         fn = val => attr.scope.handlerTest = val;
@@ -778,7 +790,10 @@ describe('component.js', () => {
       });
 
       describe('.attr()', () => {
-        it('should throw an error', () => {          
+        it('should throw an error', () => {       
+          let testAttr = new TestAttr(document.createElement('test-attr')); 
+          testAttr.checkAttr = true;
+          assert.throws(() => testAttr.created(), '', 'before the compilation');   
           assert.throws(() => attr.attr('test'));
         });
 
@@ -808,7 +823,9 @@ describe('component.js', () => {
       });  
     
       describe('.unattr()', () => {
-        it('should throw an error', () => {          
+        it('should throw an error', () => {   
+          let testAttr = new TestAttr(document.createElement('test-attr')); 
+          assert.throws(() => testAttr.created(), '', 'before the compilation');        
           assert.throws(() => attr.unattr('test'));
         });
 

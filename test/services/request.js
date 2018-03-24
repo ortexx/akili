@@ -17,6 +17,20 @@ XMLHttpRequest.prototype.open = function(method, url) {
 };
 
 XMLHttpRequest.prototype.send = function() {
+  const end = (err, status = 200) => {
+    this.status = status;
+
+    if(err) {
+      this.response = 'error';
+      this.status = 500;
+      this.onerror(new Error(`Wrong test url "${this.requestURL}"`));
+      return;
+    }
+
+    this.onprogress && this.onprogress();
+    this.onload();
+  }
+
   if(this.requestMethod == 'GET' && this.requestURL == 'include.html') {
     this.response = '${this.__content}1';
   }
@@ -47,16 +61,11 @@ XMLHttpRequest.prototype.send = function() {
   else if(this.requestURL == 'json') {
     this.response = { success: true };
   }
-
-  if(this.response) {
-    this.status = 200;
-    this.onload();
-    return;
+  else if(this.requestURL == 'status404') {
+    return end(null, 404);
   }
 
-  this.status = 500;
-  this.response = 'error';
-  this.onerror(new Error(`Wrong test url "${this.requestURL}"`));
+  end(!this.response);  
 };
 
 describe('request.js', () => {
@@ -98,9 +107,15 @@ describe('request.js', () => {
 
       it('should get the bad response', (done) => {
         request.query({ url: 'non-existent'}).then(() => {
-          done(new Error('must be error response'))
+          done(new Error('must be an error response'))
         }).catch(() => done());
       });
+
+      it('should handle bad status pattern', (done) => {
+        request.query({ url: 'status404'}).then(() => {
+          done(new Error('must be an error response'))
+        }).catch(() => done());
+      });      
 
       it('should make GET request', () => {
         return request.get('get').then((res) => {
@@ -133,13 +148,24 @@ describe('request.js', () => {
       });
 
       it('should make JSON request', () => {
-        return request.get('json', { json: { id: 1 } }).then((res) => {
+        return request.get('json', { 
+            json: { 
+              id: 1 
+            },
+            onProgress: () => {}
+          }).then((res) => {
           assert.equal(JSON.stringify(res.data), JSON.stringify({ success: true }));
         });
       });
 
       it('should make request with form', () => {
-        return request.get('form', { form: { id: 1, file: new Blob([1, 0]) } }).then((res) => {
+        return request.get('form', { 
+          form: { 
+            id: 1, 
+            file: new Blob([1, 0]),
+            date: new Date()
+          } 
+        }).then((res) => {
           assert.equal(res.data, 'ok');
         });
       });
@@ -157,8 +183,10 @@ describe('request.js', () => {
       });
 
       it('should create cache', () => {
-        return request.get('ping', { cache: 1000 }).then(() => {
-          assert.lengthOf(Object.keys(request.__cache), 1);
+        return request.get('ping', { cache: 1000 }).then((res) => {
+          return request.get('ping', { cache: true }).then((result) => {
+            assert.strictEqual(res, result);
+          });
         });
       });
 

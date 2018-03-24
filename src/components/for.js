@@ -96,7 +96,7 @@ export default class For extends Component {
     return el;
   }
 
-  loop(key, value, index, dataChanged) {
+  loop(key, value, index) {
     this.__index = index;
     this.__key = key;
     this.__value = value;    
@@ -105,11 +105,9 @@ export default class For extends Component {
     if(this.iterators.length > index) {
       let iterator = this.iterators[index];
       let cCopy = iterator.comparsion.copy;
-      let changed = false;
         
       if (this.__index !== iterator.index) {
         iterator.setIndex();
-        changed = true;
       }
       else {
         iterator.setIndex(true);
@@ -117,7 +115,6 @@ export default class For extends Component {
 
       if (this.__key !== iterator.key) {
         iterator.setKey();
-        changed = true;
       }
       else {
         iterator.setKey(true);
@@ -125,13 +122,12 @@ export default class For extends Component {
       
       if (!utils.compare(cCopy, this.__comparisonValue, { ignoreUndefined: true })) {
         iterator.setValue();
-        changed = true;
       }
       else {
         iterator.setValue(true);
       }
 
-      (changed || dataChanged) && Akili.compile(iterator.el, { recompile: true });
+      Akili.compile(iterator.el, { recompile: true });
       return iterator;
     }
     
@@ -153,17 +149,28 @@ export default class For extends Component {
       data = [];
     }
 
-    let dataChanged = utils.compare(this.data, data);
     this.data = data;   
-    let keys = Object.keys(data);
     let iterators = [];
     let index = 0;
-    
-    for (let l = keys.length; index < l; index++) {
-      let key = keys[index];
-      let iterator = this.loop(key, data[key], index, dataChanged);
+
+    const loop = (key, value, index) => {
+      let iterator = this.loop(key, value, index);
       iterators.push(iterator);
       iterator.iterate(index);
+    };
+
+    if(Array.isArray(data)) {
+      for (let l = data.length; index < l; index++) {
+        loop(index, data[index], index);
+      }     
+    }
+    else {
+      let keys = Object.keys(data);
+
+      for (let l = keys.length; index < l; index++) {
+        let key = keys[index];
+        loop(key, data[key], index);
+      }
     }
 
     for (let i = index, l = this.iterators.length; i < l; i++) {

@@ -76,7 +76,7 @@ export class Request {
         let _cache = this.getCache(hash);
         let now = new Date().getTime();
 
-        if(_cache && now - _cache.createdAt <= cache) {
+        if(_cache && (cache === true || now - _cache.createdAt <= cache)) {
           return resolve(_cache.data);
         }
         else if(_cache) {
@@ -98,11 +98,10 @@ export class Request {
         xhr.withCredentials = options.withCredentials;
       }
 
-      for (let k in options.headers) {
-        if (!options.headers.hasOwnProperty(k)) {
-          continue;
-        }
+      let headerKeys = Object.keys(options.headers);
 
+      for (let i = 0, l = headerKeys.length; i < l; i++) {
+        let k = headerKeys[i];
         xhr.setRequestHeader(k, options.headers[k]);
       }
 
