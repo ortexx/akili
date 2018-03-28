@@ -12,8 +12,8 @@ import Akili from '../akili.js';
  * @attr [in] @see For
  */
 export default class Select extends For {
-  static booleanAttributes = ['multiple'];
-  static events = ['change'];
+  static booleanAttributes = ['multiple'].concat(For.booleanAttributes);
+  static events = ['change'].concat(For.events);
 
   static define() {
     Akili.component('select', this);

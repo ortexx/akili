@@ -15,7 +15,7 @@ import Akili from '../akili.js';
  */
 export default class Radio extends For {
   static matches = '[name]';
-  static events = ['radio'];
+  static events = ['radio'].concat(For.events);
 
   static define() {
     Akili.component('radio', this);

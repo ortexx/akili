@@ -48,7 +48,7 @@ export default class Component {
       keys.push(key);
       vars.push(globals[key]);
     }
-
+    
     return new Function(...keys, `${exps.join('; ')}`).apply(context, vars);
   }
 
@@ -137,7 +137,6 @@ export default class Component {
 
         if (child.nodeType == 3) {
           this.__initializeNode(child, parent);
-
           child.nodeValue = this.__evaluate(child);
         }
         else if (child.nodeType == 1 && !child.__akili) {

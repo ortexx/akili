@@ -12,8 +12,8 @@ import Akili from '../akili.js';
  * @message @see Text
  */
 export default class Input extends Text {
-  static booleanAttributes = ['checked', 'multiple'];
-  static events = ['change'];
+  static booleanAttributes = ['checked', 'multiple'].concat(Text.booleanAttributes);
+  static events = ['change'].concat(Text.events);
 
   static define() {
     Akili.component('input', this);

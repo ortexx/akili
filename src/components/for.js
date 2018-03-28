@@ -13,6 +13,7 @@ import utils from '../utils.js';
  */
 export default class For extends Component {
   static matches = '[in]';
+  static events = ['out'];
   static saveAttributeProxyIn = true;  
 
   static define() {
@@ -150,12 +151,10 @@ export default class For extends Component {
     }
 
     this.data = data;   
-    let iterators = [];
     let index = 0;
 
     const loop = (key, value, index) => {
       let iterator = this.loop(key, value, index);
-      iterators.push(iterator);
       iterator.iterate(index);
     };
 
@@ -180,6 +179,8 @@ export default class For extends Component {
       l--;
       i--;
     }
+
+    this.attrs.onOut.trigger(this.data, { bubbles: true });
   }
 }
 
