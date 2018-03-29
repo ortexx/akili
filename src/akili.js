@@ -727,26 +727,13 @@ Akili.init = function(root) {
 
   this.__root = root;
   
-  if(window.AKILI_SERVER) {
-    let html = window.AKILI_SERVER.html;
-
-    for (let i = this.__root.attributes.length - 1; i >= 0; i--){
-      this.__root.removeAttribute(this.__root.attributes[i].name);
-    }
-
-    let parser = new DOMParser();
-    let doc = parser.parseFromString(html, "text/html");
-    let el = doc.querySelector(this.__root === document.body? 'body': 'body > *');    
-    this.__root.innerHTML = el.innerHTML;
-
-    for (let i = el.attributes.length - 1; i >= 0; i--) {
-      let attr = el.attributes[i];
-      this.__root.setAttribute(attr.name, attr.value);
-    }  
+  if(window.AKILI_SERVER) {    
+    Akili.initServerSideHtml(window.AKILI_SERVER.html);
+    Akili.initServerSideRequestCache(window.AKILI_SERVER.requestCache);
   }
   else {
     window.AKILI_CLIENT = {
-      html: this.__root.outerHTML
+      html: this.prepareServerSideHtml()      
     }
   }
   
@@ -754,13 +741,73 @@ Akili.init = function(root) {
     if (router.__init) {
       return router.changeState();
     }
-  }).then(() => {
+  }).then(() => {    
+    window.AKILI_CLIENT && (window.AKILI_CLIENT.requestCache = this.prepareServerSideRequestCache());
     this.triggerInit(true);
   }).catch((err) => {
     this.triggerInit(false);
     throw err;
   });
 };
+
+/**
+ * Initialize server-side rendering html
+ * 
+ * @param {string} html
+ */
+Akili.initServerSideHtml = function (html) {
+  for (let i = this.__root.attributes.length - 1; i >= 0; i--){
+    this.__root.removeAttribute(this.__root.attributes[i].name);
+  }
+
+  let parser = new DOMParser();
+  let doc = parser.parseFromString(html, "text/html");
+  let el = doc.querySelector(this.__root === document.body? 'body': 'body > *');    
+  this.__root.innerHTML = el.innerHTML;
+
+  for (let i = el.attributes.length - 1; i >= 0; i--) {
+    let attr = el.attributes[i];
+    this.__root.setAttribute(attr.name, attr.value);
+  }  
+}
+
+/**
+ * Initialize server-side rendering request cache
+ * 
+ * @param {object} obj
+ */
+Akili.initServerSideRequestCache = function (obj) {
+  const init = (instance, obj) => {
+    for(let key in obj) {
+      instance.__cache[key] = obj[key];
+    }
+  }
+  
+  for (let key in obj) {
+    let instance = key === '__main'? request: request.__instances[key];
+    init(instance, obj[key]);
+  }
+}
+
+/**
+ * Prepare server-side rendering html
+ */
+Akili.prepareServerSideHtml = function () {
+  return this.__root.outerHTML;
+}
+
+/**
+ * Prepare server-side rendering request cache
+ */
+Akili.prepareServerSideRequestCache = function () {
+  let cache = { __main: request.__cache };
+
+  for(let key in request.__instances) {
+    cache[key] = request.__instances[key].__cache;
+  }
+
+  return cache;
+}
 
 /**
  * Deinitialize the application

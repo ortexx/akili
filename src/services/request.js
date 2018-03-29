@@ -1,4 +1,5 @@
 import utils from '../utils.js';
+import Akili from '../akili.js';
 
 /**
  * Request class.
@@ -61,6 +62,7 @@ export class Request {
            
       let hash = null;
       let cache = typeof options.cache == 'function'? options.cache(options): options.cache;
+      (window.AKILI_SERVER && !Akili.__init) && (cache = true);
 
       if(options.method.toUpperCase() == 'GET' && (!options.body || typeof options.body == 'string')) {
         hash = this.createCacheHash({ 
@@ -77,10 +79,7 @@ export class Request {
         let now = new Date().getTime();
 
         if(_cache && (cache === true || now - _cache.createdAt <= cache)) {
-          return resolve(_cache.data);
-        }
-        else if(_cache) {
-          this.removeCache(hash);
+          return resolve(this.transformAfter(_cache.result));
         }
       }
 
@@ -112,7 +111,21 @@ export class Request {
       }
 
       xhr.onload = () => {
-        let response = this.transformAfter(xhr);
+        const result = {
+          response: xhr.response,
+          status: xhr.status,
+          readyState: xhr.readyState,
+          statusText: xhr.statusText,
+          withCredentials: xhr.withCredentials,
+          responseType: xhr.responseType,
+          responseText: xhr.responseType == 'text'? xhr.responseText: '',
+          responseXML: xhr.responseType == 'document'? xhr.responseXML: '',
+          responseURL: xhr.responseURL,
+          timeout: xhr.timeout,
+          headers: this.getHeaders(xhr),         
+        };
+
+        const response = this.transformAfter(result);
 
         if ((xhr.status + '').match(options.statusErrorsPattern)) {
           let err = new Error(`Request to "${options.url}" returns failure status code ${xhr.status}`);
@@ -120,7 +133,7 @@ export class Request {
           return reject(err);
         } 
 
-        cache && hash && this.createCache(hash, response);        
+        hash && this.createCache(hash, result);        
         resolve(response);
       };
 
@@ -137,6 +150,30 @@ export class Request {
   }
 
   /**
+   * Get headers of a XMLHttpRequest instance
+   * 
+   * @param {XMLHttpRequest}
+   */
+  getHeaders = function(xhr) {
+    let headers = {};
+    let str = xhr.getAllResponseHeaders();  
+    let arr = str.split('\u000d\u000a');
+
+    for (let i = 0, l = arr.length; i < l; i++) {
+      let line = arr[i];
+      let index = line.indexOf('\u003a\u0020');
+
+      if (index > 0) {
+        let key = line.substring(0, index);
+        let val = line.substring(index + 2);
+        headers[key] = val;
+      }
+    }
+
+    return headers;
+  }
+
+  /**
    * Get cache
    * 
    * @param {string} hash
@@ -150,10 +187,10 @@ export class Request {
    * Create cache
    * 
    * @param {string} hash
-   * @param {object} data
+   * @param {object} result
    */
-  createCache(hash, data) {
-    this.__cache[hash] = { data, createdAt: new Date().getTime() };
+  createCache(hash, result) {
+    this.__cache[hash] = { result, createdAt: new Date().getTime() };
   }
 
   /**
@@ -300,14 +337,13 @@ export class Request {
   /**
    * Transform data after a request
    *
-   * @param {XMLHttpRequest} xhr
+   * @param {object} result
    * @returns {object}
    */
-  transformAfter(xhr) {
+  transformAfter(result) {
     return {
-      xhr: xhr,
-      data: xhr.response,
-      status: xhr.status
+      ...result,
+      data: result.response,
     };
   }
 

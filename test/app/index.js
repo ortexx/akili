@@ -41,8 +41,15 @@ describe('Application initialization', () => {
     assert.throws(() => Akili.init({}), '',  'by non-element');
   }); 
 
-  it('should be initialized', () => {
-    window.AKILI_SERVER = { html: elements.root.outerHTML };   
+  it('should be initialized on the client side', () => {
+    window.AKILI_SERVER = { 
+      html: elements.root.outerHTML, 
+      requestCache: { 
+        __main: {
+          undefined: { result: {}, date: Date.now() }
+        }
+      }, 
+    };   
 
     return Akili.init(elements.root).then(() => {
       elements.root.appendChild(elements.app);

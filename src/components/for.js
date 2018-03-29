@@ -10,6 +10,7 @@ import utils from '../utils.js';
  * @tag for
  * @selector for[in],ol[in],ul[in],thead[in],tbody[in],tfoot[in]
  * @attr {object|array} in - data to create the loop
+ * @message {object|array} out - sent on the data change
  */
 export default class For extends Component {
   static matches = '[in]';

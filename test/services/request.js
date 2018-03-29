@@ -172,34 +172,37 @@ describe('request.js', () => {
 
       it('should set "responseType" option', () => {
         return request.get('ping', { responseType: 'json' }).then((res) => {
-          assert.equal(res.xhr.responseType, 'json');
+          assert.equal(res.responseType, 'json');
         });
       });
 
       it('should set "withCredentials" option', () => {
         return request.get('ping', { withCredentials: true }).then((res) => {
-          assert.isOk(res.xhr.withCredentials);
+          assert.isOk(res.withCredentials);
         });
       });
 
       it('should create cache', () => {
         return request.get('ping', { cache: 1000 }).then((res) => {
           return request.get('ping', { cache: true }).then((result) => {
-            assert.strictEqual(res, result);
+            assert.equal(JSON.stringify(res), JSON.stringify(result));
           });
         });
       });
 
       it('should create cache', () => {
+        let length = Object.keys(request.__cache).length;
+
         return request.get('ping', { cache: 1000, params: { x: 1 } }).then(() => {
-          assert.lengthOf(Object.keys(request.__cache), 2);
+          assert.lengthOf(Object.keys(request.__cache), length + 1);
         });
       });
 
       it('should remove cache', () => {
+        let length = Object.keys(request.__cache).length;
         let hash = Object.keys(request.__cache)[0];
         request.removeCache(hash);        
-        assert.lengthOf(Object.keys(request.__cache), 1);
+        assert.lengthOf(Object.keys(request.__cache), length - 1);
       });
     });
 

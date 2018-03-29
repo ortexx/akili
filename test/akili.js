@@ -139,6 +139,13 @@ describe('akili.js', () => {
       });
     });
 
+    describe('.prepareServerSideHtml()', () => {
+      it('should return the right html', () => {
+        let res = Akili.prepareServerSideHtml();
+        assert.equal(Akili.__root.outerHTML, res);
+      });
+    }); 
+
     describe('.isolate()', () => {
       let component;
 
