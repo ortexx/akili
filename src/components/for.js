@@ -230,7 +230,6 @@ export default class For extends Component {
     this.__value = null;    
     this.__comparisonValue = null;
     this.__promises = [];
-    this.renderType = 'asc';
   }
 }
 
