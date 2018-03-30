@@ -216,6 +216,10 @@ export default class For extends Component {
         return;
       }
 
+      if(this.renderType !== 'asc') {
+        this.__children.sort((a, b) => a.__akili.index - b.__akili.index);
+      }
+
       return Promise.all(this.__promises).then(() => {
         this.reset();        
         this.attrs.onOut.trigger(this.data, { bubbles: true });

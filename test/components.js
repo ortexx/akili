@@ -101,7 +101,7 @@ describe('components/', () => {
     it('should splice one element', (done) => {
       const fn = () => {
         assert.equal(_ul.children().length, 9, 'check length');
-        assert.equal(_ul.el.children[0].innerHTML, '0=1', 'check key 0'); 
+        assert.equal(_ul.children()[0].el.innerHTML, '0=1', 'check key 0'); 
         _ul.el.removeEventListener('out', fn);  
         done();
       };
