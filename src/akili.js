@@ -66,6 +66,8 @@ Akili.setDefaults = function () {
     'disabled', 'contenteditable', 'hidden'
   ];
 
+  Akili.wrap(utils, { unevaluate: true });
+
   this.components = {};
   this.services = {};
 
@@ -101,7 +103,7 @@ Akili.setDefaults = function () {
   this.errorHandling();
   this.isolateEvents();
   this.isolateArrayPrototype();
-  this.isolateWindowFunctions();
+  this.isolateWindowFunctions();  
 }
 
 /**
@@ -132,7 +134,7 @@ Akili.define = function () {
 /**
  * Clear the global context
  */
-Akili.clearGlobals = function() {
+Akili.clearGlobals = function () {
   if(this.__cleared) {
     return;
   }
@@ -149,6 +151,7 @@ Akili.clearGlobals = function() {
   window.setInterval = this.__window.setInterval;
   window.Promise = this.__window.Promise;
   window.removeEventListener('error', this.__onError);
+  Akili.unwrap(utils);
   this.__cleared = true;
 };
 
@@ -157,7 +160,7 @@ Akili.clearGlobals = function() {
  *
  * @param {string[]} keys binding keys
  */
-Akili.joinBindingKeys = function(keys) {
+Akili.joinBindingKeys = function (keys) {
   return keys.map(el => el.toString()).join('.');
 };
 
@@ -166,7 +169,7 @@ Akili.joinBindingKeys = function(keys) {
  *
  * @param scope
  */
-Akili.addScope = function(scope) {
+Akili.addScope = function (scope) {
   if (this.__scopes[scope.__name]) {
     throw new Error(`Scope name ${scope.__name} already exists`);
   }
@@ -180,7 +183,7 @@ Akili.addScope = function(scope) {
  * @param {string} name - scope name
  * @returns {Scope}
  */
-Akili.getScope = function(name) {
+Akili.getScope = function (name) {
   return this.__scopes[name];
 };
 
@@ -189,7 +192,7 @@ Akili.getScope = function(name) {
  *
  * @param {string} name - scope name
  */
-Akili.removeScope = function(name) {
+Akili.removeScope = function (name) {
   this.__scopes[name] = null;
   delete this.__scopes[name];
 };
@@ -236,7 +239,7 @@ Akili.getAkiliParents = function (el, tree = true) {
  * @param {string} template
  * @returns {string}
  */
-Akili.setTemplate = function(el, template) {
+Akili.setTemplate = function (el, template) {
   template = template.replace(/\${(((?!\${)\s*this\.__content\s*)*)}/, el.innerHTML);
   el.innerHTML = template;
 
@@ -248,7 +251,7 @@ Akili.setTemplate = function(el, template) {
  *
  * @returns {string}
  */
-Akili.createScopeName = function() {
+Akili.createScopeName = function () {
   return utils.createRandomString(16, (str) => {
     return !!this.__scopes[str];
   });
@@ -264,7 +267,7 @@ Akili.createScopeName = function() {
  * @param {function} fn
  * @returns {*}
  */
-Akili.isolate = function(fn) { 
+Akili.isolate = function (fn) { 
   if (this.__isolation) {
     return fn();
   }
@@ -304,7 +307,7 @@ Akili.isolate = function(fn) {
  * @param {function} fn
  * @returns {*}
  */
-Akili.unevaluate = function(fn) {
+Akili.unevaluate = function (fn) {
   let evaluation = this.__evaluation;
   let res;
   this.__evaluation = null;
@@ -319,7 +322,7 @@ Akili.unevaluate = function(fn) {
  * @param {function} fn
  * @returns {*}
  */
-Akili.unisolate = function(fn) {
+Akili.unisolate = function (fn) {
   let isolation = this.__isolation;
   let res;
   this.__isolation = null;
@@ -334,7 +337,7 @@ Akili.unisolate = function(fn) {
  * @param {function} fn
  * @returns {Promise}
  */
-Akili.nextTick = function(fn) {
+Akili.nextTick = function (fn) {
   return new Promise((res) => setTimeout(() => Promise.resolve(fn()).then(res)));
 };
 
@@ -345,7 +348,7 @@ Akili.nextTick = function(fn) {
  * @param {object} [options={}]
  * @returns {*}
  */
-Akili.initialize = function(el, options = {}) {
+Akili.initialize = function (el, options = {}) {
   let recompile = options.recompile;
   let component = el.__akili;
 
@@ -418,7 +421,7 @@ Akili.initialize = function(el, options = {}) {
  * @param {object} [options]
  * @returns {Promise}
  */
-Akili.compile = function(root, options = { recompile: false }) {  
+Akili.compile = function (root, options = { recompile: false }) {  
   let elements = [];
 
   const nestedInitializing = (el) => {
@@ -458,7 +461,7 @@ Akili.compile = function(root, options = { recompile: false }) {
  * @param {string} name
  * @param {Component} [fn]
  */
-Akili.component = function(name, fn) {
+Akili.component = function (name, fn) {
   name = name.toLowerCase();
 
   if (!fn) {
@@ -478,7 +481,7 @@ Akili.component = function(name, fn) {
  *
  * @param {string} name
  */
-Akili.unregisterComponent = function(name) {
+Akili.unregisterComponent = function (name) {
   delete this.__components[name];
 };
 
@@ -488,7 +491,7 @@ Akili.unregisterComponent = function(name) {
  * @param {string} selector - DOM selector
  * @param {string} [componentName]
  */
-Akili.alias = function(selector, componentName = '') {
+Akili.alias = function (selector, componentName = '') {
   componentName = componentName.toLowerCase();
 
   if (!componentName) {
@@ -508,14 +511,14 @@ Akili.alias = function(selector, componentName = '') {
  *
  * @param {string} selector
  */
-Akili.unregisterAlias = function(selector) {
+Akili.unregisterAlias = function (selector) {
   delete this.__aliases[selector];
 };
 
 /**
  * Isolate array prototype functions
  */
-Akili.isolateArrayPrototype = function() {
+Akili.isolateArrayPrototype = function () {
   this.__window.Array = { prototype: {} };
 
   let keys = Object.getOwnPropertyNames(Array.prototype);
@@ -530,7 +533,7 @@ Akili.isolateArrayPrototype = function() {
 
     this.__window.Array.prototype[key] = old;
 
-    Array.prototype[key] = function() {
+    Array.prototype[key] = function () {
       return Akili.unevaluate(() => {
         if (!this.__isProxy) {
           return old.apply(this, arguments);
@@ -561,18 +564,18 @@ Akili.isolateWindowFunctions = function() {
 /**
  * Isolate event listeners
  */
-Akili.isolateEvents = function() {
+Akili.isolateEvents = function () {
   this.__window.Element = { prototype: {} };
   this.__window.Element.prototype.addEventListener = Element.prototype.addEventListener;
   this.__window.Element.prototype.removeEventListener = Element.prototype.removeEventListener;
   this.__window.Element.prototype.remove = Element.prototype.remove;
 
-  Element.prototype.remove = function() {
+  Element.prototype.remove = function () {
     delete this.__akiliListeners;
     return Akili.__window.Element.prototype.remove.apply(this, arguments);
   };
 
-  Element.prototype.addEventListener = function(name, fn) {
+  Element.prototype.addEventListener = function (name, fn) {
     let args = [].slice.call(arguments);
 
     if (!this.__akiliListeners) {
@@ -597,7 +600,9 @@ Akili.isolateEvents = function() {
     return Akili.__window.Element.prototype.addEventListener.apply(this, args);
   };
 
-  Element.prototype.removeEventListener = function(name, fn) {
+  Element.prototype.removeEventListener = function (name, fn) {
+    let args = [].slice.call(arguments);
+
     if (!this.__akiliListeners) {
       this.__akiliListeners = {};
     }
@@ -611,6 +616,7 @@ Akili.isolateEvents = function() {
 
       if (listener.link === fn) {
         this.__akiliListeners[name].splice(i, 1);
+        args[1] = listener.fn;
         i--;
         l--;
         break;
@@ -621,7 +627,7 @@ Akili.isolateEvents = function() {
       delete this.__akiliListeners[name];
     }
 
-    return Akili.__window.Element.prototype.removeEventListener.apply(this, arguments);
+    return Akili.__window.Element.prototype.removeEventListener.apply(this, args);
   };
 };
 
@@ -632,7 +638,7 @@ Akili.isolateEvents = function() {
  * @param {number|string|number[]|string[]} [pos="last"]
  * @returns {function}
  */
-Akili.createCallbackIsolation = function(fn, pos = 'last') {
+Akili.createCallbackIsolation = function (fn, pos = 'last') {
   return function () {
     let args = [].slice.call(arguments);
     !Array.isArray(pos) && (pos = [pos]);
@@ -663,32 +669,91 @@ Akili.createCallbackIsolation = function(fn, pos = 'last') {
 };
 
 /**
- * Isolate the function
+ * Wrap objects/classes to isolate and unevaluate data
+ *
+ * @param {*} obj
+ * @param {object|function} [options] 
+ */
+Akili.wrap = function (obj, options = {}) {
+  let arr = [];
+
+  if(typeof obj == 'function') {
+    arr.push(obj.prototype);
+    arr.push(obj);
+  }
+  else if(obj && typeof obj == 'object' && !Array.isArray(obj)) {
+    arr.push(obj);
+  }
+  else {
+    return;
+  }
+
+  for(let i = 0, l = arr.length; i < l; i++) {
+    let obj = arr[i];
+    let keys = Object.getOwnPropertyNames(obj);
+
+    for(let k = 0, c = keys.length; k < c; k++) {
+      let key = keys[k];
+      let val = obj[key];
+
+      if(typeof val == 'object') {
+        this.wrap(val, options);
+      }
+      else if(typeof val != 'function') {
+        continue;
+      }
+
+      if(options.reverse) {
+        obj[key] = obj[key].__akili;
+        continue;
+      }
+
+      obj[key] = this.wrapFunction(obj[key], options);  
+    }    
+  }
+};
+
+/**
+ * Unwrap objects/classes
+ *
+ * @param {object|function} obj
+ */
+Akili.unwrap = function (obj) {
+  return this.wrap(obj, { reverse: true });
+}
+
+/**
+ * Isolate a function
  *
  * @param {function} fn
- * @param {object} [context]
+ * @param {object} [options]
  * @returns {function}
  */
-Akili.isolateFunction = function(fn, context = null) {
+Akili.wrapFunction = function(fn, options = { isolate: true }) {
   if (fn.__akili) {
     return fn;
   }
 
-  let oFn = function() {
-    context = context || this;
+  const akiliWrappedFunction = function () {
+    if(options.unevaluate && options.isolate) {
+      return Akili.unevaluate(() => Akili.isolate(() => fn.apply(this, arguments)));
+    }
+    else if(options.unevaluate) {
+      return Akili.unevaluate(() => fn.apply(this, arguments));
+    }
+    else if(options.isolation) {
+      return Akili.isolate(() => fn.apply(this, arguments));
+    }
 
-    return Akili.isolate(() => {
-      return fn.apply(context, arguments);
-    });
+    return fn.apply(this, arguments);
   };
 
-  Object.defineProperty(oFn, '__akili', {
-    configurable: true,
+  Object.defineProperty(akiliWrappedFunction, '__akili', {
     enumerable: false,
-    value: true
+    value: fn
   });
 
-  return oFn;
+  return akiliWrappedFunction;
 };
 
 /**

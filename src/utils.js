@@ -226,7 +226,7 @@ utils.filter = function (arr, handler, keys = null) {
  * @returns {Array}
  */
 utils.sort = function(arr, keys = true, order = []) {
-  arr = [...arr];
+  arr = arr.slice();
 
   if (keys === true) {
     keys = [];

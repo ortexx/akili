@@ -47,11 +47,14 @@ export default class Radio extends For {
     }
   }
 
-  resolved() {
-    this.attr('in', this.setNames, { callOnStart: false });   
+  resolved() {   
     this.attr('value', this.setValue); 
     this.attr('name', this.setNames);
     return super.resolved.apply(this, arguments);
+  }
+
+  draw() {
+    return super.draw.apply(this, arguments).then(() => this.__isResolved && this.setNames(this.attrs.name));
   }
 
   setNames(name) {

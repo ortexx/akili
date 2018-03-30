@@ -59,9 +59,10 @@ describe('components/', () => {
 
   describe('For, Loop', () => {
     let _for, _ul;
+    let data;
 
     before(() => {
-      let data = [];
+      data = [];
 
       for (let i = 0; i < 10; i++) {
         data.push(i);
@@ -69,15 +70,26 @@ describe('components/', () => {
       
       _for = component.child('for');
       _ul = component.child('ul');
-      component.scope.cForData = data;
+      
     });
 
-    it('should fill "for" node with all data', () => {
-      assert.equal(_for.children().length, 10);
+    it('should not fill "for" node with all data', () => {
+      component.scope.cForData = data;
+      assert.notEqual(_for.children().length, 10);
     });
 
     it('should fill "ul" node with all data', () => {
       assert.equal(_ul.children().length, 10);
+    });
+
+    it('should fill "for" node with all data', (done) => {
+      const fn = () => {
+        assert.equal(_for.children().length, 10);
+        _for.el.removeEventListener('out', fn);  
+        done();
+      };
+
+      _for.el.addEventListener('out', fn);
     });
 
     it('should fill any item html', () => {
@@ -86,10 +98,16 @@ describe('components/', () => {
       assert.equal(_ul.children()[9].el.innerHTML, '9=9', 'check key 9');
     });
 
-    it('should splice one element', () => {
+    it('should splice one element', (done) => {
+      const fn = () => {
+        assert.equal(_ul.children().length, 9, 'check length');
+        assert.equal(_ul.children()[0].el.innerHTML, '0=1', 'check key 0'); 
+        _ul.el.removeEventListener('out', fn);  
+        done();
+      };
+
+      _ul.el.addEventListener('out', fn);  
       component.scope.cForData.splice(0, 1);
-      assert.equal(_ul.children().length, 9, 'check length');
-      assert.equal(_ul.children()[0].el.innerHTML, '0=1', 'check key 0');
     });
   });
 
@@ -211,28 +229,40 @@ describe('components/', () => {
 
     describe('select manipulations', () => {
       let select;
+      let data;
 
       before(() => {
-        let data = [];
+        data = [];
 
         for (let i = 0; i < 5; i++) {
           data.push(i);
         }
 
         select = component.child('select');
-        component.scope.cSelectData = data;
       });
 
-      it('should set the option "selected" value', () => {
-        assert.equal(select.el.value, '2', 'check value');
-        assert.equal(select.el.content, '2', 'check content');
+      it('should set the option "selected" value', done => {
+        const fn = () => {
+          select.el.removeEventListener('change', fn);
+          assert.equal(select.el.value, '2', 'check value');
+          assert.equal(select.el.content, '2', 'check content');            
+          done();
+        };
+  
+        select.el.addEventListener('change', fn);  
+        component.scope.cSelectData = data; 
       });
+      
+      it('should save the option "selected" value after any deletion', done => {
+        const fn = () => {                  
+          select.el.removeEventListener('change', fn); 
+          assert.equal(select.el.value, '3', 'check value');
+          assert.equal(select.el.content, '3', 'check content');
+          done();
+        };
 
-      it('should save the option "selected" value after any deletion', () => {
+        select.el.addEventListener('change', fn);  
         component.scope.cSelectData.splice(0, 1);
-        assert.equal(select.el.value, '3', 'check value');
-        assert.equal(select.el.content, '3', 'check content');
-
       });
 
       it('should change the value', () => {

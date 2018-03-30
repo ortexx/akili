@@ -12,7 +12,6 @@ import Akili from '../akili.js';
  * @attr {boolean} recreate - delete the content and recreate or just show/hide 
  */
 export default class If extends Component {
-  static transparent = true;
   static matches = '[is]';
   static booleanAttributes = ['recreate'];
 
@@ -74,7 +73,7 @@ export default class If extends Component {
     }
     else {
       if (this.recreate) {
-        this.__empty();
+        this.empty();
       }
       else if (!this.isCompiled) {
         res = this.compile();
@@ -88,7 +87,7 @@ export default class If extends Component {
 
   compile() {
     let res;
-    this.el.innerHTML = this.html;
+    this.el.innerHTML = this.html;    
     res = Akili.compile(this.el, { recompile: true });
     this.isCompiled = true;
     return res;

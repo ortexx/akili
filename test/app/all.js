@@ -44,13 +44,13 @@ export default class All extends Component {
     `;
     
     this.el.innerHTML += `
-      <for in="\${this.cForData}">\${this.loopKey}=\${this.loopValue}</for>
-      <for in="\${ {x: 1, y: 2} }">
+      <for in="\${this.cForData}" render="asc" chunk="2">\${this.loopKey}=\${this.loopValue}</for>
+      <for in="\${ {x: 1, y: 2} }" render="mid">
         <div component="loop" in="\${[1]}">
           \${this.loopKey}=\${this.loopValue}
         </div>
       </for>
-      <ul in="\${this.cForData}"><li>\${this.loopKey}=\${this.loopValue}</li></ul>
+      <ul in="\${this.cForData}" render="desc"><li>\${this.loopKey}=\${this.loopValue}</li></ul>
     `;
 
     this.el.innerHTML += `
@@ -91,6 +91,12 @@ export default class All extends Component {
       >
         <radio-button value="radio-1"></radio-button>
         <input type="radio" value="radio-2"/>
+      </radio>
+      <radio
+        name="radio2"
+        in="\${this.cForData}"
+      >
+        <radio-button value="\${ this.loopValue }"></radio-button>
       </radio>
     `
   }

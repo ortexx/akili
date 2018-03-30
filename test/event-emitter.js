@@ -12,7 +12,6 @@ Element.prototype.addEventListener = function(name, fn) {
   }
 
   listeners[name].push(fn);
-
   return oldAddEventListener.apply(this, arguments);
 };
 
@@ -26,7 +25,6 @@ Element.prototype.removeEventListener = function(name, fn) {
 
     if(listener === fn) {
       listeners[name].splice(i, 1);
-
       break;
     }
   }

@@ -446,6 +446,7 @@ export default class Component {
       let evaluate;
       let evaluation = [];
       let existingBindings = {};
+      let parentBindings = {};
       let parseValue = node.__component.__getParsedExpression(d);
       Akili.__evaluation = { node: node, list: [], component: node.__component };
       
@@ -458,7 +459,7 @@ export default class Component {
         let componentName = (attrName || tagName).toLowerCase();
         let elementName = node.__element.tagName.toLowerCase();
         let attributeName = (node instanceof window.Attr)? node.name.toLowerCase(): '';        
-        let messages =  [ err.message, node.__expression.trim() ];
+        let messages = [ err.message, node.__expression.trim() ];
         attributeName && messages.push(`[attribute ${attributeName}]`);
         messages = messages.concat([ `[element ${elementName}]`, `[component ${componentName}]` ]);
         throw `Expression error: ` + messages.join('\n\tat ');
@@ -473,6 +474,7 @@ export default class Component {
       for (let i = evaluation.length - 1; i >= 0; i--) {
         let data = evaluation[i];
         let hash = this.__createKeysHash(data.keys);
+        let parentsHash = this.__createKeysHash(data.parents);
        
         if (data.notBinding) {
           continue;
@@ -484,6 +486,19 @@ export default class Component {
 
         let parentValue = utils.getPropertyByKeys(data.parents, data.component.__scope);
         let evalComponent = node.__attributeOf || node.__component;
+
+        if (parentValue && typeof parentValue == 'object') {
+          if(Akili.options.debug && parentBindings[parentsHash] == 50) {
+            // eslint-disable-next-line no-console
+            console.warn([
+              `For higher performance, don't loop Proxy arrays/objects inside expression functions, or use Akili.unevaluate() to wrap you code.`,
+              `${ node.__expression.trim() }`,
+              `scope property "${ data.parents.join('.')}"`
+            ].join('\n\tat '));
+          }
+           
+          !parentBindings[parentsHash]? parentBindings[parentsHash] = 1: parentBindings[parentsHash]++;
+        }
                 
         if (
           utils.isScopeProxy(parentValue) && 
@@ -575,7 +590,7 @@ export default class Component {
   __evaluateNested(keys, withoutParents = false) {
     let scope = this.__scope;
     let props = [];    
-    
+
     if (!withoutParents) {
       let lastProps = [];
 
@@ -607,7 +622,7 @@ export default class Component {
          
         for (let k = 0, c = data.__data.length; k < c; k++) {
           let bind = data.__data[k]; 
- 
+          
           if (component.__checkNodePropertyChanging(bind.node, prop.keys, prop.value)) {     
             component.__disableKeys(prop.keys);
             let checkProp = component.__getNodeProperty(bind.node, prop.keys);            
@@ -749,7 +764,7 @@ export default class Component {
    * @protected
    */
   __initializeAttribute(node, el, attributeOf) {
-    if (systemAttributes.indexOf(node.nodeName) != -1) {
+    if (!node || systemAttributes.indexOf(node.nodeName) != -1) {
       return;
     }
 
@@ -935,10 +950,10 @@ export default class Component {
         }
 
         if (typeof target[key] === 'function') {
-          let realTarget  = utils.getOwnPropertyTarget(target, key);
+          let realTarget = utils.getOwnPropertyTarget(target, key);
 
           if (!utils.isPlainObject(realTarget)) {
-            realTarget[key] = Akili.isolateFunction(realTarget[key]);
+            realTarget[key] = Akili.wrapFunction(realTarget[key], { isolate: true });
           }
         }
 
@@ -1157,7 +1172,8 @@ export default class Component {
         continue;
       }
       
-      component.scope.__set(link.keys, value);      
+      let current = utils.getPropertyByKeys(link.keys, component.__scope);
+      !utils.compare(current, value) && component.scope.__set(link.keys, value);     
     }     
   }
 
@@ -1369,7 +1385,15 @@ export default class Component {
     for(let i = 0, l = links.length; i < l; i++) {
       const link = links[i];    
       this.__disableAttrTriggering = true;
-      link.fn? Akili.unisolate(() => link.fn.call(this, value)): this.scope.__set(link.keys, value); 
+
+      if(link.fn) {
+        Akili.unisolate(() => link.fn.call(this, value));
+      }
+      else {
+        let current = utils.getPropertyByKeys(link.keys, this.__scope);
+        !utils.compare(current, value) && this.scope.__set(link.keys, value);
+      } 
+
       this.__disableAttrTriggering = false; 
     }
   }
@@ -1833,15 +1857,15 @@ export default class Component {
         if (!obj.hasOwnProperty(k)) {
           continue;
         }
-
+        
         if (k == '__data') {
           let data = obj[k] || [];
           let l = data.length;
 
           for (let i = 0; i < l; i++) {
             let bind = data[i];
-
-            if (nodes.indexOf(bind.node) != -1) {
+            
+            if (nodes.indexOf(bind.node) != -1) {              
               data.splice(i, 1);
               i--;
               l--;
@@ -1857,7 +1881,7 @@ export default class Component {
         }
       }
     };
-
+    
     unbind(this.__bindings);
     this.__clearEmptyBindings();
   }
@@ -1989,7 +2013,6 @@ export default class Component {
   __empty() {
     let nodes = [];
     this.__removeChildren();
-
     const find = (children) => {
       for (let i = 0, l = children.length; i < l; i++) {
         let child = children[i];
@@ -2006,7 +2029,7 @@ export default class Component {
         }
       }
     };
-
+    
     find(this.el.childNodes);
     this.__unbindByNodes(nodes);
     this.el.innerHTML = '';

@@ -34,13 +34,14 @@ export default class Select extends For {
 
     return super.created.apply(this, arguments);
   }
-  
-  compiled() { 
-    let res = super.compiled.apply(this, arguments);   
+
+  resolved() {   
     this.attr('multiple', this.setMultiple);
-    this.attr('content', this.setContent);
-    this.attr('in', this.drawSelect);
-    return res;
+    this.attr('content', this.setContent)
+  }
+
+  draw() {
+    return super.draw.apply(this, arguments).then(() => this.drawSelect());
   }
 
   setMultiple(value) {

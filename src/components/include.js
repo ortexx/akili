@@ -15,7 +15,6 @@ import request from '../services/request.js';
  * @message {Error} error - sent on error
  */
 export default class Include extends Component {
-  static transparent = true;
   static matches = '[url]';
   static events = ['load', 'error'];
 
