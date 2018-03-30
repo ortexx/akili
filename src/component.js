@@ -2061,7 +2061,6 @@ export default class Component {
         if (!selector || parent.__akili.matches(selector)) {
           if (!findAll) {
             arr.push(parent.__akili);
-
             return;
           }
 
@@ -2074,7 +2073,6 @@ export default class Component {
     };
 
     find(this.__parent);
-
     return findAll? arr: (arr[0] || null);
   }
 
@@ -2103,7 +2101,6 @@ export default class Component {
           if (!selector || child.__akili.matches(selector)) {
             if (!findAll) {
               arr.push(child.__akili);
-
               return;
             }
 
@@ -2120,7 +2117,6 @@ export default class Component {
     };
 
     find(this.__children);
-
     return findAll? arr: (arr[0] || null);
   }
 
@@ -2140,7 +2136,6 @@ export default class Component {
 
     let levelElements = this.__parent.__akili.__children.slice();
     let arr = [];
-
     right && levelElements.reverse();
 
     for (let i = 0, l = levelElements.length; i < l; i++) {

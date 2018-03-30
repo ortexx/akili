@@ -73,7 +73,6 @@ export default class Radio extends For {
     let prev = this.prevValue;
     let children = this.children('input[type=radio]');
     let isTrue = false;
-
     this.prevValue = value;
 
     for (let i = 0, l = children.length; i < l; i++) {
