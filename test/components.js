@@ -70,44 +70,27 @@ describe('components/', () => {
       
       _for = component.child('for');
       _ul = component.child('ul');
-      
     });
 
-    it('should not fill "for" node with all data', () => {
+    it('should fill "for" node with all data', () => {
       component.scope.cForData = data;
-      assert.notEqual(_for.children().length, 10);
+      assert.equal(_for.children().length, 10);
     });
 
     it('should fill "ul" node with all data', () => {
       assert.equal(_ul.children().length, 10);
     });
 
-    it('should fill "for" node with all data', (done) => {
-      const fn = () => {
-        assert.equal(_for.children().length, 10);
-        _for.el.removeEventListener('out', fn);  
-        done();
-      };
-
-      _for.el.addEventListener('out', fn);
-    });
-
     it('should fill any item html', () => {
-      assert.equal(_ul.el.children[0].innerHTML, '0=0', 'check key 0');
-      assert.equal(_ul.el.children[5].innerHTML, '5=5', 'check key 5');
-      assert.equal(_ul.el.children[9].innerHTML, '9=9', 'check key 9');
+      assert.equal(_ul.children()[0].el.innerHTML, '0=0', 'check key 0');
+      assert.equal(_ul.children()[5].el.innerHTML, '5=5', 'check key 5');
+      assert.equal(_ul.children()[9].el.innerHTML, '9=9', 'check key 9');
     });
 
-    it('should splice one element', (done) => {
-      const fn = () => {
-        assert.equal(_ul.children().length, 9, 'check length');
-        assert.equal(_ul.children()[0].el.innerHTML, '0=1', 'check key 0'); 
-        _ul.el.removeEventListener('out', fn);  
-        done();
-      };
-
-      _ul.el.addEventListener('out', fn);  
+    it('should splice one element', () => {
       component.scope.cForData.splice(0, 1);
+      assert.equal(_ul.children().length, 9, 'check length');
+      assert.equal(_ul.children()[0].el.innerHTML, '0=1', 'check key 0');
     });
   });
 
