@@ -38,10 +38,10 @@ export default class Component {
    * @param {object} [globals]
    */
   static parse(context, expression, globals = {}) {
-    globals = { utils, ...Akili.options.globals, ...globals};
+    globals = { ...Akili.options.globals, ...globals};
     const keys = [];
     const vars = [];
-    const exps = utils.split(expression.trim(), ';', ['"', "'", '`']);  
+    const exps = utils.split(expression, ';', ['"', "'", '`']);  
     exps[exps.length - 1] = `return ${exps[exps.length - 1]}`;
 
     for(let key in globals) {
@@ -70,8 +70,8 @@ export default class Component {
     this.__prevent = false;
     this.__bindings = {};
     this.__evaluatingEvent = null;
-    this.__recompiling = null;
-    this.__compiling = {};
+    this.__recompiling = false;
+    this.__compiling = null;
     this.__disableProxy = {};
     this.__disableAttrTriggering = false;
     this.__children = [];
@@ -87,19 +87,54 @@ export default class Component {
   }
 
   /**
-   * Called on the recompilation
-   *
+   * Create compilation options 
+   * 
+   * @param {object} [options]
    * @protected
    */
-  __recompile() {
+  __createCompilationOptions(options = {}) {
+    return { 
+      checkChanges: false, 
+      setEvents: true,
+      setParents: true,
+      setBooleanAttributes: true,
+      defineAttributes: true,
+      ...options 
+    };
+  }
+
+  /**
+   * Create recompilation options 
+   * 
+   * @param {object} [options]
+   * @protected
+   */
+  __createRecompilationOptions(options = {}) {
+    return { 
+      ...this.__createCompilationOptions(),    
+      setEvents: false,
+      setParents: false,
+      setBooleanAttributes: false,
+      defineAttributes: false,
+      ...options 
+    };
+  }
+ 
+  /**
+   * Called on the recompilation
+   * 
+   * @param {object} [options]
+   * @protected
+   */
+  __recompile(options = {}) {
     this.__isMounted = false;
+    this.__recompiling = true;
     this.__evaluationComponent.__disableProxy = {};
-    this.__compiling = {};
-    this.__recompiling = {};
-    this.__setEvents();
-    this.__setParents();
-    this.__setBooleanAttributes();
-    this.__defineAttributes();
+    this.__compiling = this.__createRecompilationOptions(options);    
+    this.__compiling.setEvents && this.__setEvents();
+    this.__compiling.setParents && this.__setParents();
+    this.__compiling.setBooleanAttributes && this.__setBooleanAttributes();
+    this.__compiling.defineAttributes && this.__defineAttributes();
   }
 
   /**
@@ -108,6 +143,7 @@ export default class Component {
    * @protected
    */
   __create() {
+    this.__compiling = this.__createCompilationOptions();   
     this.__initialize();
     this.__setEvents();
     this.__setParents();
@@ -135,9 +171,8 @@ export default class Component {
       for (let i = 0, l = children.length; i < l; i++) {
         let child = children[i];
 
-        if (child.nodeType == 3) {
-          this.__initializeNode(child, parent);
-          child.nodeValue = this.__evaluate(child);
+        if (child.nodeType == 3 && this.__initializeNode(child, parent, true)) { 
+          this.__evaluateNode(child, this.__compiling.checkChanges);               
         }
         else if (child.nodeType == 1 && !child.__akili) {
           this.__interpolateAttributes(child);
@@ -160,7 +195,7 @@ export default class Component {
         p = request.get(this.constructor.templateUrl, { cache: this.constructor.templateCache }).then((res) => {
           this.el.innerHTML = this.__content;
           Akili.setTemplate(this.el, res.data);
-          delete this.__content;
+          delete this.__content;          
           return Akili.compile(this.el, { recompile: true });
         });
       }
@@ -172,7 +207,7 @@ export default class Component {
       });
     }
     
-    this.__recompiling = null;
+    this.__recompiling = false;
     this.__compiling = null;
 
     return p.then(() => {
@@ -411,7 +446,7 @@ export default class Component {
    * @returns {boolean}
    * @protected
    */
-  __checkNodePropertyChanging(node, keys, value) {
+  __checkNodePropertyChange(node, keys, value) {
     let prop = this.__getNodeProperty(node, keys);
     
     if (!prop) {
@@ -459,7 +494,7 @@ export default class Component {
         let componentName = (attrName || tagName).toLowerCase();
         let elementName = node.__element.tagName.toLowerCase();
         let attributeName = (node instanceof window.Attr)? node.name.toLowerCase(): '';        
-        let messages = [ err.message, node.__expression.trim() ];
+        let messages = [ err.message, node.__expression ];
         attributeName && messages.push(`[attribute ${attributeName}]`);
         messages = messages.concat([ `[element ${elementName}]`, `[component ${componentName}]` ]);
         throw `Expression error: ` + messages.join('\n\tat ');
@@ -473,8 +508,8 @@ export default class Component {
       
       for (let i = evaluation.length - 1; i >= 0; i--) {
         let data = evaluation[i];
-        let hash = this.__createKeysHash(data.keys);
-        let parentsHash = this.__createKeysHash(data.parents);
+        let hash = data.component.__createKeysHash(data.keys);
+        let parentsHash = data.component.__createKeysHash(data.parents);
        
         if (data.notBinding) {
           continue;
@@ -492,11 +527,11 @@ export default class Component {
             // eslint-disable-next-line no-console
             console.warn([
               `For higher performance, don't loop Proxy arrays/objects inside expression functions, or use Akili.unevaluate() to wrap you code.`,
-              `${ node.__expression.trim() }`,
+              `${ node.__expression }`,
               `scope property "${ data.parents.join('.')}"`
             ].join('\n\tat '));
           }
-           
+          
           !parentBindings[parentsHash]? parentBindings[parentsHash] = 1: parentBindings[parentsHash]++;
         }
                 
@@ -506,16 +541,9 @@ export default class Component {
           data.component === data.realComponent
         ) {
           continue;
-        }   
+        }  
 
-        let bind = data.component.__getBoundNode(data.keys, node);
-        let value = utils.getPropertyByKeys(data.keys, data.component.__scope);
-
-        if (!bind) {
-          data.component.__bind(data.keys, { node: node });
-        }
-
-        data.component.__setNodeProperty(node, data.keys, value, data.evaluated);
+        data.component.__bindAndSetProperty(node, data.keys, data.evaluated);
         existingBindings[hash] = true;
       }
 
@@ -543,10 +571,6 @@ export default class Component {
     if (node instanceof window.Attr) {
       let value = res;
       let isBooleanAttribute = false;
-
-      if (counter) {
-        node.__hasBindings = true;
-      }
 
       if (counter == 1 && expression && node.__expression == expression) {
         value = attributeValue;
@@ -578,6 +602,25 @@ export default class Component {
     }
 
     return res;
+  }
+
+  /**
+   * Bind the node and set property
+   *
+   * @param {Node} node
+   * @param {string[]} keys
+   * @param {boolean} [evaluated]
+   * @protected
+   */
+  __bindAndSetProperty(node, keys, evaluated) {
+    let bind = this.__getBoundNode(keys, node);
+    let value = utils.getPropertyByKeys(keys, this.__scope);
+
+    if (!bind) {
+      this.__bind(keys, { node });
+    }
+
+    this.__setNodeProperty(node, keys, value, evaluated);
   }
 
   /**
@@ -623,7 +666,7 @@ export default class Component {
         for (let k = 0, c = data.__data.length; k < c; k++) {
           let bind = data.__data[k]; 
           
-          if (component.__checkNodePropertyChanging(bind.node, prop.keys, prop.value)) {     
+          if (component.__checkNodePropertyChange(bind.node, prop.keys, prop.value)) {     
             component.__disableKeys(prop.keys);
             let checkProp = component.__getNodeProperty(bind.node, prop.keys);            
             checkProp && checkProp.evaluated && component.scope.__set(prop.keys, prop.value, false, true);                       
@@ -666,7 +709,7 @@ export default class Component {
    * @param {boolean} [isDeleted=false] - true if value is deleting
    * @protected
    */
-  __evaluateByKeys(keys, value, isDeleted = false) {     
+  __evaluateByKeys (keys, value, isDeleted = false) {     
     let data = this.__getBind(keys);
 
     const unbind = (obj, parents) => {
@@ -736,7 +779,6 @@ export default class Component {
     this.__disableProxy = {};
     evaluate = this.constructor.parse(this.__evaluationComponent.scope, expression[1], { event: e });
     this.__evaluatingEvent = null;
-
     return evaluate;
   }
 
@@ -748,11 +790,14 @@ export default class Component {
    * @protected
    */
   __evaluateNode(node, check = true) {
+    let key = node instanceof window.Attr? 'value': 'nodeValue';
+
     if (check? this.__checkEvaluation(node): true) {      
-      let key = node instanceof window.Attr? 'value': 'nodeValue';
       let res = this.__evaluate(node);     
       node[key] != res && (node[key] = res);
     }
+
+    return node[key];
   }
 
   /**
@@ -803,7 +848,8 @@ export default class Component {
       node.__attributeOf = component;
     }
 
-    el.setAttribute(node.nodeName, component.__evaluate(node));
+    let check = this.__compiling? this.__compiling.checkChanges: false;
+    el.setAttribute(node.nodeName, component.__evaluateNode(node, check));
   }
 
   /**
@@ -811,25 +857,59 @@ export default class Component {
    *
    * @param {Node} node
    * @param {Element} el
+   * @param {boolean} [checkBinding]
    * @returns {boolean}
    * @protected
    */
-  __initializeNode(node, el) {
+  __initializeNode(node, el, checkBinding = false) {
     if (node.__initialized) {
+      return true;
+    }
+
+    let val = node[(node instanceof window.Attr)? 'value': 'nodeValue'].trim();
+    let hasBinding = checkBinding? evaluationRegex.test(val): false;
+    
+    if(checkBinding && !hasBinding) {
       return false;
     }
 
-    node.__expression = node[(node instanceof window.Attr)? 'value': 'nodeValue'];
+    node.__expression = val;
     node.__properties = {};
     node.__attributeOf = null;
     node.__attributeOn = null;
     node.__event = null;
-    node.__hasBindings = false;
+    node.__hasBindings = hasBinding;
     node.__initialized = true;
     node.__component = this;
     node.__element = el;
-
     return true;
+  }
+
+  /**
+   * Deinitialize the node
+   *
+   * @param {Node} node
+   * @protected
+   */
+  __deinitializeNode(node) {
+    if (node.__event) {
+      node.__event.unbind();
+      node.__event = null;
+    }
+
+    if (node.__hasBindings) {
+      this.__parent && this.__parent.__akili.__evaluationComponent.__unbindByNodes([node]);          
+    }
+
+    delete node.__expression;
+    delete node.__properties;
+    delete node.__attributeOf;
+    delete node.__attributeOn;
+    delete node.__event;
+    delete node.__hasBindings;
+    delete node.__initialized;
+    delete node.__component;
+    delete node.__element;
   }
 
   /**
@@ -858,29 +938,21 @@ export default class Component {
 
       let node = this.el.getAttributeNode(key);
 
-      if (node) {
-        if (node.__event) {
-          node.__event.unbind();
-          node.__event = null;
-          node.__expression = value;
-        }
-
-        if (node.__hasBindings) {
-          this.__parent && this.__parent.__akili.__evaluationComponent.__unbindByNodes([node]);
-          node.__hasBindings = false;
-          node.__expression = value;
-        }
-      }
-
       if (isDeleted) {
+        node && this.__deinitializeNode(node);
         this.el.removeAttribute(key);
+        return 
       }
-      else if (node) {
-        node.value = value;
+      else if (!node) {
+        this.el.setAttribute(key, value);
+        node = this.el.getAttributeNode(key);
       }
       else {
-        this.el.setAttribute(key, value);
+        node.value = value;
+        this.__deinitializeNode(node);
       }
+
+      this.__initializeAttribute(node, this.el, this.__attributeOf);
     };
 
     this.attrs = new Proxy(this.__attrs, {
@@ -896,15 +968,9 @@ export default class Component {
 
         if (this.booleanAttributes.indexOf(attrKey) != -1) {
           attrKey = `boolean-${attrKey}`;
-
-          if (value) {
-            this.el.setAttribute(key, value);
-          }
-          else {
-            this.el.removeAttribute(key);
-          }
+          value? this.el.setAttribute(key, value): this.el.removeAttribute(key);
         }
-
+        
         target[key] = value;
         changeAttribute(attrKey, utils.makeAttributeValue(value));
         return true;
@@ -949,14 +1015,6 @@ export default class Component {
           return target[key];
         }
 
-        if (typeof target[key] === 'function') {
-          let realTarget = utils.getOwnPropertyTarget(target, key);
-
-          if (!utils.isPlainObject(realTarget)) {
-            realTarget[key] = Akili.wrapFunction(realTarget[key], { isolate: true });
-          }
-        }
-
         if (Akili.__evaluation) {  
           let keys = [].concat(parents, [key]);
           let notBinding = false;
@@ -968,6 +1026,10 @@ export default class Component {
             let realTarget = utils.getOwnPropertyTarget(target, key);
             realTarget && (realTarget instanceof Scope) && (component =  realTarget.__component);
           } 
+
+          if(Akili.__wrapping && keys.length > 1) {
+            return target[key];
+          }
 
           const forParents = Akili.__evaluation.component.parents(c => c instanceof Akili.components.For);
 
@@ -982,7 +1044,7 @@ export default class Component {
   
               excArr.pop();
             }
-          }  
+          }               
 
           if (!(key in target)) {
             target[key] = undefined;
@@ -1001,6 +1063,10 @@ export default class Component {
         if (this.__isSystemKey(key)) {
           target[key] = value;
           return true;
+        }
+
+        if (typeof target[key] === 'function') {
+          value = Akili.wrapFunction(value);
         }
 
         let keys = [].concat(parents, [key]);
@@ -1773,8 +1839,7 @@ export default class Component {
    * @protected
    */
   __getNodeProperty(node, keys) {
-    let hash = `${this.__scope.__name}.${Akili.joinBindingKeys(keys)}`;
-    return node.__properties[hash] || null;
+    return node.__properties[this.__createKeysHash(keys)] || null;
   }
 
   /**
@@ -2320,7 +2385,7 @@ export default class Component {
    */
   appendTo(parent) {
     parent.appendChild(this.el);
-    return Akili.compile(this.el, { recompile: true });
+    return Akili.compile(this.el, { recompile: { setParents: true, checkChanges: false } });
   }
 
   /**

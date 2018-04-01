@@ -48,7 +48,7 @@ const Akili = {};
 Akili.setDefaults = function () {
   this.options = {
     debug: true,
-    globals: {}
+    globals: { utils }
   };
   
   this.__init = null;
@@ -60,13 +60,12 @@ Akili.setDefaults = function () {
   this.__window = {};
   this.__isolation = null;
   this.__evaluation = null;
+  this.__wrapping = false;
   this.__onError = () => this.triggerInit(false);
   
   this.htmlBooleanAttributes = [
     'disabled', 'contenteditable', 'hidden'
   ];
-
-  Akili.wrap(utils, { unevaluate: true });
 
   this.components = {};
   this.services = {};
@@ -147,11 +146,14 @@ Akili.clearGlobals = function () {
     Array.prototype[key] = this.__window.Array.prototype[key];
   }
 
+  for(let key in this.options.globals) {
+    this.options.globals[key] = this.unwrap(this.options.globals[key]);
+  }
+
   window.setTimeout = this.__window.setTimeout;
   window.setInterval = this.__window.setInterval;
   window.Promise = this.__window.Promise;
   window.removeEventListener('error', this.__onError);
-  Akili.unwrap(utils);
   this.__cleared = true;
 };
 
@@ -283,7 +285,7 @@ Akili.isolate = function (fn) {
 
     props.push(this.__isolation[k]);
   }
-  
+
   this.__isolation = null;
 
   for (let i = 0, l = props.length; i < l; i++) {
@@ -315,6 +317,23 @@ Akili.unevaluate = function (fn) {
   this.__evaluation = evaluation;
   return res;
 };
+
+/**
+ * Evaluate only root properties
+ *
+ * @param {function} fn
+ * @returns {*}
+ */
+Akili.wrapping = function(fn) {
+  if(this.__wrapping) {
+    return fn();
+  }
+  
+  this.__wrapping = true;
+  let res = fn();  
+  this.__wrapping = false;  
+  return res;   
+}
 
 /**
  * Stop isolation before the function and continue after
@@ -354,7 +373,7 @@ Akili.initialize = function (el, options = {}) {
 
   if (component) {
     if (recompile) {
-      component.__recompile();
+      component.__recompile(recompile === true? {}: recompile);
       return component;
     }
 
@@ -676,16 +695,18 @@ Akili.createCallbackIsolation = function (fn, pos = 'last') {
  */
 Akili.wrap = function (obj, options = {}) {
   let arr = [];
+  let res = obj;
 
   if(typeof obj == 'function') {
     arr.push(obj.prototype);
     arr.push(obj);
+    res = options.reverse? (obj.__akili || obj): this.wrapFunction(obj, options);
   }
   else if(obj && typeof obj == 'object' && !Array.isArray(obj)) {
     arr.push(obj);
   }
   else {
-    return;
+    return obj;
   }
 
   for(let i = 0, l = arr.length; i < l; i++) {
@@ -704,13 +725,15 @@ Akili.wrap = function (obj, options = {}) {
       }
 
       if(options.reverse) {
-        obj[key] = obj[key].__akili;
+        obj[key] = obj[key].__akili || obj[key];
         continue;
       }
 
-      obj[key] = this.wrapFunction(obj[key], options);  
+      obj[key] = this.wrapFunction(obj[key]);  
     }    
   }
+  
+  return res;
 };
 
 /**
@@ -726,26 +749,15 @@ Akili.unwrap = function (obj) {
  * Isolate a function
  *
  * @param {function} fn
- * @param {object} [options]
  * @returns {function}
  */
-Akili.wrapFunction = function(fn, options = { isolate: true }) {
+Akili.wrapFunction = function(fn) {
   if (fn.__akili) {
     return fn;
   }
 
   const akiliWrappedFunction = function () {
-    if(options.unevaluate && options.isolate) {
-      return Akili.unevaluate(() => Akili.isolate(() => fn.apply(this, arguments)));
-    }
-    else if(options.unevaluate) {
-      return Akili.unevaluate(() => fn.apply(this, arguments));
-    }
-    else if(options.isolation) {
-      return Akili.isolate(() => fn.apply(this, arguments));
-    }
-
-    return fn.apply(this, arguments);
+    return Akili.wrapping(() => fn.apply(this, arguments));
   };
 
   Object.defineProperty(akiliWrappedFunction, '__akili', {
@@ -800,6 +812,10 @@ Akili.init = function(root) {
     window.AKILI_CLIENT = {
       html: this.prepareServerSideHtml()      
     }
+  }
+
+  for(let key in this.options.globals) {
+    this.options.globals[key] = this.wrap(this.options.globals[key]);
   }
   
   return this.compile(this.__root).then(() => {

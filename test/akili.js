@@ -125,7 +125,7 @@ describe('akili.js', () => {
       });
 
       it('should recompile existing', () => {
-        Akili.compile(elements.app, { recompile: true });
+        Akili.compile(elements.app, { recompile: true, checkChanges: false });
         assert.equal(elements.sectionOneOne.innerHTML, '2', 'full recompiling');
       });
     });

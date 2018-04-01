@@ -173,13 +173,13 @@ describe('component.js', () => {
         });
       });
 
-      describe('.__checkNodePropertyChanging()', () => {
+      describe('.__checkNodePropertyChange()', () => {
         it('should be false', () => {
-          assert.isNotOk(component.__checkNodePropertyChanging(node, ['html'], 'Hello World!'));
+          assert.isNotOk(component.__checkNodePropertyChange(node, ['html'], 'Hello World!'));
         });
 
         it('should be true', () => {
-          assert.isOk(component.__checkNodePropertyChanging(node, ['html'], 'new value'));
+          assert.isOk(component.__checkNodePropertyChange(node, ['html'], 'new value'));
         });
       });
 
@@ -341,7 +341,13 @@ describe('component.js', () => {
       it('should change attribute', () => {
         component.attrs.parent = "Parent value";
         assert.equal(elements.home.getAttribute('parent'), "Parent value", 'check element attribute');
-        assert.isNotOk(parentComponent.__bindings.homeAttr, 'check parent binding');
+        assert.isOk(parentComponent.__bindings.homeAttr, 'check parent binding');
+      });
+
+      it('should change attribute with an expression', () => {
+        component.attrs.parent = "${ this.newParentBinding }";
+        assert.isUndefined(component.attrs.parent, 'check component attribute value');
+        assert.isOk(parentComponent.__bindings.newParentBinding, 'check parent binding');
       });
 
       it('should delete attribute', () => {
