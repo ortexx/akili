@@ -34,10 +34,10 @@ export default class For extends Component {
     this.iterators = [];
     this.iteratorRef = null;
     this.iteratorOuterHTML = null;
+    this.reset();
   }
 
-  created() {
-    this.reset();
+  created() {    
     this.createIterator();
   }
 
