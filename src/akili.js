@@ -42,6 +42,8 @@ import utils from './utils.js';
  */
 const Akili = {};
 
+Akili.__defaults = [];
+
 /**
  * Set the framework's default variables
  */
@@ -102,7 +104,11 @@ Akili.setDefaults = function () {
   this.errorHandling();
   this.isolateEvents();
   this.isolateArrayPrototype();
-  this.isolateWindowFunctions();  
+  this.isolateWindowFunctions(); 
+  
+  for(let i = 0, l = this.__defaults.length; i < l; i++) {
+    this.__defaults[i]();
+  }
 }
 
 /**
@@ -129,6 +135,16 @@ Akili.define = function () {
   Track.define();
   Video.define();
 };
+
+/**
+ * Set defaults
+ * 
+ * @param {function} fn 
+ */
+Akili.defaults = function(fn) {  
+  this.__defaults.push(fn);
+  fn();
+}
 
 /**
  * Clear the global context
@@ -694,46 +710,38 @@ Akili.createCallbackIsolation = function (fn, pos = 'last') {
  * @param {object|function} [options] 
  */
 Akili.wrap = function (obj, options = {}) {
-  let arr = [];
-  let res = obj;
+  let current = obj;
 
   if(typeof obj == 'function') {
-    arr.push(obj.prototype);
-    arr.push(obj);
-    res = options.reverse? (obj.__akili || obj): this.wrapFunction(obj, options);
+    obj = this.wrapFunction(obj);
+
+    if(obj === current) {
+      return obj;
+    }
   }
-  else if(obj && typeof obj == 'object' && !Array.isArray(obj)) {
-    arr.push(obj);
-  }
-  else {
+  else if(!obj || typeof obj != 'object' || Array.isArray(obj)) {
     return obj;
   }
 
-  for(let i = 0, l = arr.length; i < l; i++) {
-    let obj = arr[i];
-    let keys = Object.getOwnPropertyNames(obj);
+  let keys = Object.getOwnPropertyNames(obj);
 
-    for(let k = 0, c = keys.length; k < c; k++) {
-      let key = keys[k];
-      let val = obj[key];
+  for(let k = 0, c = keys.length; k < c; k++) {
+    let key = keys[k];
+    let descriptor = Object.getOwnPropertyDescriptor(obj, key);
 
-      if(typeof val == 'object') {
-        this.wrap(val, options);
-      }
-      else if(typeof val != 'function') {
-        continue;
-      }
+    if(!descriptor.configurable || !descriptor.writable) {
+      continue;
+    }
 
-      if(options.reverse) {
-        obj[key] = obj[key].__akili || obj[key];
-        continue;
-      }
-
-      obj[key] = this.wrapFunction(obj[key]);  
-    }    
-  }
+    if(options.reverse) {
+      Object.defineProperty(obj, key, {...descriptor, value: obj[key].__akili || obj[key] });
+      continue;
+    }
+    
+    Object.defineProperty(obj, key, {...descriptor, value: this.wrap(obj[key], options) });
+  } 
   
-  return res;
+  return obj;
 };
 
 /**
@@ -759,6 +767,14 @@ Akili.wrapFunction = function(fn) {
   const akiliWrappedFunction = function () {
     return Akili.wrapping(() => fn.apply(this, arguments));
   };
+
+  let keys = Object.keys(fn);
+  akiliWrappedFunction.prototype = fn.prototype;
+
+  for(let i = 0, l = keys.length; i < l; i++) {
+    let key = keys[i];
+    akiliWrappedFunction[key] = fn[key];
+  }
 
   Object.defineProperty(akiliWrappedFunction, '__akili', {
     enumerable: false,

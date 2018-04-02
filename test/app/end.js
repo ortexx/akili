@@ -9,4 +9,8 @@ describe('Application deinitialization', () => {
   it('should be deinitialized', () => {
     Akili.deinit();
   });  
+
+  it('should call the defaults handler', () => {
+    assert.equal(Akili.__testDefaults, 2);
+  });
 });
