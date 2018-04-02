@@ -30,18 +30,14 @@ export default class For extends Component {
 
   constructor(...args) {
     super(...args);
-
-    this.__iterator = null;
-    this.__key = null;
-    this.__value = null;
-    this.__index = null;
-    this.__comparisonValue = null;
+    
     this.iterators = [];
     this.iteratorRef = null;
     this.iteratorOuterHTML = null;
   }
 
   created() {
+    this.reset();
     this.createIterator();
   }
 
@@ -129,14 +125,14 @@ export default class For extends Component {
         iterator.setValue(true);
       }
 
-      Akili.compile(iterator.el, { recompile: { checkChanges: true } });
+      this.__promises.push(Akili.compile(iterator.el, { recompile: { checkChanges: true } }));
       return iterator;
     }
     
     let el = this.createIteratorElement();
     el.innerHTML = this.html;
     this.el.insertBefore(el, this.iteratorRef);
-    Akili.compile(el);
+    this.__promises.push(Akili.compile(el));
     this.iterators.push(el.__akili);
     return el.__akili;
   }
@@ -152,7 +148,6 @@ export default class For extends Component {
     }
 
     this.data = data;   
-    let index = 0;
 
     const loop = (key, value, index) => {
       let iterator = this.loop(key, value, index);
@@ -160,20 +155,20 @@ export default class For extends Component {
     };
 
     if(Array.isArray(data)) {
-      for (let l = data.length; index < l; index++) {
-        loop(index, data[index], index);
+      for (let i = 0, l = data.length; i < l; i++) {
+        loop(i, data[i], i);
       }     
     }
     else {
       let keys = Object.keys(data);
 
-      for (let l = keys.length; index < l; index++) {
-        let key = keys[index];
-        loop(key, data[key], index);
+      for (let i = 0, l = keys.length; i < l; i++) {
+        let key = keys[i];
+        loop(key, data[key], i);
       }
     }
 
-    for (let i = index, l = this.iterators.length; i < l; i++) {
+    for (let i = this.__index + 1, l = this.iterators.length; i < l; i++) {
       let iterator = this.iterators[i];
       iterator.__destroy();
       this.iterators.splice(i, 1);
@@ -181,7 +176,22 @@ export default class For extends Component {
       i--;
     }
 
-    this.attrs.onOut.trigger(this.data, { bubbles: true });
+    return Promise.all(this.__promises).then(() => {
+      this.reset();
+      this.attrs.onOut.trigger(data, { bubbles: true });
+    });    
+  }
+
+  /**
+   * Reset the initial state
+   */
+  reset() {
+    this.__iterator = null;
+    this.__index = 0;
+    this.__key = '';
+    this.__value = null;
+    this.__comparisonValue = null;
+    this.__promises = [];
   }
 }
 
