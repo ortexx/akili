@@ -148,6 +148,7 @@ export default class For extends Component {
     }
 
     this.data = data;   
+    let index = 0;
 
     const loop = (key, value, index) => {
       let iterator = this.loop(key, value, index);
@@ -155,20 +156,20 @@ export default class For extends Component {
     };
 
     if(Array.isArray(data)) {
-      for (let i = 0, l = data.length; i < l; i++) {
-        loop(i, data[i], i);
+      for (let l = data.length; index < l; index++) {
+        loop(index, data[index], index);
       }     
     }
     else {
       let keys = Object.keys(data);
 
-      for (let i = 0, l = keys.length; i < l; i++) {
-        let key = keys[i];
-        loop(key, data[key], i);
+      for (let l = keys.length; index < l; index++) {
+        let key = keys[index];
+        loop(key, data[key], index);
       }
     }
 
-    for (let i = this.__index + 1, l = this.iterators.length; i < l; i++) {
+    for (let i = index, l = this.iterators.length; i < l; i++) {
       let iterator = this.iterators[i];
       iterator.__destroy();
       this.iterators.splice(i, 1);
