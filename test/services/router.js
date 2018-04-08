@@ -60,6 +60,9 @@ describe('router.js', () => {
             else if(transition.path.query.type == 2) {
               transition.cancel();
             }
+            else if(transition.path.query.type == 3) {
+              transition.reload({}, { type: 4 });
+            }
           }
         },
         {
@@ -249,6 +252,17 @@ describe('router.js', () => {
         }, 'state-changed');
 
         router.state('3', {},  { type: 1 });       
+      });
+    });
+
+    describe('Transition.prototype.reload()', () => {
+      it('should redirect', (done) => {
+        onStateChange(() => {
+          assert.equal(location.pathname + location.search, '/3?type=4');
+          done();
+        }, 'state-changed');
+
+        router.state('3', {},  { type: 3 });       
       });
     });
 

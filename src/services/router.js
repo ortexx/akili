@@ -28,8 +28,23 @@ export class Transition {
    * @see router.state
    */
   redirect() {
-    this.cancel();    
+    this.cancel();   
     router.state.apply(router, arguments);
+  }
+
+  /**
+   * Reload the current state
+   * 
+   * @param {object} [params]
+   * @param {object} [query]
+   * @param {string} [hash]
+   * @param {object} [options]
+   */
+  reload(params = {}, query = {}, hash = '', options = {}) {
+    params = { ...this.params, ...params };
+    query = { ...this.query, ...query };
+    hash = hash || this.path.hash;
+    return this.redirect(this.path.state.name, params, query, hash, options);
   }
 
   /**
@@ -96,7 +111,7 @@ router.setDefaults = function () {
   this.__redirects = 0;
   this.__init = false;
   this.__options = {};
-  this.__paramRegex = /(:([\w\d-]+))/g;
+  this.__paramRegex = /(\/?:([\w\d-]+))/g;
   this.__routeSelector = c => c instanceof Route;
 }
 
@@ -193,12 +208,7 @@ router.state = function (name, params = {}, query = {}, hash = '', options = {})
     throw new Error(`Not found route state with name ${name}`);
   }
 
-  let url = this.createStateUrl(state, params, query, hash);
-
-  if (!options.reload && url === this.getUrl()) {
-    return;
-  }
-  
+  let url = this.createStateUrl(state, params, query, hash);  
   this.__options = options;
   this.setUrl(url);
 };
@@ -459,8 +469,7 @@ router.getHashUrlQuery = function() {
  */
 router.createStateUrl = function (state, params = {}, query = {}, hash = '') {
   typeof state !== 'object' && (state = this.getState(state));
-
-  let url = state.fullPattern.replace(this.__paramRegex, (m, f, v) => params[v] || '');
+  let url = state.fullPattern.replace(this.__paramRegex, (m, f, v) => '/' + (params[v] || ''));
   url = url.replace(/^\^/, '');
   url = this.splitSlashes(url);
 
@@ -498,7 +507,6 @@ router.getPatternContent = function (state, url) {
   typeof state !== 'object' && (state = this.getState(state));
 
   let keys = [];
-  let i = 0;
   let params = {};
 
   url = url.split('?')[0];
@@ -506,19 +514,24 @@ router.getPatternContent = function (state, url) {
 
   let urlPattern = state.fullPattern.replace(this.__paramRegex, (m, f, v) => {
     keys.push(v);
-    return '([^\\/]*)';
+    return '/?([^/]*)';
   });
 
-  let regex = new RegExp(urlPattern);
+  urlPattern = urlPattern.replace(/([^^/]+)[/]+$/, '$1');
+  let regex = new RegExp(urlPattern, 'g');
   let isIncluded = url.match(regex);
-
+  
   if (!isIncluded) {
     return null;
   }
+  
+  url.replace(regex, (m, ...args) => { 
+    args = args.slice(0, args.length - 2);
 
-  url.replace(regex, (m, v) => {
-    v && (params[keys[i]] = v);
-    i++;
+    for(let i = 0, l = args.length; i < l; i++) {
+      let v = args[i];
+      v && (params[keys[i]] = v);
+    }  
   });
 
   return { params };
@@ -570,7 +583,6 @@ router.getRoute = function (level) {
     }
 
     i++;
-
     return find(route);
   };
 
@@ -649,7 +661,7 @@ router.changeState = function () {
     delete this.__disableChange;
     return Promise.resolve();
   }
-
+  
   let url = this.getUrl();
   let hash = this.hashMode? '': window.location.hash.replace('#', '');
   let query = this.getUrlQuery();
@@ -673,7 +685,7 @@ router.changeState = function () {
     let state = content.state;
     let params = content.params;
     let route = state.abstract? null: this.getRoute(state.level);
-
+    
     if (!route && !state.abstract) {
       throw new Error (`Not found route component for state "${state.name}"`);
     }    
