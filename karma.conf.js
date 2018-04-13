@@ -28,7 +28,10 @@ module.exports = function(config) {
             enforce: "pre",
             test: /\.js$/,
             exclude: /node_modules/,
-            loader: 'eslint-loader'
+            loader: 'eslint-loader',
+            options: { 
+              failOnError: true 
+            }
           },
           {
             test: /\.js$/,

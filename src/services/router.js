@@ -546,9 +546,10 @@ router.getPatternContent = function (state, url) {
  */
 router.isActiveState = function(state, includes = false) {
   typeof state !== 'object' && (state = this.getState(state));
-  let url = this.splitSlashes(this.getUrl().split('?')[0] + '/');
-  let urlPattern = state.fullPattern.replace(this.__paramRegex, '([^\\/]*)');
-  let str = includes? urlPattern: this.splitSlashes('^' + urlPattern + '/$');
+  let url = this.splitSlashes('/' + this.getUrl().split('?')[0] + '/');
+  let urlPattern = state.fullPattern.replace(this.__paramRegex, '/?([^/]*)');
+  urlPattern = urlPattern.replace(/^\^/, '').replace(/\$$/, '');
+  let str = includes? urlPattern: this.splitSlashes('^/' + urlPattern + '/$');
   let regex = new RegExp(str);  
   return regex.test(url);
 };
