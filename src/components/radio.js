@@ -29,8 +29,14 @@ export default class Radio extends For {
   }
 
   created() {
+    if(this.iterable) {
+      return super.created.apply(this, arguments);
+    }
+  }
+
+  compiled() {
     this.el.addEventListener('change', () => {
-      setTimeout(() => {
+      Akili.nextTick(() => {
         let value = this.getRadioValue();
 
         if (value === this.prevValue) {
@@ -43,7 +49,7 @@ export default class Radio extends For {
     });
 
     if(this.iterable) {
-      return super.created.apply(this, arguments);
+      return super.compiled.apply(this, arguments);
     }
   }
 
@@ -51,7 +57,10 @@ export default class Radio extends For {
     this.attr('in', this.setNames, { callOnStart: false });   
     this.attr('value', this.setValue); 
     this.attr('name', this.setNames);
-    return super.resolved.apply(this, arguments);
+
+    if(this.iterable) {
+      return super.resolved.apply(this, arguments);
+    }
   }
 
   setNames(name) {

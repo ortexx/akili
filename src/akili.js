@@ -246,7 +246,7 @@ Akili.getAkiliParents = function (el, tree = true) {
 };
 
 /**
- * Set element inner html with content replacing
+ * Set element inner html with content replacement
  *
  * @example
  * // returns "<i>Hello</i><b>World</b>"

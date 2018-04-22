@@ -49,7 +49,14 @@ describe('store.js', () => {
       elements.sectionOne.__akili.store('handler', handler);       
       assert.strictEqual(Akili.__storeLinks['handler'][0].fn, handler, 'check Akili.__storeLinks');
       assert.equal(elements.sectionOne.__akili.scope.linkHandler, 'start', 'check the value');
-    });    
+    }); 
+    
+    it('should create the link with all store properties by a function', () => { 
+      elements.sectionOne.__akili.store(handler);       
+      assert.strictEqual(Akili.__storeLinks['*'][0].fn, handler, 'check Akili.__storeLinks');
+      store.test = '*'; 
+      assert.equal(elements.sectionOne.__akili.scope.linkHandler, '*', 'check the value');
+    });  
   });  
 
   describe('store property changing', () => {
@@ -82,7 +89,8 @@ describe('store.js', () => {
       elements.sectionOne.__akili.unstore('test', 'test');
       elements.sectionTwo.__akili.unstore('test', 'tasty');
       elements.sectionOne.__akili.unstore('handler', handler);
-      assert.doesNotHaveAllKeys(elements.sectionOne.__akili.__storeLinks, ['test'], 'check component.__storeLinks for sectionOne');
+      elements.sectionOne.__akili.unstore(handler);
+      assert.doesNotHaveAllKeys(elements.sectionOne.__akili.__storeLinks, ['test', '*'], 'check component.__storeLinks for sectionOne');
       assert.doesNotHaveAllKeys(elements.sectionTwo.__akili.__storeLinks, ['tasty'], 'check component.__storeLinks for sectionTwo');
       assert.doesNotHaveAllKeys(Akili.__storeLinks, ['test', 'handler'], 'check Akili.__storeLinks for sectionOne');
       assert.doesNotHaveAllKeys(Akili.__storeLinks, ['tasty'], 'check Akili.__storeLinks for sectionTwo');

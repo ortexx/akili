@@ -812,6 +812,13 @@ describe('component.js', () => {
           attr.attr('test', fn);         
           assert.strictEqual(attr.__attrLinks['test'][1].fn, fn);
         });
+
+        it('should create the link with all attrs by a function', () => { 
+          attr.attr(fn);      
+          assert.strictEqual(attr.__attrLinks['*'][0].fn, fn);
+          all.scope.cAttr = '*';          
+          assert.equal(attr.scope.handlerTest, '*', 'check the value');
+        });  
         
         it('should have the necessary scope value', () => {  
           all.scope.cAttr = 'link';             
@@ -838,7 +845,8 @@ describe('component.js', () => {
         it('should remove all links', () => {
           attr.unattr('test', 'test');
           attr.unattr('test', fn);
-          assert.doesNotHaveAllKeys(attr.__attrLinks, ['test']);
+          attr.unattr(fn);
+          assert.doesNotHaveAllKeys(attr.__attrLinks, ['test', '*']);
         });
       }); 
     });  

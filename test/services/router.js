@@ -74,7 +74,7 @@ describe('router.js', () => {
 
     describe('.add()', () => {
       it('should add new state', () => {
-        router.add('x', '/x/:id');
+        router.add('x', '/x/:id', { params: { id: 4 }, query: { z: 3 } });
         routeOptions.forEach((route) => router.add(route));
         assert.equal(router.states[0].name, 'x');
       });
@@ -131,9 +131,13 @@ describe('router.js', () => {
     describe('.createStateUrl()', () => {
       it('should create right url by data', () => {
         let state = router.getState('x');
-        let params = {id: 2, fix: 3};
-        let query = {x: 1, y: 2};
-        assert.equal(router.createStateUrl(state, params, query), '/x/2?x=1&y=2');
+        let params = { id: 2, fix: 3 };
+        let query = { x: 1, y: 2 };
+        assert.equal(router.createStateUrl(state, params, query), '/x/2?z=3&x=1&y=2');
+      });
+
+      it('should create right url by data', () => {
+        assert.equal(router.createStateUrl('x', {}, {}), '/x/4?z=3');
       });
     });
 
@@ -177,8 +181,8 @@ describe('router.js', () => {
 
     describe('.state()', () => {
       it('should change the state', () => {
-        router.state('x', { id: 1 }, { y: 2 });
-        assert.equal(location.pathname + location.search, '/x/1?y=2');
+        router.state('x', { id: 1 }, { z: 2 });
+        assert.equal(location.pathname + location.search, '/x/1?z=2');
       });
 
       it('should not change the state with nonexistent state', () => {
@@ -204,7 +208,7 @@ describe('router.js', () => {
     describe('.forward()', () => {
       it('should go forward', (done) => {
         onStateChange(() => {
-          assert.equal(location.pathname + location.search, '/x/1?y=2');
+          assert.equal(location.pathname + location.search, '/x/1?z=2');
           done();
         });
 
@@ -232,8 +236,8 @@ describe('router.js', () => {
 
     describe('.location()', () => {
       it('should change the location', () => {
-        router.location('/x/1?y=1');
-        assert.equal(location.pathname + location.search, '/x/1?y=1');
+        router.location('/x/1?z=1');
+        assert.equal(location.pathname + location.search, '/x/1?z=1');
       });
     });
 
@@ -263,6 +267,17 @@ describe('router.js', () => {
         }, 'state-changed');
 
         router.state('3', {},  { type: 3 });       
+      });
+    });
+
+    describe('.reload()', () => {
+      it('should redirect', (done) => {
+        onStateChange(() => {
+          assert.equal(location.pathname + location.search, '/3?type=4&z=1');
+          done();
+        }, 'state-changed');
+
+        router.reload({}, { z: 1 });       
       });
     });
 

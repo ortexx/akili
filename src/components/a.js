@@ -33,12 +33,12 @@ export default class A extends Component {
     this.state = null;
     this.params = {};
     this.query = {};
-    this.hash = '';
+    this.hash = null;
     this.options = {};
     this.isUrl = this.el.getAttribute('url');
   }
 
-  created() {
+  compiled() {
     this.el.addEventListener('click', (e) => {
       e.preventDefault();
 
@@ -52,9 +52,7 @@ export default class A extends Component {
 
     this.onStateChanged = () => this.state && this.setActivity();
     window.addEventListener('state-changed', this.onStateChanged);
-  }
 
-  compiled() {
     this.attr('state', this.setState);
     this.attr('params', this.setParams);
     this.attr('query', this.setQuery);
@@ -104,7 +102,7 @@ export default class A extends Component {
   }
 
   setHash(hash) {
-    if (typeof hash != 'string') {
+    if (typeof hash != 'string' && hash !== undefined) {
       throw new Error(`Router state hash must be a string`);
     }
 

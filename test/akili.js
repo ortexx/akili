@@ -65,7 +65,7 @@ describe('akili.js', () => {
     });
 
     describe('.setTemplate()', () => {
-      it('should return template with content replacing', () => {
+      it('should return template with content replacement', () => {
         let el = document.createElement('div');
 
         el.innerHTML = "<b>World</b>";

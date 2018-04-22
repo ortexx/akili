@@ -26,9 +26,6 @@ export default class Route extends Component {
    */
   setTransition(transition) {
     let state = transition.path.state;
-    let params = transition.path.params;
-    let url = transition.url;
-    let query = transition.query;
 
     const getParentScopeTransition = (path) => {
       if (path.parent) {
@@ -68,16 +65,14 @@ export default class Route extends Component {
       return Akili.compile(this.el, { recompile: true });
     }
 
-    this.__scope.__transition = {
-      path: {
-        state: state.name,
-        data: transition.path.data,
-        params: params,
-        parent: getParentScopeTransition(transition.path)
-      },
-      params: transition.params,
-      url: url,
-      query: query
+    this.__scope.__transition = {  
+      parent: getParentScopeTransition(transition.path),   
+      state: transition.path.state,
+      data: transition.path.data,
+      url: transition.path.url,
+      params: transition.path.params,
+      query: transition.path.query,
+      hash: transition.path.hash
     };
 
     if (!transition.path.loaded) {

@@ -1219,7 +1219,7 @@ export default class Component {
    */
   __storeTriggerByName(name, value) {  
     store.__target[name] = value;
-    const links = Akili.__storeLinks[name];
+    const links = (Akili.__storeLinks[name] || []).concat(Akili.__storeLinks['*'] || []);
 
     if(!links || !links.length) {
       return;
@@ -1234,7 +1234,7 @@ export default class Component {
       }
       
       if(link.fn) {
-        Akili.unisolate(() => link.fn.call(component, value))
+        Akili.unisolate(() => link.fn.call(component, value, name))
         continue;
       }
       
@@ -1313,6 +1313,19 @@ export default class Component {
     }
 
     Akili.__storeLinks[name].push({ component: this, name, fn });
+
+    if(name == '*' && options.callOnStart !== false) {
+      let storeKeys = Object.keys(store.__target);
+      let p = [];
+
+      for(let i = 0, l = storeKeys.length ; i < l; i++) {
+        let key = storeKeys[i];
+        let val = store.__target[key];
+        p.push(Akili.unisolate(() => fn.call(this, val, key)));
+      }
+
+      return Promise.all(p);
+    }
 
     if(call) {
       return Akili.unisolate(() => fn.call(this, store[name]));
@@ -1442,8 +1455,8 @@ export default class Component {
    * @protected
    */
   __attrTriggerByName(name, value) {
-    const links = this.__attrLinks[name];
-
+    const links = (this.__attrLinks[name] || []).concat(this.__attrLinks['*'] || []);
+    
     if(!links || !links.length) {
       return;
     }    
@@ -1453,7 +1466,7 @@ export default class Component {
       this.__disableAttrTriggering = true;
 
       if(link.fn) {
-        Akili.unisolate(() => link.fn.call(this, value));
+        Akili.unisolate(() => link.fn.call(this, value, utils.toDashCase(name)));
       }
       else {
         let current = utils.getPropertyByKeys(link.keys, this.__scope);
@@ -1482,10 +1495,10 @@ export default class Component {
 
     name = utils.toCamelCase(name);
     this.__disableAttrTriggering = true;
-    this.attrs.hasOwnProperty(name) && this.scope.__set(keys, this.attrs[name]);  
+    this.attrs.hasOwnProperty(name) && this.scope.__set(keys, this.attrs[name]); 
     this.__disableAttrTriggering = false;  
     let keyString = Akili.joinBindingKeys(keys);
-
+    
     if(!this.__attrLinks[keyString]) {
       this.__attrLinks[keyString] = [];
     }
@@ -1531,6 +1544,19 @@ export default class Component {
     }
     
     this.__attrLinks[name].push({ name, fn });
+
+    if(name == '*' && options.callOnStart !== false) {
+      let attrsKeys = Object.keys(this.__attrs).filter(k => !(this.__attrs[k] instanceof Akili.EventEmitter));
+      let p = [];
+
+      for(let i = 0, l = attrsKeys.length ; i < l; i++) {
+        let key = attrsKeys[i];
+        let val = this.__attrs[key];
+        p.push( Akili.unisolate(() => fn.call(this, val, utils.toDashCase(key))));
+      }
+
+      return Promise.all(p);
+    }
     
     if(call) {
       return Akili.unisolate(() => fn.call(this, this.attrs[name]));
@@ -2235,7 +2261,14 @@ export default class Component {
       throw new Error(`Method "store" must be called after the compilation. For example, in "compiled" method.`);
     }
 
-    return typeof handler === 'function'? this.__storeByFunction(...arguments): this.__storeByKeys(...arguments);
+    const args = [].slice.call(arguments);
+
+    if(typeof name == 'function') {
+      args.unshift('*');
+      handler = name;
+    }
+
+    return typeof handler === 'function'? this.__storeByFunction(...args): this.__storeByKeys(...args);
   }
 
   /**
@@ -2249,7 +2282,14 @@ export default class Component {
       throw new Error(`Method "attr" must be called after the compilation. For example, in "compiled" method.`);
     }
 
-    return typeof handler === 'function'? this.__attrByFunction(...arguments): this.__attrByKeys(...arguments);
+    const args = [].slice.call(arguments);
+
+    if(typeof name == 'function') {
+      args.unshift('*');
+      handler = name;
+    }
+
+    return typeof handler === 'function'? this.__attrByFunction(...args): this.__attrByKeys(...args);
   }
 
   /**
@@ -2261,6 +2301,13 @@ export default class Component {
   unstore(name, handler) {
     if(!this.__isMounted) {
       throw new Error(`Method "unstore" must be called after the compilation. For example, in "compiled" method.`);
+    }
+
+    const args = [].slice.call(arguments);
+
+    if(typeof name == 'function') {
+      args.unshift('*');
+      handler = name;
     }
 
     return typeof handler === 'function'? this.__unstoreByFunction(...arguments): this.__unstoreByKeys(...arguments);
@@ -2275,6 +2322,13 @@ export default class Component {
   unattr(name, handler) {
     if(!this.__isMounted) {
       throw new Error(`Method "unattr" must be called after the compilation. For example, in "compiled" method.`);
+    }
+
+    const args = [].slice.call(arguments);
+
+    if(typeof name == 'function') {
+      args.unshift('*');
+      handler = name;
     }
 
     return typeof handler === 'function'? this.__unattrByFunction(...arguments): this.__unattrByKeys(...arguments);

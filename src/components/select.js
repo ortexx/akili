@@ -27,15 +27,8 @@ export default class Select extends For {
     this.isMultiple = false;
   }
 
-  created() {
-    this.el.addEventListener('change', () => {
-      this.el.content = this.getContent();
-    });
-
-    return super.created.apply(this, arguments);
-  }
-
   compiled() { 
+    this.el.addEventListener('change', () => this.el.content = this.getContent());
     let res = super.compiled.apply(this, arguments);   
     this.attr('multiple', this.setMultiple);
     this.attr('content', this.setContent);

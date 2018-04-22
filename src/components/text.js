@@ -21,7 +21,7 @@ export default class Text extends Component {
     this.debounceTimeout = null;
   }
 
-  created() {
+  compiled() {
     if(this.el.hasAttribute('on-debounce')) {
       this.el.addEventListener('input', () => {        
         this.debounceTimeout && clearTimeout(this.debounceTimeout);
@@ -30,9 +30,7 @@ export default class Text extends Component {
         }, this.debounceInterval);
       });
     }
-  }
 
-  compiled() {
     this.attr('focus', this.setFocus);
     this.attr('value', this.setValue);
     this.attr('debounce', this.setDebounce);
