@@ -54,7 +54,8 @@ XMLHttpRequest.prototype.send = function() {
     (this.requestMethod == 'POST' && this.requestURL == 'post') ||
     (this.requestMethod == 'PUT' && this.requestURL == 'put') ||
     (this.requestMethod == 'DELETE' && this.requestURL == 'delete') ||
-    (this.requestMethod == 'PATCH' && this.requestURL == 'patch')
+    (this.requestMethod == 'PATCH' && this.requestURL == 'patch') ||
+    (this.requestMethod == 'HEAD' && this.requestURL == 'head')
   ) {
     this.response = 'ok';
   }
@@ -143,6 +144,12 @@ describe('request.js', () => {
 
       it('should make PATCH request', () => {
         return request.patch('patch').then((res) => {
+          assert.equal(res.data, 'ok');
+        });
+      });
+
+      it('should make HEAD request', () => {
+        return request.head('head').then((res) => {
           assert.equal(res.data, 'ok');
         });
       });

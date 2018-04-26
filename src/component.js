@@ -568,40 +568,7 @@ export default class Component {
       return evaluate;
     });
 
-    if (node instanceof window.Attr) {
-      let value = res;
-      let isBooleanAttribute = false;
-
-      if (counter == 1 && expression && node.__expression == expression) {
-        value = attributeValue;
-      }
-
-      let clearAttribute = node.nodeName.replace(/^boolean-(.+)/i, '$1');
-      let camelAttribute = utils.toCamelCase(clearAttribute);
-
-      if (clearAttribute != node.nodeName) {
-        isBooleanAttribute = true;
-        value = !!value;
-      }          
-
-      if (node.__attributeOn) {        
-        let component = node.__attributeOn;
-        !component.__saveAttributeProxyIn && (value = utils.copy(value));
-        component.__disableAttributeSetter = true;
-        component.attrs[camelAttribute] = value;
-        component.__disableAttributeSetter = false;
-
-        if (component.__isMounted) {
-          component.__attrTriggerByName(camelAttribute, value);
-        }
-      }
-      else if (isBooleanAttribute) {
-        let element = node.__element;
-        value? element.setAttribute(camelAttribute, 'true'): element.removeAttribute(camelAttribute);
-      }
-    }
-
-    return res;
+    return { res, counter, expression, attributeValue };
   }
 
   /**
@@ -790,11 +757,44 @@ export default class Component {
    * @protected
    */
   __evaluateNode(node, check = true) {
-    let key = node instanceof window.Attr? 'value': 'nodeValue';
+    const key = node instanceof window.Attr? 'value': 'nodeValue';
 
     if (check? this.__checkEvaluation(node): true) {      
-      let res = this.__evaluate(node);     
+      const { res, attributeValue, expression, counter } = this.__evaluate(node);     
       node[key] != res && (node[key] = res);
+
+      if (node instanceof window.Attr) {
+        let value = res;
+        let isBooleanAttribute = false;
+  
+        if (counter == 1 && expression && node.__expression == expression) {
+          value = attributeValue;
+        }
+  
+        const clearAttribute = node.nodeName.replace(/^boolean-(.+)/i, '$1');
+        const camelAttribute = utils.toCamelCase(clearAttribute);
+  
+        if (clearAttribute != node.nodeName) {
+          isBooleanAttribute = true;
+          value = !!value;
+        }          
+  
+        if (node.__attributeOn) {        
+          const component = node.__attributeOn;
+          !component.__saveAttributeProxyIn && (value = utils.copy(value));
+          component.__disableAttributeSetter = true;
+          component.attrs[camelAttribute] = value;
+          component.__disableAttributeSetter = false;
+  
+          if (component.__isMounted) {
+            component.__attrTriggerByName(camelAttribute, value);
+          }
+        }
+        else if (isBooleanAttribute) {
+          const element = node.__element;
+          value? element.setAttribute(camelAttribute, 'true'): element.removeAttribute(camelAttribute);
+        }
+      }
     }
 
     return node[key];
@@ -849,7 +849,9 @@ export default class Component {
     }
 
     let check = this.__compiling? this.__compiling.checkChanges: false;
-    el.setAttribute(node.nodeName, component.__evaluateNode(node, check));
+    let currentValue = node.value;
+    let res = component.__evaluateNode(node, check);
+    currentValue != res && el.setAttribute(node.nodeName, res);
   }
 
   /**
@@ -1201,10 +1203,8 @@ export default class Component {
     this.__disableKeys(keys);
 
     for(let i = 0, l = links.length; i < l; i++) {
-      const link = links[i];
-      
-      this.__storeTriggerByName(link.name, value);
-      
+      const link = links[i];      
+      this.__storeTriggerByName(link.name, value);      
     }
     
     this.__enableKeys(keys);
@@ -1219,12 +1219,14 @@ export default class Component {
    */
   __storeTriggerByName(name, value) {  
     store.__target[name] = value;
-    const links = (Akili.__storeLinks[name] || []).concat(Akili.__storeLinks['*'] || []);
+    let links = (Akili.__storeLinks[name] || []).concat(Akili.__storeLinks['*'] || []);
 
     if(!links || !links.length) {
       return;
     }
-    
+
+    links = utils.sort(links, ['date'], true);
+
     for(let i = 0, l = links.length; i < l; i++) {
       const link = links[i];
       const component = link.component;
@@ -1281,7 +1283,7 @@ export default class Component {
       Akili.__storeLinks[name] = [];
     }
 
-    info = { component: this, name, keys, keyString };
+    info = { component: this, name, keys, keyString, date: Date.now() };
     this.__storeLinks[keyString].push(info);
     Akili.__storeLinks[name].push(info);
   }
@@ -1312,7 +1314,7 @@ export default class Component {
       }
     }
 
-    Akili.__storeLinks[name].push({ component: this, name, fn });
+    Akili.__storeLinks[name].push({ component: this, name, fn, date: Date.now() });
 
     if(name == '*' && options.callOnStart !== false) {
       let storeKeys = Object.keys(store.__target);
@@ -1455,12 +1457,14 @@ export default class Component {
    * @protected
    */
   __attrTriggerByName(name, value) {
-    const links = (this.__attrLinks[name] || []).concat(this.__attrLinks['*'] || []);
+    let links = (this.__attrLinks[name] || []).concat(this.__attrLinks['*'] || []);
     
     if(!links || !links.length) {
       return;
-    }    
-
+    }  
+    
+    links = utils.sort(links, ['date'], true);
+    
     for(let i = 0, l = links.length; i < l; i++) {
       const link = links[i];    
       this.__disableAttrTriggering = true;
@@ -1484,7 +1488,9 @@ export default class Component {
    * @param {string|string[]} keys
    * @protected
    */
-  __attrByKeys(name, keys) {    
+  __attrByKeys(name, keys) {   
+    name = utils.toCamelCase(name);
+
     if(!keys) {
       throw new Error(`Attribute link "${name}" must have the scope property name`);
     }
@@ -1492,8 +1498,7 @@ export default class Component {
     if(!Array.isArray(keys)) {
       keys = [keys];
     }
-
-    name = utils.toCamelCase(name);
+    
     this.__disableAttrTriggering = true;
     this.attrs.hasOwnProperty(name) && this.scope.__set(keys, this.attrs[name]); 
     this.__disableAttrTriggering = false;  
@@ -1513,7 +1518,7 @@ export default class Component {
       }
     }
 
-    this.__attrLinks[keyString].push({ name, keys, keyString });
+    this.__attrLinks[keyString].push({ name, keys, keyString, date: Date.now() });
   }
 
   /**
@@ -1526,8 +1531,8 @@ export default class Component {
    * @returns {*}
    */
   __attrByFunction(name, fn, options = {}) {    
-    let call = options.callOnStart === undefined? this.attrs.hasOwnProperty(name): options.callOnStart;
     name = utils.toCamelCase(name);
+    let call = options.callOnStart === undefined? this.attrs.hasOwnProperty(name): options.callOnStart;    
 
     if(!this.__attrLinks[name]) {
       this.__attrLinks[name] = [];
@@ -1543,7 +1548,7 @@ export default class Component {
       }
     }
     
-    this.__attrLinks[name].push({ name, fn });
+    this.__attrLinks[name].push({ name, fn, date: Date.now() });
 
     if(name == '*' && options.callOnStart !== false) {
       let attrsKeys = Object.keys(this.__attrs).filter(k => !(this.__attrs[k] instanceof Akili.EventEmitter));

@@ -204,7 +204,7 @@ describe('component.js', () => {
         });
 
         it('should return right value', () => {
-          assert.equal(parentComponent.__evaluate(node), 'New value');
+          assert.equal(parentComponent.__evaluate(node).res, 'New value');
         });
 
         it('should change component attrs value', () => {

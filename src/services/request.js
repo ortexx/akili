@@ -416,6 +416,20 @@ export class Request {
 
     return this.query(options);
   }
+
+   /**
+   *  Make HEAD request
+   *
+   * @param {string} url
+   * @param {object} options
+   * @returns {Promise}
+   */
+  head(url, options = {}) {
+    options.url = url;
+    options.method = 'HEAD';
+
+    return this.query(options);
+  }
 }
 
 const request = new Request();
