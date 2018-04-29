@@ -1096,20 +1096,20 @@ export default class Component {
           target[key] = value;
           return true;
         }
-        
-        if(this.__storeLinks[keyString]) {
-          this.__storeTriggerByKeys(keys, value);
-        }
-
-        if(this.__attrLinks[keyString]) {
-          this.__attrTriggerByKeys(keys, value);
-        }
 
         target[key] = this.__nestedObserve(value, keys);
         
         if (Akili.__isolation) { 
           this.__createIsolationObject(parents, key, false);
           return true;
+        }
+
+        if(this.__storeLinks[keyString]) {
+          this.__storeTriggerByKeys(keys, value);
+        }
+
+        if(this.__attrLinks[keyString]) {
+          this.__attrTriggerByKeys(keys, value);
         }
         
         if (this.__isMounted) {                   
