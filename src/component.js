@@ -172,7 +172,7 @@ export default class Component {
         let child = children[i];
 
         if (child.nodeType == 3 && this.__initializeNode(child, parent, true)) { 
-          this.__evaluateNode(child, this.__compiling.checkChanges);               
+          this.__evaluateNode(child, this.__compiling? this.__compiling.checkChanges: false);               
         }
         else if (child.nodeType == 1 && !child.__akili) {
           this.__interpolateAttributes(child);
@@ -600,7 +600,7 @@ export default class Component {
   __evaluateNested(keys, withoutParents = false) {
     let scope = this.__scope;
     let props = [];    
-
+    
     if (!withoutParents) {
       let lastProps = [];
 
@@ -624,14 +624,22 @@ export default class Component {
 
       for (let m = 0; m < propsLength; m++) {
         let prop = props[m];
-        let data = component.__getBind(prop.keys);
+        let data;
         
-        if (!data || !data.__data) {
+        if(component === this) {
+          let bind = component.__getBind(prop.keys);
+          data = bind? (bind.__data || []): [];
+        }
+        else {
+          data = component.__getAllBinds(prop.keys);
+        }
+        
+        if (!data || !data.length) {
           continue;
         }
          
-        for (let k = 0, c = data.__data.length; k < c; k++) {
-          let bind = data.__data[k]; 
+        for (let k = 0, c = data.length; k < c; k++) {
+          let bind = data[k]; 
           
           if (component.__checkNodePropertyChange(bind.node, prop.keys, prop.value)) {     
             component.__disableKeys(prop.keys);
@@ -666,7 +674,7 @@ export default class Component {
 
     elEvaluate(this.el);
     evaluate(this.__children);
-  }  
+  }
 
   /**
    * Evaluate value by keys
@@ -1203,7 +1211,12 @@ export default class Component {
     this.__disableKeys(keys);
 
     for(let i = 0, l = links.length; i < l; i++) {
-      const link = links[i];      
+      const link = links[i];   
+      
+      if(!link.set) {
+        continue;
+      }
+
       this.__storeTriggerByName(link.name, value);      
     }
     
@@ -1239,6 +1252,10 @@ export default class Component {
         Akili.unisolate(() => link.fn.call(component, value, name))
         continue;
       }
+
+      if(!link.get) {
+        continue;
+      }
       
       let current = utils.getPropertyByKeys(link.keys, component.__scope);
       !utils.compare(current, value) && component.scope.__set(link.keys, value);     
@@ -1250,11 +1267,18 @@ export default class Component {
    * 
    * @param {string} name 
    * @param {string|string[]} keys
+   * @param {obhect} [options]
    * @protected
    */
-  __storeByKeys(name, keys) {
+  __storeByKeys(name, keys, options = {}) {
+    options = { get: true, set: true, ...options };
+
     if(!keys) {
       throw new Error(`Store link "${name}" must have the scope property name`);
+    }
+
+    if(!options.get && !options.set) {
+      throw new Error(`Store link "${name}" must have at least "get" or "set" option as true`);
     }
 
     if(!Array.isArray(keys)) {
@@ -1275,6 +1299,8 @@ export default class Component {
       let res = arr[i];
 
       if(res.component === this && res.name == name && res.keyString == keyString) {
+        //eslint-disable-next-line no-console 
+        Akili.options.debug && console.warn(`Store link "${name}" with key "${keyString}" already exists`);
         return;
       }
     }
@@ -1283,7 +1309,7 @@ export default class Component {
       Akili.__storeLinks[name] = [];
     }
 
-    info = { component: this, name, keys, keyString, date: Date.now() };
+    info = { component: this, name, keys, keyString, date: Date.now(), set: options.set, get: options.get };
     this.__storeLinks[keyString].push(info);
     Akili.__storeLinks[name].push(info);
   }
@@ -1442,6 +1468,10 @@ export default class Component {
         if(link.fn) {
           continue;
         }
+
+        if(!link.set) {
+          continue;
+        }
         
         const ev = 'on' + utils.capitalize(link.name);
         this.attrs[ev] && this.attrs[ev].trigger(value, { bubbles: true });
@@ -1472,7 +1502,7 @@ export default class Component {
       if(link.fn) {
         Akili.unisolate(() => link.fn.call(this, value, utils.toDashCase(name)));
       }
-      else {
+      else if(link.get) {
         let current = utils.getPropertyByKeys(link.keys, this.__scope);
         !utils.compare(current, value) && this.scope.__set(link.keys, value);
       } 
@@ -1486,9 +1516,11 @@ export default class Component {
    * 
    * @param {string} name 
    * @param {string|string[]} keys
+   * @param {object} [options]
    * @protected
    */
-  __attrByKeys(name, keys) {   
+  __attrByKeys(name, keys, options = {}) {   
+    options = { get: true, set: true, ...options };
     name = utils.toCamelCase(name);
 
     if(!keys) {
@@ -1514,11 +1546,13 @@ export default class Component {
       let res = arr[i];
 
       if(res.name == name && res.keyString == keyString) {
+        //eslint-disable-next-line no-console 
+        Akili.options.debug && console.warn(`Attribute link "${name}" with key "${keyString}" already exists`);
         return;
       }
     }
 
-    this.__attrLinks[keyString].push({ name, keys, keyString, date: Date.now() });
+    this.__attrLinks[keyString].push({ name, keys, keyString, date: Date.now(), set: options.set, get: options.get });
   }
 
   /**
@@ -1801,6 +1835,36 @@ export default class Component {
    */
   __getBind(keys) {
     return utils.getPropertyByKeys(keys, this.__bindings) || null;
+  }
+
+  /**
+   * Get all nested bindings by keys
+   * 
+   * @param {string[]} keys 
+   */
+  __getAllBinds(keys) {
+    const root = this.__getBind(keys);
+
+    if(!root) {
+      return [];
+    }
+
+    let data = [];
+
+    const collect = (obj) => {
+      data = data.concat(obj.__data || []);
+
+      for(let key in obj) {
+        if(!obj.hasOwnProperty(key) || key == '__data') {
+          continue;
+        }
+
+        collect(obj[key]);
+      }
+    }
+
+    collect(root);
+    return data;
   }
 
   /**

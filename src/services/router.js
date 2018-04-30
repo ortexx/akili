@@ -515,7 +515,22 @@ router.prepareStateParams = function(state, params) {
     defaultParams[key] = typeof val == 'function'? val(router.transition, params[key]): val;
   }
 
-  return {...defaultParams, ...params};  
+  for(let key in params) {
+    const val = params[key];
+
+    if(val === undefined) {
+      continue;
+    }
+
+    if(val === null) {
+      delete defaultParams[key];
+      continue;
+    }
+
+    defaultParams[key] = val;
+  }
+
+  return defaultParams;  
 }
 
 /**
@@ -545,7 +560,22 @@ router.prepareStateQuery = function(state, query) {
     defaultQuery[key] = typeof val == 'function'? val(router.transition, query[key]): val;
   }
 
-  return {...defaultQuery, ...query};  
+  for(let key in query) {
+    const val = query[key];
+
+    if(val === undefined) {
+      continue;
+    }
+
+    if(val === null) {
+      delete defaultQuery[key];
+      continue;
+    }
+
+    defaultQuery[key] = val;
+  }
+
+  return defaultQuery;  
 }
 
 /**
@@ -857,7 +887,7 @@ router.changeState = function () {
         }
       }
       
-      if (!this.__options.saveScrollPosition && !transition.hash) {
+      if (!this.__options.saveScrollPosition && (!transition.path || !transition.path.hash)) {
         window.scrollTo(0, 0);
       }
 

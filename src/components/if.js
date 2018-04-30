@@ -70,7 +70,7 @@ export default class If extends Component {
         res = this.compile();
       }
 
-      this.el.style.display = this.display;
+      this.el.style.setProperty('display', this.display, 'important');
     }
     else {
       if (this.recreate) {
@@ -80,7 +80,7 @@ export default class If extends Component {
         res = this.compile();
       }
 
-      this.el.style.display = "none";
+      this.el.style.setProperty('display', 'none', 'important');
     }
 
     return res;
