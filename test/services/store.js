@@ -28,6 +28,7 @@ describe('store.js', () => {
     it('should create the link by a scope property', () => {        
       store.test = 'start';  
       elements.sectionOne.__akili.store('test', ['test']);
+      elements.sectionOne.__akili.store('test', 'test');
       elements.sectionTwo.__akili.store('test', ['tasty']);        
       assert.equal(elements.sectionOne.__akili.__storeLinks['test'][0].keyString, 'test', 'check the component.__storeLinks');
       assert.equal(Akili.__storeLinks['test'][1].keyString, 'tasty', 'check Akili.__storeLinks');
@@ -46,7 +47,8 @@ describe('store.js', () => {
     });
 
     it('should create the link by a function', () => { 
-      elements.sectionOne.__akili.store('handler', handler);       
+      elements.sectionOne.__akili.store('handler', handler);
+      elements.sectionOne.__akili.store('handler', handler);      
       assert.strictEqual(Akili.__storeLinks['handler'][0].fn, handler, 'check Akili.__storeLinks');
       assert.equal(elements.sectionOne.__akili.scope.linkHandler, 'start', 'check the value');
     }); 

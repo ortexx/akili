@@ -46,6 +46,9 @@ describe('router.js', () => {
           templateUrl: "router-1-2.html"
         },
         {
+          params: { o: () => 1 },
+          query: { m: () => 1 },
+          hash: 's',
           state: '2',
           pattern: '^/2',
           component: RouterComponent

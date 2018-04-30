@@ -1299,8 +1299,9 @@ export default class Component {
       let res = arr[i];
 
       if(res.component === this && res.name == name && res.keyString == keyString) {
-        //eslint-disable-next-line no-console 
-        Akili.options.debug && console.warn(`Store link "${name}" with key "${keyString}" already exists`);
+        res.set = options.set;
+        res.get = options.get;
+        res.date = Date.now();
         return;
       }
     }
@@ -1336,7 +1337,8 @@ export default class Component {
       let res = links[i];
 
       if(res.component === this && res.name == name && res.fn === fn) {
-        break;
+        res.date = Date.now();
+        return;
       }
     }
 
@@ -1546,8 +1548,9 @@ export default class Component {
       let res = arr[i];
 
       if(res.name == name && res.keyString == keyString) {
-        //eslint-disable-next-line no-console 
-        Akili.options.debug && console.warn(`Attribute link "${name}" with key "${keyString}" already exists`);
+        res.get = options.get;
+        res.set = options.set;
+        res.date = Date.now();
         return;
       }
     }
@@ -1578,7 +1581,8 @@ export default class Component {
       let res = links[i];
 
       if(res.name == name && res.fn === fn) {
-        break;
+        res.date = Date.now();
+        return;
       }
     }
     

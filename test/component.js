@@ -804,11 +804,13 @@ describe('component.js', () => {
         });
 
         it('should create the link by a scope property', () => {  
-          attr.attr('test', 'test');            
+          attr.attr('test', 'test');
+          attr.attr('test', 'test');             
           assert.equal(attr.__attrLinks['test'][0].keyString, 'test');
         });
   
         it('should create the link by a function', () => {  
+          attr.attr('test', fn);
           attr.attr('test', fn);         
           assert.strictEqual(attr.__attrLinks['test'][1].fn, fn);
         });
