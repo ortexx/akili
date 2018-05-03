@@ -25,7 +25,7 @@ export class Transition {
    */
   redirect() {
     this.cancel();   
-    router.state.apply(router, arguments);
+    return router.state.apply(router, arguments);
   }
 
   /**
@@ -138,7 +138,6 @@ router.add = function (name, pattern, options = {}) {
     component: null,
     params: {},
     query: {},
-    hash: null,
     handler: () => {},
   };
 
@@ -206,10 +205,13 @@ router.state = function (state, params = {}, query = {}, hash = undefined, optio
     throw new Error(`Not found route state with name ${state}`);
   }
 
-  let url = this.createStateUrl(state, params, query, hash);  
+  ({ params, query, hash } = this.prepareStateArgs(state, params, query, hash));
+  let url = this.createStateUrl(state, params, query, hash, false);  
   this.__options = options;
+  this.__options.hashIsNull = hash === null;  
   this.__options.manual = true;
-  this.setUrl(url);
+  this.isolate(() => this.setUrl(url));
+  return this.changeState();
 };
 
 /**
@@ -239,19 +241,20 @@ router.forward = function() {
  * @param {string} url
  * @param {object} [options]
  */
-router.location = function(url, options = { reload: false }) {
+router.location = function (url, options = { reload: false }) {
   this.__options = options;
   this.__options.manual = true;
 
-  if (this.hashMode) {
-    let current = window.location.hash.replace('#', '');
-    window.location.hash = url;
-    // eslint-disable-next-line no-console
-    current === url && this.changeState().catch((err) => console.error(err));
-  }
-  else {
-    window.history.pushState(null, '', url);
-  }
+  this.isolate(() => {
+    if (this.hashMode) {
+      window.location.hash = url;
+    }
+    else {
+      window.history.pushState(null, '', url);
+    }
+  })
+
+  return this.changeState();
 };
 
 /**
@@ -470,9 +473,11 @@ router.getHashUrlQuery = function() {
  */
 router.createStateUrl = function (state, params = {}, query = {}, hash = undefined, prepare = true) {
   typeof state !== 'object' && (state = this.getState(state));
-  prepare && (params = this.prepareStateParams(state, params));
-  prepare && (query = this.prepareStateQuery(state, query));
-  prepare && (hash = this.prepareStateHash(state, hash));
+  
+  if(prepare) {
+    ({ params, query, hash } = this.prepareStateArgs(state, params, query, hash));
+  }
+
   let url = state.fullPattern.replace(this.__paramRegex, (m, f, v) => '/' + (params[v] || ''));
   url = url.replace(/^\^/, '');
   url = this.splitSlashes(url);
@@ -489,48 +494,44 @@ router.createStateUrl = function (state, params = {}, query = {}, hash = undefin
 };
 
 /**
+ * Prepare the state arguments
+ * 
+ * @param {string|Object} state
+ * @param {object} [params]
+ * @param {object} [query]
+ * @param {string} [hash]
+ */
+router.prepareStateArgs = function (state, params = {}, query = {}, hash = undefined) {
+  let args = { params, query, hash };
+
+  for(let i = 0; i < 9; i++) {
+    const paramsTemp = this.prepareStateParams(state, params, args);
+    const queryTemp = this.prepareStateQuery(state, query, args);
+    const hashTemp = this.prepareStateHash(state, hash, args);
+    args = { params: paramsTemp, query: queryTemp, hash: hashTemp };
+  }
+  
+  return args;
+}
+
+/**
  * Prepare the state params
  * 
  * @param {string|Object} state
  * @param {object} params
+ * @param {object} [args]
  */
-router.prepareStateParams = function(state, params) {
-  typeof state !== 'object' && (state = this.getState(state));  
-  let allParams = {};  
-  let lastState = '';
-  const defaultParams = {};
+router.prepareStateParams = function(state, params, args) {
+  typeof state !== 'object' && (state = this.getState(state));
+  const list = [params];
   const states = state.name.split('.');
 
   for(let i = 0, l = states.length; i < l; i++) {
-    let current = lastState + states[i];
-    allParams = { ...allParams, ...this.getState(current).params };
-    lastState = current + '.';
+    let current = states.slice(0, states.length - i).join('.');
+    list.push(this.getState(current).params);
   }
 
-  const paramKeys = Object.keys(allParams);
- 
-  for(let i = 0, l = paramKeys.length; i < l; i++) {
-    let key = paramKeys[i];
-    let val = allParams[key];
-    defaultParams[key] = typeof val == 'function'? val(router.transition, params[key]): val;
-  }
-
-  for(let key in params) {
-    const val = params[key];
-
-    if(val === undefined) {
-      continue;
-    }
-
-    if(val === null) {
-      delete defaultParams[key];
-      continue;
-    }
-
-    defaultParams[key] = val;
-  }
-
-  return defaultParams;  
+  return this.createStateArgs(list, args);
 }
 
 /**
@@ -538,44 +539,60 @@ router.prepareStateParams = function(state, params) {
  * 
  * @param {string|Object} state
  * @param {object} query
+ * @param {object} [args]
  */
-router.prepareStateQuery = function(state, query) {
-  typeof state !== 'object' && (state = this.getState(state)); 
-  let allQuery = {};
-  let lastState = '';
-  const defaultQuery = {};
-  const states = state.name.split('.');
+router.prepareStateQuery = function(state, query, args) {  
+  typeof state !== 'object' && (state = this.getState(state));
+  const list = [query];
+  const states = state.name.split('.');  
 
   for(let i = 0, l = states.length; i < l; i++) {
-    const current = lastState + states[i];
-    allQuery = { ...allQuery, ...this.getState(current).query };
-    lastState = current + '.';
+    const current = states.slice(0, states.length - i).join('.');
+    list.push(this.getState(current).query);
   }
-
-  const queryKeys = Object.keys(allQuery);
  
-  for(let i = 0, l = queryKeys.length; i < l; i++) {
-    let key = queryKeys[i];
-    let val = allQuery[key];
-    defaultQuery[key] = typeof val == 'function'? val(router.transition, query[key]): val;
+  return this.createStateArgs(list, args);
+}
+
+/**
+ * Merge list items as transition objects
+ * 
+ * @param {object[]} list
+ * @param {object} [args]
+ */
+router.createStateArgs = function (list, args = { params: {}, query: {} }) {
+  const all = {};
+  const excluded = {};
+
+  for(let i = 0, l = list.length; i < l; i++) {
+    const obj = list[i];
+    const keys = Object.keys(obj);
+ 
+    for(let k = 0, c = keys.length; k < c; k++) {
+      let key = keys[k];
+      let val = obj[key];
+
+      if(excluded[key]) {
+        continue;
+      }
+
+      val = typeof val == 'function'? val(args): val;
+
+      if(val === undefined) {
+        continue;
+      }
+
+      if(val === null) {
+        delete all[key];
+        excluded[key] = true;
+        continue;
+      }
+
+      all[key] = val;
+    }
   }
 
-  for(let key in query) {
-    const val = query[key];
-
-    if(val === undefined) {
-      continue;
-    }
-
-    if(val === null) {
-      delete defaultQuery[key];
-      continue;
-    }
-
-    defaultQuery[key] = val;
-  }
-
-  return defaultQuery;  
+  return all; 
 }
 
 /**
@@ -583,24 +600,33 @@ router.prepareStateQuery = function(state, query) {
  * 
  * @param {string|Object} state
  * @param {string} hash
+ * @param {object} [args]
  */
-router.prepareStateHash = function(state, hash) {
-  if(hash !== undefined) {
+router.prepareStateHash = function(state, hash, args) {
+  if(hash === null) {
     return hash;
   }
 
   typeof state !== 'object' && (state = this.getState(state));
   const states = state.name.split('.');
-  let lastState = '';
 
   for(let i = 0, l = states.length; i < l; i++) {
-    const current = lastState + states[i];
-    const currentHash = this.getState(current).hash;
-    currentHash !== undefined && (hash = currentHash);
-    lastState = current + '.';
+    const current = states.slice(0, states.length - i).join('.');
+    let val = this.getState(current).hash;
+    val = typeof val == 'function'? val(args): val;
+
+    if(val === undefined) {
+      continue;
+    }
+
+    if(val === null) {
+      return null;
+    }
+
+    hash = val;
   }
 
-  return hash || '';
+  return hash;
 }
 
 /**
@@ -811,10 +837,11 @@ router.changeState = function () {
 
     let state = content.state;
     transition.setPath({ state, component: route, loaded: true });
-    let currentUrl = this.createStateUrl(state, content.params, query, hash, false);
-    params = this.prepareStateParams(state, { ...params, ...content.params });
-    query = this.prepareStateQuery(state, query);
-    hash = this.prepareStateHash(state, hash || (!this.__options.manual? undefined: '')) || '';
+    let currentUrl = this.createStateUrl(state, content.params, query, hash, false);  
+    params = { ...params, ...content.params };
+    hash = hash || (this.__options.hashIsNull? null: '');
+    ({ params, query, hash } = this.prepareStateArgs(state, params, query, hash)); 
+    hash = hash || '';
     let realUrl = this.createStateUrl(state, params, query, hash, false); 
     currentUrl != realUrl && this.isolate(() => this.setUrl(realUrl));   
     let route = state.abstract? null: this.getRoute(componentLevel);
@@ -844,7 +871,7 @@ router.changeState = function () {
     
     Promise.resolve(transition.path.loaded? state.handler(transition): transition.path.data).then((data) => {  
       if (transition.__cancelled) {
-        return onEnd && onEnd();
+        return Promise.resolve(data).then(() => onEnd && onEnd()).catch((err) => onEnd && onEnd(err));
       }
       
       transition.path.data = data;

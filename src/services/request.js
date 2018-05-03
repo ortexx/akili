@@ -141,10 +141,7 @@ export class Request {
         reject(new Error(`Request to "${options.url}" timed out`));
       };
 
-      xhr.onerror = (err) => {
-        reject(err);
-      };
-
+      xhr.onerror = reject;
       xhr.send(options.body);
     });
   }
@@ -213,9 +210,9 @@ export class Request {
     let str = JSON.stringify(data);
 
     for (let i = 0; i < str.length; i++) {
-        let  char = str.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; 
+      let  char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; 
     }
 
     return hash + '';
@@ -240,18 +237,11 @@ export class Request {
 
       if (Array.isArray(obj[k])) {
         ks = encodeURIComponent(k);
-
-        return obj[k].map((v, i) => {
-          return ks + `[${i}]` + eq + encodeURIComponent(v);
-        }).join(sep);
+        return obj[k].map((v, i) => ks + `[${i}]` + eq + encodeURIComponent(v)).join(sep);
       }
       else if (obj[k] && typeof obj[k] === 'object') {
         let opt = [];
-
-        Object.keys(obj[k]).map((key) => {
-          opt.push(ks + `[${key}]` + eq + encodeURIComponent(obj[k][key]));
-        });
-
+        Object.keys(obj[k]).map((key) => opt.push(ks + `[${key}]` + eq + encodeURIComponent(obj[k][key])));
         return opt.join(sep);
       }
       else {

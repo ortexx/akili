@@ -201,7 +201,7 @@ export default class Component {
       }
     }
     else {
-      Akili.isolate(() => {
+      res = Akili.isolate(() => {
         this.attrs.onRecompiled && this.attrs.onRecompiled.trigger(undefined, { bubbles: false });
         this.recompiled();
       });

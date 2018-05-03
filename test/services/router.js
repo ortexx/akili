@@ -77,7 +77,10 @@ describe('router.js', () => {
 
     describe('.add()', () => {
       it('should add new state', () => {
-        router.add('x', '/x/:id', { params: { id: 4 }, query: { z: 3 } });
+        router.add('x', '/x/:id', { 
+          params: { id: (args) => args.params.id || 4 }, 
+          query: { z: (args) => args.query.z || 3 } 
+        });
         routeOptions.forEach((route) => router.add(route));
         assert.equal(router.states[0].name, 'x');
       });
@@ -136,7 +139,7 @@ describe('router.js', () => {
         let state = router.getState('x');
         let params = { id: 2, fix: 3 };
         let query = { x: 1, y: 2 };
-        assert.equal(router.createStateUrl(state, params, query), '/x/2?z=3&x=1&y=2');
+        assert.equal(router.createStateUrl(state, params, query), '/x/2?x=1&y=2&z=3');
       });
 
       it('should create right url by data', () => {

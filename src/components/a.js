@@ -102,8 +102,8 @@ export default class A extends Component {
   }
 
   setHash(hash) {
-    if (typeof hash != 'string' && hash !== undefined) {
-      throw new Error(`Router state hash must be a string`);
+    if (typeof hash != 'string' && hash !== undefined && hash !== null) {
+      throw new Error(`Router state hash must be a string|null`);
     }
 
     this.hash = hash;

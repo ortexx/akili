@@ -588,12 +588,15 @@ Akili.isolateArrayPrototype = function () {
 Akili.isolateWindowFunctions = function() {
   this.__window.setTimeout = setTimeout;
   this.__window.setInterval = setInterval;
-  this.__window.Promise = Promise;
+  this.__window.Promise = window.Promise;
   window.setTimeout = this.createCallbackIsolation(window.setTimeout, 0);
   window.setInterval = this.createCallbackIsolation(window.setInterval, 0);
-  window.Promise.constructor = this.createCallbackIsolation(window.Promise.constructor);
-  window.Promise.prototype.then = this.createCallbackIsolation(window.Promise.prototype.then, [0, 'last']);
-  window.Promise.prototype.catch = this.createCallbackIsolation(window.Promise.prototype.catch);
+  
+  if(!window.AKILI_SSR) {
+    window.Promise.constructor = this.createCallbackIsolation(window.Promise.constructor);
+    window.Promise.prototype.then = this.createCallbackIsolation(window.Promise.prototype.then, [0, 'last']);
+    window.Promise.prototype.catch = this.createCallbackIsolation(window.Promise.prototype.catch);
+  }  
 };
 
 /**
@@ -621,11 +624,11 @@ Akili.isolateEvents = function () {
       this.__akiliListeners[name] = [];
     }
 
-    args[1] = function () {
-      return Akili.isolate(() => {
-        return fn.apply(this, arguments);
-      });
-    };
+    if(typeof fn === 'function') {
+      args[1] = function () {
+        return Akili.isolate(() => fn.apply(this, arguments));
+      };
+    }    
 
     this.__akiliListeners[name].push({
       link: fn,
@@ -692,11 +695,16 @@ Akili.createCallbackIsolation = function (fn, pos = 'last') {
         continue;
       }
 
-      args[index] = function() {
-        return Akili.isolate(() => {
-          return callback.apply(callback, arguments);
+      if(!callback.__isolated) {
+        args[index] = function() {
+          return Akili.isolate(() => callback.apply(callback, arguments));
+        };
+
+        Object.defineProperty(args[index], '__isolated', {
+          enumerable: false,
+          value: callback
         });
-      };
+      }
     }
 
     return fn.apply(this, args);
