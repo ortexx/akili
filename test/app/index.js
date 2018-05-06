@@ -2,6 +2,7 @@ import { assert } from 'chai';
 import Akili from '../../src/akili.js';
 import App from './app';
 import { SectionOne, SectionTwo, SectionOneOne, SectionEmpty } from './sections';
+import { FirstStore, SecondStore } from './store';
 import Abstract from './abstract';
 import Attribute from './attribute';
 import Prevent from './prevent';
@@ -23,6 +24,8 @@ elements.forCompile = document.createElement('for-compile');
 document.body.appendChild(elements.root);
 
 Akili.component('attr', Attribute);
+Akili.component('first-store', FirstStore);
+Akili.component('second-store', SecondStore);
 Akili.component('cancel', Cancel);
 Akili.component('prevent', Prevent);
 Akili.component('app', App);

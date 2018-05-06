@@ -26,30 +26,20 @@ export default class Input extends Text {
     this.isRadio = this.el.type == 'radio';    
   }
 
-  created() {
-    if(this.isRadio || this.isCheckbox) {
-      this.el.addEventListener('click', () => {
-        this.setChecked(this.el.checked, false);
-      });
-    }
-   
-    return super.created.apply(this, arguments);
-  }
-
-  resolved() {
+  compiled() {
     (this.isCheckbox || this.isRadio) && this.attr('checked', this.setChecked);
-    return super.resolved.apply(this, arguments);
+    return super.compiled.apply(this, arguments);
   }  
 
-  setChecked(value, trigger = true) {
+  setChecked(value) {
     value = !!value;
-
-    if (this.prevChecked === value) {
+    
+    if (this.el.checked === value) {
       return;
     }
 
-    this.el.checked = this.prevChecked = value;
-    trigger && this.attrs.onChange.dispatch(Event, { bubbles: true });
+    this.el.checked = value;
+    this.__isCompiled && this.attrs.onChange.dispatch(Event, { bubbles: true });
     this.isRadio && this.changeRadio();
   }
 

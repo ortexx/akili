@@ -32,6 +32,11 @@ export default class All extends Component {
     `;
 
     this.el.innerHTML += `
+      <first-store></first-store>
+      <second-store></second-store>
+    `;
+
+    this.el.innerHTML += `
       <object url="\${this.cObjectValue}"></object>
     `;
 

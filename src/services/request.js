@@ -20,7 +20,7 @@ export class Request {
     this.baseUrl = baseUrl? (baseUrl.replace(/\/$/, '') + '/'): '';
 
     this.defaults = {
-      statusErrorsPattern: /^([^23])|404/,
+      statusErrorPattern: /^[^23]/,
       cache: false,
       ...(defaults || {})
     };
@@ -127,7 +127,7 @@ export class Request {
 
         const response = this.transformAfter(result);
 
-        if ((xhr.status + '').match(options.statusErrorsPattern)) {
+        if (options.statusErrorPattern && (xhr.status + '').match(options.statusErrorPattern)) {
           let err = new Error(`Request to "${options.url}" returns failure status code ${xhr.status}`);
           err.response = response;
           return reject(err);

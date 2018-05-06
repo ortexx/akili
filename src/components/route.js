@@ -76,7 +76,7 @@ export default class Route extends Component {
     };
 
     if (!transition.path.loaded) {
-      return Akili.compile(this.el, { recompile: true });
+      return Akili.compile(this.el, { recompile: { checkChanges: true } });
     }
 
     return Promise.resolve().then(() => {

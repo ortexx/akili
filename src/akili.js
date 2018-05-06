@@ -305,14 +305,10 @@ Akili.isolate = function (fn) {
   this.__isolation = null;
 
   for (let i = 0, l = props.length; i < l; i++) {
-    let prop = props[i];
-
-    if (prop.isDeleted) {
-      prop.component.__evaluateByKeys(prop.keys, undefined, true);
-      continue;
-    }
-    
-    prop.component.scope.__set(prop.keys, utils.getPropertyByKeys(prop.keys, prop.component.__scope));
+    const prop = props[i];
+    const val = utils.getPropertyByKeys(prop.keys, prop.component.__scope);    
+    prop.component.__isResolved && prop.component.__triggerStoreAndAttr(prop.keys, val);
+    prop.component.__evaluateByKeys(prop.keys, val, prop.isDeleted);
   }
 
   props = null;
@@ -574,9 +570,7 @@ Akili.isolateArrayPrototype = function () {
           return old.apply(this, arguments);
         }
         
-        return Akili.isolate(() => {
-          return old.apply(this, arguments);
-        }, this);
+        return Akili.isolate(() => old.apply(this, arguments));
       });
     };
   }

@@ -82,6 +82,53 @@ export class Transition {
   }
 
   /**
+   * Check the route is changed
+   * 
+   * @param {object} route
+   */
+  isRouteChanged(route) {
+    if(!this.previous) {
+      return true;
+    }
+
+    const state = route.state;
+
+    if(!this.previous.hasState(state)) {
+      return true;
+    }
+
+    const paramKeys = [];
+    state.fullPattern.replace(router.__paramRegex, (m, f, v) => paramKeys.push(v));
+    
+    for(let key in state.params) {
+      if(paramKeys.indexOf(key) == -1) {
+        paramKeys.push(key);
+      }
+    }
+
+    const queryKeys = Object.keys(state.query);
+    const watchHash = state.hash !== undefined;    
+    const prevRoute = this.previous.getRoute(state); 
+
+    const prev = { 
+      params: utils.includeKeys(prevRoute.params, paramKeys), 
+      query: utils.includeKeys(prevRoute.query, queryKeys)
+    };
+
+    const current = {
+      params: utils.includeKeys(route.params, paramKeys),
+      query: utils.includeKeys(route.query, queryKeys)
+    }
+
+    if(watchHash) {
+      prev.hash = prevRoute.hash;
+      current.hash = route.hash;
+    }
+
+    return !utils.compare(prev, current);
+  }
+
+  /**
    * Cancel the current transition
    */
   cancel() {
@@ -857,15 +904,11 @@ router.changeState = function () {
     !state.abstract && componentLevel++;
     level++;    
 
-    let hasState = prevTransition && prevTransition.hasState(state);
     let isDifferent = true;
-     
-    if (hasState && this.__options.manual && realUrl != url) {
-      let route = prevTransition.getRoute(state);      
-      let prev = { params: route.params, query: route.query, hash: route.hash };
-      let current = { params, query, hash };
-      isDifferent = !utils.compare(prev, current);
-    }   
+
+    if(realUrl != url) {
+      isDifferent = transition.isRouteChanged(transition.path);
+    }
     
     transition.path.loaded = isDifferent && this.__options.reload !== false;
     

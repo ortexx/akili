@@ -112,7 +112,7 @@ export default class Component {
    */
   __createRecompilationOptions(options = {}) {
     return { 
-      ...this.__createCompilationOptions(),    
+      ...this.__createCompilationOptions(),
       setEvents: false,
       setParents: false,
       setBooleanAttributes: false,
@@ -172,7 +172,7 @@ export default class Component {
       for (let i = 0, l = children.length; i < l; i++) {
         let child = children[i];
 
-        if (child.nodeType == 3 && this.__initializeNode(child, parent, true)) { 
+        if (child.nodeType == 3 && this.__initializeNode(child, parent)) {
           this.__evaluateNode(child, this.__compiling? this.__compiling.checkChanges: false);               
         }
         else if (child.nodeType == 1 && !child.__akili) {
@@ -230,7 +230,7 @@ export default class Component {
     
     this.attrs.onResolved && this.attrs.onResolved.trigger(undefined, { bubbles: false });
 
-    return Promise.resolve(this.resolved()).then(res => {
+    return Promise.resolve(Akili.isolate(() => this.resolved())).then(res => {
       this.__isResolved = true;
       return res;
     });
@@ -650,12 +650,12 @@ export default class Component {
         }
          
         for (let k = 0, c = data.length; k < c; k++) {
-          let bind = data[k]; 
+          const bind = data[k]; 
           
-          if (component.__checkNodePropertyChange(bind.node, prop.keys, prop.value)) {     
-            component.__disableKeys(prop.keys);
-            let checkProp = component.__getNodeProperty(bind.node, prop.keys);            
-            checkProp && checkProp.evaluated && component.scope.__set(prop.keys, prop.value, false, true);                       
+          if (component.__checkNodePropertyChange(bind.node, prop.keys, prop.value)) {  
+            component.__disableKeys(prop.keys);     
+            const checkProp = component.__getNodeProperty(bind.node, prop.keys);
+            checkProp && checkProp.evaluated && component.scope.__set(prop.keys, prop.value, false, true); 
             component.__evaluateNode(bind.node, false);
             
             for (let _k in bind.node.__properties) {
@@ -731,7 +731,7 @@ export default class Component {
     };
     
     data && unbind(data, [].concat(keys));
-    this.__evaluateNested(keys);
+    this.__evaluateNested(keys, false);
 
     if (isDeleted) {
       this.__unbind(keys);
@@ -839,7 +839,10 @@ export default class Component {
       return;
     }
 
-    this.__initializeNode(node, el);
+    if(!this.__initializeNode(node, el)) {
+      return;
+    }
+
     let eventName = node.nodeName.replace(/^on-(.+)/i, '$1');
     let nodeName = utils.toCamelCase(node.nodeName);
     let component = attributeOf? attributeOf: this;
@@ -873,11 +876,9 @@ export default class Component {
       node.__attributeOn = this;
       node.__attributeOf = component;
     }
-
+    
     let check = this.__compiling? this.__compiling.checkChanges: false;
-    let currentValue = node.value;
-    let res = component.__evaluateNode(node, check);
-    currentValue != res && el.setAttribute(node.nodeName, res);
+    component.__evaluateNode(node, check);
   }
 
   /**
@@ -885,28 +886,31 @@ export default class Component {
    *
    * @param {Node} node
    * @param {Element} el
-   * @param {boolean} [checkBinding]
    * @returns {boolean}
    * @protected
    */
-  __initializeNode(node, el, checkBinding = false) {
+  __initializeNode(node, el) {
     if (node.__initialized) {
       return true;
     }
 
-    let val = node[(node instanceof window.Attr)? 'value': 'nodeValue'].trim();
-    let hasBinding = checkBinding? evaluationRegex.test(val): false;
-    
-    if (checkBinding && !hasBinding) {
+    const val = node[(node instanceof window.Attr)? 'value': 'nodeValue'].trim();
+    const hasBinding = evaluationRegex.test(val);
+    const isBoolean = /^boolean-/i.test(node.nodeName);
+    const isEvent = /^on-(.+)/i.test(node.nodeName);
+
+    if(!el.__akili && !hasBinding && !isBoolean && !isEvent) {
       return false;
     }
 
+    node.__isEvent = isEvent;
+    node.__hasBindings = hasBinding;
+    node.__isBoolean = isBoolean;
     node.__expression = val;
     node.__properties = {};
     node.__attributeOf = null;
     node.__attributeOn = null;
-    node.__event = null;
-    node.__hasBindings = hasBinding;
+    node.__event = null;    
     node.__initialized = true;
     node.__component = this;
     node.__element = el;
@@ -922,19 +926,20 @@ export default class Component {
   __deinitializeNode(node) {
     if (node.__event) {
       node.__event.unbind();
-      node.__event = null;
     }
 
     if (node.__hasBindings) {
       this.__parent && this.__parent.__akili.__evaluationComponent.__unbindByNodes([node]);          
     }
 
+    delete node.__hasBindings;
+    delete node.__isBoolean;
+    delete node.__isEvent;
     delete node.__expression;
     delete node.__properties;
     delete node.__attributeOf;
     delete node.__attributeOn;
-    delete node.__event;
-    delete node.__hasBindings;
+    delete node.__event;    
     delete node.__initialized;
     delete node.__component;
     delete node.__element;
@@ -1104,8 +1109,6 @@ export default class Component {
           return true;
         }
 
-        let keyString = Akili.joinBindingKeys(keys);
-
         CHECK_EXISTENCE: if (parents.length > 0) {
           let targetParentValue = parents.length > 1? utils.getPropertyByKeys(parents.slice(0, -1), this.__scope): this.__scope;
           
@@ -1124,18 +1127,18 @@ export default class Component {
         }
 
         target[key] = this.__nestedObserve(value, keys);
-        
+
+        if(!this.__isResolved) {
+          this.__triggerStoreAndAttr(keys, value);
+        }
+       
         if (Akili.__isolation) { 
           this.__createIsolationObject(parents, key, false);
           return true;
         }
 
-        if (this.__storeLinks[keyString]) {
-          this.__storeTriggerByKeys(keys, value);
-        }
-
-        if (this.__attrLinks[keyString]) {
-          this.__attrTriggerByKeys(keys, value);
+        if(this.__isResolved) {
+          this.__triggerStoreAndAttr(keys, value);
         }
         
         if (this.__isMounted) {                   
@@ -1145,7 +1148,7 @@ export default class Component {
         return true;
       },
       deleteProperty: (target, key) => {
-        let keys = [].concat(parents, [key]);
+        const keys = [].concat(parents, [key]);
 
         if (this.__checkDisablement(keys)) {
           delete target[key];
@@ -1156,18 +1159,41 @@ export default class Component {
           delete target[key];
           return true;
         }
+
+        delete target[key];
+
+        if(!this.__isResolved) {
+          this.__triggerStoreAndAttr(keys, undefined);
+        }
         
         if (Akili.__isolation) {
-          delete target[key];
           this.__createIsolationObject(parents, key, true);
           return true;
         }
-        
-        delete target[key];
+
+        if(this.__isResolved) {
+          this.__triggerStoreAndAttr(keys, undefined);
+        }
+
         this.__evaluateByKeys(keys, undefined, true);
         return true;
       }
     });
+  }
+
+  /**
+   * Trigger store and attributes change
+   */
+  __triggerStoreAndAttr(keys, value) {
+    const keyString = Akili.joinBindingKeys(keys);
+
+    if (this.__storeLinks[keyString]) {
+      this.__storeTriggerByKeys(keys, value);
+    }
+
+    if (this.__attrLinks[keyString]) {
+      this.__attrTriggerByKeys(keys, value);
+    }
   }
 
   /**
@@ -1235,19 +1261,19 @@ export default class Component {
    * @param {*} value    
    * @protected
    */
-  __storeTriggerByKeys(keys, value) {
-    if (this.__checkDisablement(keys, 'store')) {
+  __storeTriggerByKeys(keys, value) { 
+    if (this.__checkDisablement(keys, 'store')) {      
       return;
     }
 
     const links = this.__storeLinks[Akili.joinBindingKeys(keys)];
-    
+
     if (!links || !links.length) {
       return;
     }
-
+    
     value = utils.copy(value);
-    this.__disableKeys(keys);
+    const p = [];
 
     for (let i = 0, l = links.length; i < l; i++) {
       const link = links[i];   
@@ -1256,10 +1282,10 @@ export default class Component {
         continue;
       }
 
-      this.__storeTriggerByName(link.name, value);      
+      p.push(this.__storeTriggerByName(link.name, value));      
     }
     
-    this.__enableKeys(keys);
+    return Promise.all(p);
   }
 
   /**
@@ -1279,27 +1305,29 @@ export default class Component {
 
     links = utils.sort(links, ['date'], true);
 
-    for (let i = 0, l = links.length; i < l; i++) {
-      const link = links[i];
-      const component = link.component;
+    return Akili.nextTick(() => {
+      for (let i = 0, l = links.length; i < l; i++) {
+        const link = links[i];
+        const component = link.component;
 
-      if (component === this) {
-        continue;
-      }
-      
-      if (link.fn) {
-        Akili.unisolate(() => link.fn.call(component, value, name));
-        continue;
-      }
-      if (!link.get) {
-        continue;
-      }
+        if (component === this) {
+          continue;
+        }
+        
+        if (link.fn) {
+          Akili.unisolate(() => link.fn.call(component, value, name));
+          continue;
+        }
+        if (!link.get) {
+          continue;
+        }
 
-      component.__disableKeys(link.keys, 'store');
-      let current = utils.getPropertyByKeys(link.keys, component.__scope);
-      !utils.compare(current, value) && component.scope.__set(link.keys, value);   
-      component.__enableKeys(link.keys, 'store');
-    }     
+        component.__disableKeys(link.keys, 'store');
+        let current = utils.getPropertyByKeys(link.keys, component.__scope);
+        !utils.compare(current, value) && component.scope.__set(link.keys, value);   
+        component.__enableKeys(link.keys, 'store');
+      }  
+    });   
   }
 
   /**
@@ -1324,8 +1352,10 @@ export default class Component {
     if (!Array.isArray(keys)) {
       keys = [keys];
     }
-
-    this.scope.__set(keys, store[name]);
+    
+    this.__disableKeys(keys, 'store');
+    (store.hasOwnProperty(name) || !utils.hasPropertyByKeys(keys, this.__scope)) && this.scope.__set(keys, store[name]);
+    this.__enableKeys(keys, 'store');
     let keyString = Akili.joinBindingKeys(keys);
     let info;
 
@@ -1539,7 +1569,6 @@ export default class Component {
     
     for (let i = 0, l = links.length; i < l; i++) {
       const link = links[i];    
-      this.__disableAttrTriggering = true;
 
       if (link.fn) {
         Akili.unisolate(() => link.fn.call(this, value, utils.toDashCase(name)));
@@ -1577,9 +1606,9 @@ export default class Component {
       keys = [keys];
     }
     
-    this.__disableAttrTriggering = true;
-    this.attrs.hasOwnProperty(name) && this.scope.__set(keys, this.attrs[name]); 
-    this.__disableAttrTriggering = false;  
+    this.__disableKeys(keys, 'attr');
+    (this.attrs.hasOwnProperty(name) || !utils.hasPropertyByKeys(keys, this.__scope)) && this.scope.__set(keys, this.attrs[name]); 
+    this.__enableKeys(keys, 'attr');
     let keyString = Akili.joinBindingKeys(keys);
     
     if (!this.__attrLinks[keyString]) {
@@ -1639,7 +1668,7 @@ export default class Component {
       for (let i = 0, l = attrsKeys.length ; i < l; i++) {
         let key = attrsKeys[i];
         let val = this.__attrs[key];
-        p.push( Akili.unisolate(() => fn.call(this, val, utils.toDashCase(key))));
+        p.push(Akili.unisolate(() => fn.call(this, val, utils.toDashCase(key))));
       }
 
       return Promise.all(p);
@@ -1794,7 +1823,7 @@ export default class Component {
     return res;
   }
 
-  /**
+   /**
    * Create an isolation object
    *
    * @param {string[]} parents
@@ -1804,23 +1833,23 @@ export default class Component {
    * @protected
    */
   __createIsolationObject (parents, key, isDeleted = false) {
-    let keys = parents.length? [parents[0]]: [key];
-    let isolationKey = this.__createKeysHash(keys);
+    const keys = parents.length? [parents[0]]: [key];
+    const isolationHash = this.__createKeysHash(keys);
 
     if (parents.length) {
       isDeleted = false;
     }
 
-    if (!Akili.__isolation[isolationKey]) {
-      Akili.__isolation[isolationKey] = {
+    if (!Akili.__isolation[isolationHash]) {
+      Akili.__isolation[isolationHash] = {
         updatedAt: new Date().getTime(),
         component: this,
-        keys: keys
+        keys
       };
     }
 
-    (isDeleted !== undefined) && (Akili.__isolation[isolationKey].isDeleted = isDeleted);
-    return Akili.__isolation[isolationKey];
+    (isDeleted !== undefined) && (Akili.__isolation[isolationHash].isDeleted = isDeleted);
+    return Akili.__isolation[isolationHash];
   }
 
   /**
@@ -1947,7 +1976,7 @@ export default class Component {
    * @param {Node} node
    * @param {string[]} keys
    * @param {*} value
-   * @param {boolean} [evaluated]
+   * @param {boolean} [evaluated=false]
    * @returns {boolean}
    * @protected
    */
@@ -1967,7 +1996,7 @@ export default class Component {
       value,
       copy,      
       keys,
-      evaluated      
+      evaluated  
     };
 
     return true;

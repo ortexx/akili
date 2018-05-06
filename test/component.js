@@ -341,7 +341,7 @@ describe('component.js', () => {
       it('should change attribute', () => {
         component.attrs.parent = "Parent value";
         assert.equal(elements.home.getAttribute('parent'), "Parent value", 'check element attribute');
-        assert.isOk(parentComponent.__bindings.homeAttr, 'check parent binding');
+        assert.isUndefined(parentComponent.__bindings.homeAttr, 'check parent binding');
       });
 
       it('should change attribute with an expression', () => {
