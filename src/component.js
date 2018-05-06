@@ -488,11 +488,11 @@ export default class Component {
     let expression;
 
     if (node.__component.parents((com) => com.__prevent).length) {
-      return node.__expression;
+      return { res: node.__expression };
     }
 
     if (!(node instanceof window.Attr) && node.__component.__prevent) {
-      return node.__expression;
+      return { res: node.__expression };
     }
     
     let res = node.__expression.replace(evaluationRegexGlobal, (m, d) => {
