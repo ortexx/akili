@@ -867,7 +867,6 @@ router.changeState = function () {
   let prevTransition = router.transition || null;
   let transition = router.transition = new Transition(prevTransition);
   let level = 0;
-  let componentLevel = 0;
    
   window.dispatchEvent(new CustomEvent('state-change', { detail: transition }));
 
@@ -891,7 +890,7 @@ router.changeState = function () {
     hash = hash || '';
     let realUrl = this.createStateUrl(state, params, query, hash, false); 
     currentUrl != realUrl && this.isolate(() => this.setUrl(realUrl));   
-    let route = state.abstract? null: this.getRoute(componentLevel);
+    let route = state.abstract? null: this.getRoute(level);
 
     if (!route && !state.abstract) {
       throw new Error (`Not found route component for state "${state.name}"`);
@@ -901,16 +900,14 @@ router.changeState = function () {
     transition.path.query = query;
     transition.path.hash = hash;
     transition.path.url = realUrl;
-    !state.abstract && componentLevel++;
-    level++;    
-
+    !state.abstract && level++;
     let isDifferent = true;
 
     if(realUrl != url) {
       isDifferent = transition.isRouteChanged(transition.path);
     }
     
-    transition.path.loaded = isDifferent && this.__options.reload !== false;
+    transition.path.loaded = isDifferent && this.__options.reload !== false;   
     
     Promise.resolve(transition.path.loaded? state.handler(transition): transition.path.data).then((data) => {  
       if (transition.__cancelled) {
@@ -963,13 +960,6 @@ router.changeState = function () {
 
       this.__options = {};
       this.__redirects = 0;
-
-      if (prevTransition) {
-        for (let i = level, l = prevTransition.routes.length; i < l; i++) {
-          let route = prevTransition.routes[i];
-          route.component && route.component.empty();
-        }
-      }
 
       window.dispatchEvent(new CustomEvent('state-changed', { detail: transition }));
       resolve(transition);

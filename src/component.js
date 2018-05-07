@@ -224,7 +224,7 @@ export default class Component {
    * @returns {Promise}
    */
   __resolve() {
-    if (this.__recompiling) {
+    if (this.__isResolved) {
       return Promise.resolve();
     }
     
