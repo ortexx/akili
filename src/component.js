@@ -486,6 +486,7 @@ export default class Component {
     let counter = 0;
     let attributeValue;
     let expression;
+    const evalComponent = node.__attributeOf || node.__component;
 
     if (node.__component.parents((com) => com.__prevent).length) {
       return { res: node.__expression };
@@ -505,7 +506,7 @@ export default class Component {
       Akili.__evaluation = { node: node, list: [], component: node.__component };
       
       try {
-        evaluate = this.constructor.parse(this.__evaluationComponent.scope, parseValue);
+        evaluate = this.constructor.parse(evalComponent.__evaluationComponent.scope, parseValue);
       }
       catch (err) {        
         throw this.__createExceptionMessage(node, err);
@@ -530,8 +531,7 @@ export default class Component {
           continue;
         }
 
-        let parentValue = utils.getPropertyByKeys(data.parents, data.component.__scope);
-        let evalComponent = node.__attributeOf || node.__component;
+        let parentValue = utils.getPropertyByKeys(data.parents, data.component.__scope);        
 
         if (parentValue && typeof parentValue == 'object') {
           if (Akili.options.debug && parentBindings[parentsHash] == 50) {
