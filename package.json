@@ -1,6 +1,6 @@
 {
   "name": "akili",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Akili - javascript framework",
   "main": "./src/akili.js",
   "author": {
@@ -22,12 +22,12 @@
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
-    "babel-core": "^6.26.2",
+    "babel-core": "^6.26.3",
     "babel-eslint": "^8.2.3",
     "babel-loader": "^7.1.4",
-    "babel-preset-akili": "^0.7.0",
+    "babel-preset-akili": "^0.7.1",
     "chai": "^4.1.2",
-    "coveralls": "^3.0.0",
+    "coveralls": "^3.0.1",
     "eslint": "^4.19.1",
     "eslint-loader": "^2.0.0",
     "istanbul-instrumenter-loader": "^3.0.1",
