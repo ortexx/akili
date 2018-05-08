@@ -1,5 +1,6 @@
 import { assert } from 'chai';
 import Akili from '../src/akili.js';
+import globals from '../src/globals.js';
 import elements from './app/elements.js';
 import ForCompile from './app/for-compile.js';
 
@@ -94,9 +95,9 @@ describe('akili.js', () => {
       });
     });
 
-    describe('.unregisterComponent()', () => {
+    describe('.removeComponent()', () => {
       it('should remove a component from the list', () => {
-        Akili.unregisterComponent('for-compile');
+        Akili.removeComponent('for-compile');
         assert.notProperty(Akili.__components, 'for-compile');
       });
     });
@@ -112,9 +113,9 @@ describe('akili.js', () => {
       });
     });
 
-    describe('.unregisterAlias()', () => {
+    describe('.removeAlias()', () => {
       it('should remove an alias from the list', () => {
-        Akili.unregisterAlias('alias');
+        Akili.removeAlias('alias');
         assert.notProperty(Akili.__aliases, 'alias');
       });
     });
@@ -182,6 +183,48 @@ describe('akili.js', () => {
       it('should not be isolate', () => {
         component.scope.html = '3';
         assert.equal(component.el.innerHTML, '3');
+      });
+    });
+
+    describe('tags', () => {
+      let component;
+
+      class TestTag extends Akili.Component {
+        static template = '${ globalFn() }';
+        
+        created() {
+          this.globalCounter = 0;
+          globals.globalFn = () => this.globalCounter++;
+        }
+      }
+
+      before(() => {
+        Akili.component('test-tag', TestTag);
+        const el = document.createElement('test-tag');
+        Akili.root.el.appendChild(el);
+        Akili.compile(el);
+        component = Akili.root.child('test-tag');
+      });
+
+      describe('check the current state', () => {
+        it('should have called the global function once', () => {
+          assert.equal(component.globalCounter, 1);
+        });
+      });
+
+      describe('.evaluateTag()', () => {
+        it('should trigger the tag expressions evalauation', () => {
+          Akili.evaluateTag('globals.globalFn');
+          assert.equal(component.globalCounter, 2);
+        });
+      });
+
+      describe('.removeTag()', () => {
+        it('should remove the tag', () => {
+          delete globals.globalFn;
+          Akili.evaluateTag('globals.globalFn');
+          assert.equal(component.globalCounter, 2);
+        });
       });
     });
   });

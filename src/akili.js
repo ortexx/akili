@@ -34,6 +34,7 @@ import request from './services/request.js';
 import router from './services/router.js';
 import store from './services/store.js';
 import utils from './utils.js';
+import globals from './globals.js';
 
 /**
  * The framework object
@@ -49,8 +50,7 @@ Akili.__defaults = [];
  */
 Akili.setDefaults = function () {
   this.options = {
-    debug: true,
-    globals: { utils }
+    debug: true
   };
   
   this.__init = null;
@@ -69,6 +69,12 @@ Akili.setDefaults = function () {
     'disabled', 'contenteditable', 'hidden'
   ];
 
+  for(let key in globals) {
+    delete globals[key];
+  }
+
+  globals.utils = utils;
+
   this.components = {};
   this.services = {};
 
@@ -76,6 +82,7 @@ Akili.setDefaults = function () {
   this.EventEmitter = EventEmitter;
   this.Scope = Scope;
   this.utils = utils;
+  this.globals = globals;
   this.components.A = A;
   this.components.Audio = Audio;
   this.components.Content = Content;
@@ -141,7 +148,7 @@ Akili.define = function () {
  * 
  * @param {function} fn 
  */
-Akili.defaults = function(fn) {  
+Akili.defaults = function (fn) {  
   this.__defaults.push(fn);
   fn();
 }
@@ -336,7 +343,7 @@ Akili.unevaluate = function (fn) {
  * @param {function} fn
  * @returns {*}
  */
-Akili.wrapping = function(fn) {
+Akili.wrapping = function (fn) {
   if(this.__wrapping) {
     return fn();
   }
@@ -508,11 +515,11 @@ Akili.component = function (name, fn) {
 };
 
 /**
- * Unregister the component
+ * Remove the component
  *
  * @param {string} name
  */
-Akili.unregisterComponent = function (name) {
+Akili.removeComponent = function (name) {
   delete this.__components[name];
 };
 
@@ -538,11 +545,11 @@ Akili.alias = function (selector, componentName = '') {
 };
 
 /**
- * Unregister the selector alias
+ * Remove the selector alias
  *
  * @param {string} selector
  */
-Akili.unregisterAlias = function (selector) {
+Akili.removeAlias = function (selector) {
   delete this.__aliases[selector];
 };
 
@@ -579,7 +586,7 @@ Akili.isolateArrayPrototype = function () {
 /**
  * Isolate some window functions
  */
-Akili.isolateWindowFunctions = function() {
+Akili.isolateWindowFunctions = function () {
   this.__window.setTimeout = setTimeout;
   this.__window.setInterval = setInterval;
   this.__window.Promise = window.Promise;
@@ -690,7 +697,7 @@ Akili.createCallbackIsolation = function (fn, pos = 'last') {
       }
 
       if(!callback.__isolated) {
-        args[index] = function() {
+        args[index] = function () {
           return Akili.isolate(() => callback.apply(callback, arguments));
         };
 
@@ -708,14 +715,14 @@ Akili.createCallbackIsolation = function (fn, pos = 'last') {
 /**
  * Wrap objects/classes to isolate and unevaluate data
  *
- * @param {*} obj
- * @param {object|function} [options] 
+ * @param {object|function} obj
+ * @param {object} [options] 
  */
 Akili.wrap = function (obj, options = {}) {
   let current = obj;
 
   if(typeof obj == 'function') {
-    obj = this.wrapFunction(obj);
+    obj = this.wrapFunction(obj, options);
 
     if(obj === current) {
       return obj;
@@ -759,14 +766,19 @@ Akili.unwrap = function (obj) {
  * Isolate a function
  *
  * @param {function} fn
+ * @param {object} [options]
  * @returns {function}
  */
-Akili.wrapFunction = function(fn) {
+Akili.wrapFunction = function (fn, options = {}) {
   if (fn.__akili) {
     return fn;
   }
 
   const akiliWrappedFunction = function () {
+    if(options.tag && Akili.__evaluation) {
+      Akili.__evaluation.component.__addTag(options.tag, Akili.__evaluation.node);
+    }
+
     return Akili.wrapping(() => fn.apply(this, arguments));
   };
 
@@ -787,9 +799,69 @@ Akili.wrapFunction = function(fn) {
 };
 
 /**
+ * Evaluate the tags node expressions
+ * 
+ * @param {string|string[]} tags
+ */
+Akili.evaluateTag = function (tags) {
+  if(!this.root) {
+    return;
+  }
+  
+  if(!Array.isArray(tags)) {
+    tags = [tags];
+  }
+
+  const children = this.root.children();
+  
+  for(let i = 0, l = children.length; i < l; i++) {
+    const child = children[i];
+    const childTags = child.__tags;    
+
+    for(let j = 0, s = tags.length; j < s; j++) {
+      const tag = tags[j];
+      
+      if(!childTags[tag]) {
+        continue;
+      }
+  
+      for(let k = 0, c = childTags[tag].length; k < c; k++) {
+        const obj = childTags[tag][k];
+        child.__evaluateNode(obj.node, false);
+      }
+    }
+  }  
+}
+
+/**
+ * Remove the tags
+ * 
+ * @param {string|string[]} tags
+ */
+Akili.removeTag = function (tags) {
+  if(!this.root) {
+    return;
+  }
+  
+  if(!Array.isArray(tags)) {
+    tags = [tags];
+  }
+
+  const children = this.root.children();
+  
+  for(let i = 0, l = children.length; i < l; i++) {
+    const child = children[i]; 
+
+    for(let j = 0, s = tags.length; j < s; j++) {
+      child.__removeTag(tags[j]);
+    }
+  }  
+}
+
+/**
  * Error handling
  */
-Akili.errorHandling = function() {
+Akili.errorHandling = function () {
   window.addEventListener('error', this.__onError);
 };
 
@@ -798,7 +870,7 @@ Akili.errorHandling = function() {
  *
  * @param {boolean} status
  */
-Akili.triggerInit = function(status) {
+Akili.triggerInit = function (status) {
   Akili.__init = status;
   window.dispatchEvent(new CustomEvent('akili-init', { detail: status }));
 };
@@ -809,7 +881,7 @@ Akili.triggerInit = function(status) {
  * @param {Element} [root]
  * @returns {Promise}
  */
-Akili.init = function(root) {
+Akili.init = function (root) {
   root = root || document.body;
 
   if(!(root instanceof Element)) {
@@ -833,7 +905,7 @@ Akili.init = function(root) {
   }
 
   for(let key in this.options.globals) {
-    this.options.globals[key] = this.wrap(this.options.globals[key]);
+    this.options.globals[key] = this.wrap(this.options.globals[key], { tag: `globals.${key}` });
   }
   
   return this.compile(this.__root).then(() => {
@@ -911,7 +983,7 @@ Akili.prepareServerSideRequestCache = function () {
 /**
  * Deinitialize the application
  */
-Akili.deinit = function() {
+Akili.deinit = function () {
   this.clearGlobals();
   router.deinit();
   request.deinit();

@@ -2,6 +2,7 @@ import Akili from './akili.js';
 import Scope from './scope.js';
 import request from './services/request.js';
 import store from './services/store.js';
+import globals from './globals.js';
 import utils from './utils.js';
 
 export const evaluationRegex = /\${(((?!\${).)*)}/;
@@ -35,18 +36,18 @@ export default class Component {
    *
    * @param {object} context
    * @param {string} expression
-   * @param {object} [globals]
+   * @param {object} [vars]
    */
-  static parse(context, expression, globals = {}) {
-    globals = { ...Akili.options.globals, ...globals};
+  static parse(context, expression, variables = {}) {
+    variables = { ...globals, ...variables};
     const keys = [];
     const vars = [];
     const exps = utils.split(expression, ';', ['"', "'", '`']);  
     exps[exps.length - 1] = `return ${exps[exps.length - 1]}`;
 
-    for (let key in globals) {
+    for (let key in variables) {
       keys.push(key);
-      vars.push(globals[key]);
+      vars.push(variables[key]);
     }
     
     return new Function(...keys, `${exps.join('; ')}`).apply(context, vars);
@@ -69,6 +70,7 @@ export default class Component {
     this.__cancelled = false;
     this.__prevent = false;
     this.__bindings = {};
+    this.__tags = {};
     this.__evaluatingEvent = null;
     this.__recompiling = false;
     this.__compiling = null;
@@ -2027,6 +2029,70 @@ export default class Component {
   }
 
   /**
+   * Add tag
+   * 
+   * @param {string} tag
+   * @param {Node} node
+   * @protected
+   */
+  __addTag(tag, node) {
+    if(!this.__tags[tag]) {
+      this.__tags[tag] = [];    
+    }
+
+    if(!this.__hasTag(tag)) {
+      this.__tags[tag].push({ node });
+    }
+  }
+
+  /**
+   * Check the tag exists
+   * 
+   * @param {string} tag
+   * @param {Node} node
+   * @protected
+   * @returns {boolean}
+   */
+  __hasTag(tag, node) {
+    if(!this.__tags[tag]) {
+      return false;    
+    }
+
+    for(let i = 0, l = this.__tags[tag].length; i < l; i++) {    
+      if(this.__tags[tag][i].node === node) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Remove the tag
+   * 
+   * @param {string} tag
+   * @param {Node} [node]
+   * @protected
+   */
+  __removeTag (tag, node) {
+    if(!node) {
+      delete this.__tags[tag];
+      return;    
+    }
+
+    for(let i = 0, l = this.__tags[tag].length; i < l; i++) {
+      if(this.__tags[tag][i].node === node) {
+        this.__tags[tag].splice(i, 1);
+        break;
+      }
+    }
+
+    if(!this.__tags[tag].length) {
+      delete this.__tags[tag];
+    }
+  }
+
+  /**
    * Bind data with the keys
    *
    * @param {string[]} keys
@@ -2213,7 +2279,7 @@ export default class Component {
     this.__clearStoreLinks();
     this.attrs.onRemoved && this.attrs.onRemoved.trigger(undefined, { bubbles: false });
     this.removed();    
-    Akili.removeScope(this.__scope.__name);
+    Akili.removeScope(this.__scope.__name);    
     this.el.remove();
   }
 
@@ -2250,6 +2316,7 @@ export default class Component {
   __empty() {
     let nodes = [];
     this.__removeChildren();
+
     const find = (children) => {
       for (let i = 0, l = children.length; i < l; i++) {
         let child = children[i];

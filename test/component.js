@@ -562,6 +562,36 @@ describe('component.js', () => {
           assert.isNotOk(component.__bindings.htmlTwo);
         });
       });
+
+      describe('.__addTag()', () => {
+        it('should create a new tag', () => {
+          component.__addTag('custom', node);
+          assert.lengthOf(component.__tags.custom, 1);
+        });
+      });
+
+      describe('.__hasTag()', () => {
+        it('should have the tag', () => {          
+          assert.isOk(component.__hasTag('custom', node));
+        });
+
+        it('should not have the tag', () => {          
+          assert.isNotOk(component.__hasTag('non-existent', node));
+        });
+      });
+
+      describe('.__removeTag()', () => {
+        it('should remove the tag by node', () => {
+          component.__removeTag('custom', node);
+          assert.isUndefined(component.__tags.custom);
+        });
+
+        it('should remove the tag fully', () => {
+          component.__addTag('custom', node);
+          component.__removeTag('custom');
+          assert.isUndefined(component.__tags.custom);
+        });
+      });
     });
 
     describe('.appendTo()', () => {

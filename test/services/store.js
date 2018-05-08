@@ -5,6 +5,7 @@ import elements from '../app/elements.js';
 
 describe('store.js', () => {
   let handler;
+  
   class TestStore extends Akili.Component {
     created() {
       this.checkStore? this.store('test', 'test'): this.unstore('test', 'test');     

@@ -393,7 +393,7 @@ describe('components/', () => {
   });
 
   describe('event stages', () => {
-    it('should be triggered the events', () => {
+    it('should trigger the events', () => {
       let a = component.child('a[url]');
       assert.isTrue(a.scope.compiled, 'on-compiled');
       assert.isTrue(a.scope.resolved, 'on-resolved');
