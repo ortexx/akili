@@ -1,6 +1,6 @@
 {
   "name": "akili",
-  "version": "0.6.24",
+  "version": "0.7.0",
   "description": "Akili - javascript framework",
   "main": "./src/akili.js",
   "author": {
@@ -25,9 +25,7 @@
     "babel-core": "^6.26.2",
     "babel-eslint": "^8.2.3",
     "babel-loader": "^7.1.4",
-    "babel-preset-env": "^1.6.1",
-    "babel-preset-stage-2": "^6.24.1",
-    "babel-preset-stage-3": "^6.24.1",
+    "babel-preset-akili": "^0.7.0",
     "chai": "^4.1.2",
     "coveralls": "^3.0.0",
     "eslint": "^4.19.1",

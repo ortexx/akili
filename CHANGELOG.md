@@ -1,3 +1,16 @@
+# 0.7.x (May 08, 2018)
+
+* added tags system
+* fixed a lot of core bugs
+* added __Akili.globals__ object to pass custom global variables to scope expressions
+* added __.store()__ and __.attr()__ __set__ and __get__ options
+* added __router.transition.reload()__
+* added __router.reload()__
+* added __Akili.defaults()__ to define module settings
+* added __utils.includeKeys()__, __utils.excludeKeys()__
+* improved the loop system
+
+
 # 0.6.x (March 22, 2018)
 
 * improved router initialization

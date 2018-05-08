@@ -53,7 +53,7 @@ let config = {
         loader: 'babel-loader',
         exclude: /node_modules/,
         query: {
-          presets: ['env', 'stage-2', 'stage-3']
+          presets: ['akili']
         }
       }
     ]
