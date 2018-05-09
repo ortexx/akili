@@ -22,9 +22,10 @@ export default class Route extends Component {
 
   /**
    * @param {Transition} transition
+   * @param {boolean} load
    * @returns {Promise}
    */
-  setTransition(transition) {
+  setTransition(transition, load = true) {
     let state = transition.path.state;
 
     const getParentScopeTransition = (path) => {
@@ -75,7 +76,7 @@ export default class Route extends Component {
       hash: transition.path.hash
     };
 
-    if (!transition.path.loaded) {
+    if (!load) {
       return Akili.compile(this.el, { recompile: { checkChanges: true } });
     }
 

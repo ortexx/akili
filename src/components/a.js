@@ -33,9 +33,8 @@ export default class A extends Component {
     this.state = null;
     this.params = {};
     this.query = {};
-    this.hash = null;
     this.options = {};
-    this.isUrl = this.el.getAttribute('url');
+    this.isUrl = this.el.hasAttribute('url');
   }
 
   compiled() {
@@ -132,7 +131,7 @@ export default class A extends Component {
       this.attrs.href = this.url;
     }
     else {
-      this.attrs.href = router.createStateUrl(this.state, this.params, this.query, this.hash);
+      this.attrs.href = router.createStateUrl(this.state, this.params, this.query, this.hash, this.options);
     }
   }
 }
