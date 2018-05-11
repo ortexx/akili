@@ -50,7 +50,8 @@ Akili.__defaults = [];
  */
 Akili.setDefaults = function () {
   this.options = {
-    debug: true
+    debug: true,
+    ignoredTags: ['globals.utils']
   };
   
   this.__init = null;
@@ -775,7 +776,7 @@ Akili.wrapFunction = function (fn, options = {}) {
   }
 
   const akiliWrappedFunction = function () {
-    if(options.tag && Akili.__evaluation) {
+    if(options.tag && Akili.__evaluation && Akili.options.ignoredTags.indexOf(options.tag) == -1) {
       Akili.__evaluation.component.__addTag(options.tag, Akili.__evaluation.node);
     }
 
