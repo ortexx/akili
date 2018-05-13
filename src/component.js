@@ -1131,7 +1131,7 @@ export default class Component {
         target[key] = this.__nestedObserve(value, keys);
 
         if(!this.__isResolved) {
-          this.__triggerStoreAndAttr(keys, value);
+          this.__triggerStoreAndAttr(keys);
         }
        
         if (Akili.__isolation) { 
@@ -1140,7 +1140,7 @@ export default class Component {
         }
 
         if(this.__isResolved) {
-          this.__triggerStoreAndAttr(keys, value);
+          this.__triggerStoreAndAttr(keys);
         }
         
         if (this.__isMounted) {                   
@@ -1165,7 +1165,7 @@ export default class Component {
         delete target[key];
 
         if(!this.__isResolved) {
-          this.__triggerStoreAndAttr(keys, undefined);
+          this.__triggerStoreAndAttr(keys);
         }
         
         if (Akili.__isolation) {
@@ -1174,7 +1174,7 @@ export default class Component {
         }
 
         if(this.__isResolved) {
-          this.__triggerStoreAndAttr(keys, undefined);
+          this.__triggerStoreAndAttr(keys);
         }
 
         this.__evaluateByKeys(keys, undefined, true);
@@ -1186,15 +1186,19 @@ export default class Component {
   /**
    * Trigger store and attributes change
    */
-  __triggerStoreAndAttr(keys, value) {
-    const keyString = Akili.joinBindingKeys(keys);
+  __triggerStoreAndAttr(keys) {
+    for(let i = 0, l = keys.length; i < l; i++) {
+      const currentKeys = keys.slice(0, l - i);
+      const currentKeyString = Akili.joinBindingKeys(currentKeys);
+      const val = utils.getPropertyByKeys(currentKeys, this.__scope);
 
-    if (this.__storeLinks[keyString]) {
-      this.__storeTriggerByKeys(keys, value);
-    }
+      if (this.__storeLinks[currentKeyString]) {  
+        this.__storeTriggerByKeys(currentKeys, val);
+      }
 
-    if (this.__attrLinks[keyString]) {
-      this.__attrTriggerByKeys(keys, value);
+      if (this.__attrLinks[currentKeyString]) {
+        this.__attrTriggerByKeys(currentKeys, val);
+      }
     }
   }
 
