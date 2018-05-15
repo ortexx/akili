@@ -432,7 +432,7 @@ export default class Component {
       let prop = node.__properties[k];
       let value = utils.getPropertyByKeys(prop.keys, prop.component.__scope);
 
-      if (!utils.comparePreviousValue(value, prop.value, prop.copy)) {
+      if (!utils.comparePreviousValue(value, prop.copy)) {
         return true;
       }
     }
@@ -456,7 +456,7 @@ export default class Component {
       return true;
     }
 
-    return !utils.comparePreviousValue(value, prop.value, prop.copy);
+    return !utils.comparePreviousValue(value, prop.copy);
   }
 
   /**
@@ -1988,10 +1988,10 @@ export default class Component {
    */
   __setNodeProperty(node, keys, value, evaluated = false) {
     let prop = this.__getNodeProperty(node, keys);    
-    let copy = utils.copy(value);
+    let copy = typeof value == 'object'? { hash: utils.createObjectHash(value) }: utils.copy(value);
 
     if (prop) {
-      let res = utils.comparePreviousValue(value, prop.value, prop.copy);
+      let res = utils.comparePreviousValue(value, prop.copy);
       prop.value = value;
       prop.copy = copy;
       return !res;
@@ -2278,13 +2278,32 @@ export default class Component {
    *
    * @protected
    */
-  __remove() {
+  __remove() {    
     this.__detach();
     this.__clearStoreLinks();
     this.attrs.onRemoved && this.attrs.onRemoved.trigger(undefined, { bubbles: false });
     this.removed();    
     Akili.removeScope(this.__scope.__name);    
     this.el.remove();
+    delete this.el.__akili;
+    this.__bindings = null;
+    this.__tags = null;    
+    this.__evaluatingEvent = null;
+    this.__recompiling = false;
+    this.__compiling = null;
+    this.__disableProxy = null;
+    this.__disableStoreKeys = null;
+    this.__disableAttrKeys = null;
+    this.__children = null;
+    this.__parent = null;
+    this.__parents = null;
+    this.__attrs = null;
+    this.__attrLinks = null;
+    this.__storeLinks = null;
+    this.__attributeOf = null;
+    this.__evaluationComponent = this;
+    this.scope = null;
+    this.el = null;
   }
 
   /**
@@ -2308,7 +2327,7 @@ export default class Component {
    * @protected
    */
   __destroy() {
-    this.__removeChildren();
+    this.__empty();
     this.__remove();
   }
 
@@ -2326,10 +2345,12 @@ export default class Component {
         let child = children[i];
 
         if (child.nodeType == 3) {
+          this.__deinitializeNode(child);
           nodes.push(child);
         }
         else if (child.nodeType == 1 && !child.__akili) {
           for (let k = 0, attrs = child.attributes, c = attrs.length; k < c; k++) {
+            this.__deinitializeNode(child);
             nodes.push(attrs[i]);
           }
 

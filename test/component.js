@@ -356,6 +356,14 @@ describe('component.js', () => {
       });
     });
 
+    describe('set nonexistend nested scope value()', () => {
+      it('should create parent object for the key', () => {   
+        component.scope.__set(['unex', 'key'], 1)    
+        assert.isObject(component.scope.unex, 'check an object');
+        assert.equal(component.scope.unex.key, 1, 'check the key');
+      });
+    });
+
     describe('.__observe()', () => {
       it('should set proxy to the object', () => {
         let obj = {};
@@ -789,7 +797,10 @@ describe('component.js', () => {
     });
 
     describe('.remove()', () => {
+      let el;
+
       before(() => {
+        el = component.el;
         component.__storeByFunction('store', () => {});
         component.remove();
       });
@@ -808,6 +819,10 @@ describe('component.js', () => {
 
       it('should remove all store links', () => {
         assert.doesNotHaveAllKeys(Akili.__storeLinks, ['store']);
+      });
+
+      it('should remove all children', () => {
+        assert.isEmpty(el.innerHTML);
       });
     });
 
@@ -899,14 +914,6 @@ describe('component.js', () => {
 
       it('should prevent children compilation', () => {       
         assert.lengthOf(prevent.children(), 0);
-      });
-    });
-    
-    describe('set nonexistend nested scope value()', () => {
-      it('should create parent object for the  key', () => {   
-        component.scope.__set(['unex', 'key'], 1)    
-        assert.isObject(component.scope.unex, 'check an object');
-        assert.equal(component.scope.unex.key, 1, 'check the key');
       });
     });
   });

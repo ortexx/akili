@@ -219,6 +219,10 @@ Akili.getScope = function (name) {
  * @param {string} name - scope name
  */
 Akili.removeScope = function (name) {
+  const scope = this.__scopes[name];
+  scope.__el = null;
+  scope.__component = null;
+  scope.__parent = null;
   this.__scopes[name] = null;
   delete this.__scopes[name];
 };

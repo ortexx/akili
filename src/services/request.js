@@ -62,11 +62,11 @@ export class Request {
            
       let hash = null;
       let cache = typeof options.cache == 'function'? options.cache(options): options.cache;
-      (window.AKILI_SERVER && !Akili.__init) && (cache = true);
+      (!window.AKILI_SSR && !Akili.__init) && (cache = true);
 
       if(options.method.toUpperCase() == 'GET' && (!options.body || typeof options.body == 'string')) {
         hash = this.createCacheHash({ 
-          url: options.url, 
+          url: options.url,
           method: options.method,
           user: options.user, 
           password: options.password, 
@@ -133,7 +133,7 @@ export class Request {
           return reject(err);
         } 
 
-        hash && this.createCache(hash, result);        
+        (cache || window.AKILI_SSR) && hash && this.createCache(hash, result);
         resolve(response);
       };
 
@@ -206,16 +206,7 @@ export class Request {
    * @returns {string}
    */
   createCacheHash(data) {
-    let hash = 0;
-    let str = JSON.stringify(data);
-
-    for (let i = 0; i < str.length; i++) {
-      let  char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; 
-    }
-
-    return hash + '';
+    return utils.createObjectHash(data);
   }
 
   /**

@@ -138,7 +138,7 @@ describe('utils.js', () => {
         assert.isNotOk(utils.compare(function x(a) {}, function y(a) {}), 'check function');
         assert.isNotOk(utils.compare(['1', 2, null], ['1', null, 2]), 'check array');
         assert.isNotOk(utils.compare({x: 1, y: 2}, {y: 2, x: 1, z: 3}), 'check object');
-        assert.isNotOk(utils.compare({x: 1, y: undefined}, {x: 1}), 'check object including undefined values');
+        assert.isNotOk(utils.compare({x: 1, y: undefined}, {x: 1}, { ignoreUndefined: false }), 'check object including undefined values');
         assert.isNotOk(utils.compare({x: {y: 2}, y: '&'}, {x: {y: 2, i: {}}, y: '&'}), 'check nested object');
         assert.isNotOk(utils.compare({y: Akili.Component}, {y: Akili.Scope}), 'check non-plain object');
       });
@@ -149,6 +149,18 @@ describe('utils.js', () => {
         assert.isNotOk(utils.comparePreviousValue({ x: 1 }, { x: 1 }, { x: 1 }));
       });
     });
+
+    describe('.createObjectHash()', () => {
+      it('should be equal', () => {
+        assert.equal(utils.createObjectHash({ x: 1, z: { y: 1 } }), utils.createObjectHash({ x: 1, z: { y: 1 } }));
+      });
+
+      it('should not be equal', () => {
+        assert.equal(utils.createObjectHash({ x: 1, z: { y: 2 } }), utils.createObjectHash({ x: 1, z: { y: 2 } }));
+      });
+    });
+
+    
 
     describe('.decodeHtmlEntities()', () => {
       it('should be without html entities', () => {

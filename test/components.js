@@ -398,9 +398,10 @@ describe('components/', () => {
       assert.isTrue(a.scope.compiled, 'on-compiled');
       assert.isTrue(a.scope.resolved, 'on-resolved');
       Akili.compile(a.el, { recompile: true });
-      assert.isTrue(a.scope.recompiled, 'on-recompiled');        
+      assert.isTrue(a.scope.recompiled, 'on-recompiled');  
+      const scope = a.scope;
       a.remove();
-      assert.isTrue(a.scope.removed, 'on-removed');
+      assert.isTrue(scope.removed, 'on-removed');
     });
   });
 });

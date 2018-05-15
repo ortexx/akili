@@ -460,7 +460,7 @@ utils.compare = function (a, b, options = {}) {
       return a === b;
     }
 
-    options = { enumerable: true, ...options };
+    options = { enumerable: true, ignoreUndefined: true, ...options };
 
     const clearUndefined = (val) => {
       let obj = Array.isArray(val)? []: {};
@@ -508,17 +508,34 @@ utils.compare = function (a, b, options = {}) {
  *
  * @param {*} current - the current value
  * @param {*} previous - the previous value
- * @param {*} previousCopy - the previous value copy
  * @param {object} [options]
  * @returns {boolean}
  */
-utils.comparePreviousValue = function(current, previous, previousCopy, options) {
-  if (current !== previous) {
-    return false;
+utils.comparePreviousValue = function(current, previous, options) {
+  if(typeof current == 'object') {
+    current = { hash: this.createObjectHash(current) };
   }
 
-  return this.compare(current, previousCopy, options);
+  return this.compare(current, previous, options);
 };
+
+/**
+ * Create a string hash from an object
+ * 
+ * @param {object} obj
+ */
+utils.createObjectHash = function(obj) {
+  let hash = 0;
+  let str = JSON.stringify(obj);
+
+  for (let i = 0; i < str.length; i++) {
+    let  char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; 
+  }
+
+  return hash + '';
+}
 
 /**
  * Encode html entities

@@ -98,11 +98,10 @@ export default class For extends Component {
     this.__index = index;
     this.__key = key;
     this.__value = value;    
-    this.__comparisonValue = utils.copy(value);
+    this.__comparisonValue = typeof value == 'object'? { hash: utils.createObjectHash(value) }: utils.copy(value);
 
     if(this.iterators.length > index) {
       let iterator = this.iterators[index];
-      let cCopy = iterator.comparsion.copy;
         
       if (this.__index !== iterator.index) {
         iterator.setIndex();
@@ -118,7 +117,7 @@ export default class For extends Component {
         iterator.setKey(true);
       }
       
-      if (!utils.compare(cCopy, this.__comparisonValue, { ignoreUndefined: true })) {
+      if (!utils.comparePreviousValue(value, iterator.comparisonValue)) {
         iterator.setValue();
       }
       else {
@@ -255,11 +254,7 @@ export class Loop extends For {
   setValue(target) {
     this.value = this.for.__value;
     this.scope.__set('loopValue', this.value, true, target);
-
-    this.comparsion = {
-      copy: this.for.__comparisonValue,
-      value: this.for.__value
-    };
+    this.comparisonValue =  this.for.__comparisonValue;
   }
 
   iterate() {}
