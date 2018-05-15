@@ -156,7 +156,7 @@ describe('utils.js', () => {
       });
 
       it('should not be equal', () => {
-        assert.equal(utils.createObjectHash({ x: 1, z: { y: 2 } }), utils.createObjectHash({ x: 1, z: { y: 2 } }));
+        assert.notEqual(utils.createObjectHash({ x: 1, z: { y: 2 } }), utils.createObjectHash({ x: 1, z: { y: 3 } }));
       });
     });
 
