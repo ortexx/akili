@@ -915,7 +915,7 @@ Akili.init = function (root) {
   
   return this.compile(this.__root).then(() => {
     if (router.__init) {
-      return router.changeState();
+      return router.changeState({ init: true });
     }
   }).then(() => {    
     window.AKILI_CLIENT && (window.AKILI_CLIENT.requestCache = this.prepareServerSideRequestCache());

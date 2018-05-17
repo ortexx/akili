@@ -2352,25 +2352,28 @@ export default class Component {
     this.removed();    
     Akili.removeScope(this.__scope.__name);    
     this.el.remove();
-    delete this.el.__akili;
-    this.__bindings = null;
-    this.__tags = null;    
-    this.__evaluatingEvent = null;
-    this.__recompiling = false;
-    this.__compiling = null;
-    this.__disableProxy = null;
-    this.__disableStoreKeys = null;
-    this.__disableAttrKeys = null;
-    this.__children = null;
-    this.__parent = null;
-    this.__parents = null;
-    this.__attrs = null;
-    this.__attrLinks = null;
-    this.__storeLinks = null;
-    this.__attributeOf = null;
-    this.__evaluationComponent = null;
-    this.scope = null;
-    this.el = null;
+    
+    return Akili.nextTick(() => {
+      delete this.el.__akili;
+      this.__bindings = null;
+      this.__tags = null;    
+      this.__evaluatingEvent = null;
+      this.__recompiling = false;
+      this.__compiling = null;
+      this.__disableProxy = null;
+      this.__disableStoreKeys = null;
+      this.__disableAttrKeys = null;
+      this.__children = null;
+      this.__parent = null;
+      this.__parents = null;
+      this.__attrs = null;
+      this.__attrLinks = null;
+      this.__storeLinks = null;
+      this.__attributeOf = null;
+      this.__evaluationComponent = null;
+      this.scope = null;
+      this.el = null;
+    });
   }
 
   /**
