@@ -652,7 +652,11 @@ export default class Component {
         }
          
         for (let k = 0, c = data.length; k < c; k++) {
-          const bind = data[k]; 
+          const bind = data[k];
+
+          if(!bind.node.__initialized) {
+            continue;
+          }
           
           if (component.__checkNodePropertyChange(bind.node, prop.keys, prop.value)) {  
             component.__disableKeys(prop.keys);     
@@ -2033,6 +2037,53 @@ export default class Component {
   }
 
   /**
+   * Map nodes
+   * 
+   * @param {function} fn
+   * @param {object} [options]
+   * @protected
+   */
+  __mapNodes(fn, options = {}) {
+    options = { rootAttrs: true, attrs: true, node: true, ...options };
+
+    const find = (el) => {
+      if(!el) {
+        return;
+      }
+
+      if(options.attrs && (el !== this.el || options.rootAttrs)) {
+        for (let k = 0, attrs = el.attributes, c = attrs.length; k < c; k++) {
+          fn(attrs[k]);
+        }
+      }
+
+      for (let i = 0, l = el.childNodes.length; i < l; i++) {
+        const node = el.childNodes[i];
+
+        if (node.nodeType == 3) {
+          options.node && fn(node);
+        }
+        else if (node.nodeType == 1 && !node.__akili) {
+          find(node);
+        }
+      }
+    };
+    
+    find(this.el);
+  }
+
+  /**
+   * Get all nodes
+   * 
+   * @protected
+   */
+  __getAllNodes() {
+    const nodes = [];
+    this.__mapNodes(node => nodes.push(node));
+    return nodes;
+  }
+
+  /**
    * Add tag
    * 
    * @param {string} tag
@@ -2155,10 +2206,12 @@ export default class Component {
   /**
    * Unbind data by nodes
    *
-   * @param {Node[]} nodes
+   * @param {Node|Node[]} nodes
    * @protected
    */
   __unbindByNodes(nodes) {
+    !Array.isArray(nodes) && (nodes = [nodes]);
+
     const unbind = (obj) => {
       for (let k in obj) {
         if (!obj.hasOwnProperty(k)) {
@@ -2191,6 +2244,19 @@ export default class Component {
     
     unbind(this.__bindings);
     this.__clearEmptyBindings();
+  }
+
+  /**
+   * Remove all parents bindings with the nodes
+   * 
+   * @param {Node|Node[]} nodes
+   * @protected
+   */
+  __unbindParentsByNodes(nodes) {    
+    for(let i = 0, l = this.__parents.length; i < l; i++) {
+      const parent = this.__parents[i];
+      parent && parent.__akili && parent.__akili.__unbindByNodes(nodes);
+    }
   }
 
   /**
@@ -2278,10 +2344,11 @@ export default class Component {
    *
    * @protected
    */
-  __remove() {    
+  __remove() { 
+    this.attrs.onRemoved && this.attrs.onRemoved.trigger(undefined, { bubbles: false });   
     this.__detach();
-    this.__clearStoreLinks();
-    this.attrs.onRemoved && this.attrs.onRemoved.trigger(undefined, { bubbles: false });
+    this.__empty();
+    this.__clearStoreLinks();    
     this.removed();    
     Akili.removeScope(this.__scope.__name);    
     this.el.remove();
@@ -2301,7 +2368,7 @@ export default class Component {
     this.__attrLinks = null;
     this.__storeLinks = null;
     this.__attributeOf = null;
-    this.__evaluationComponent = this;
+    this.__evaluationComponent = null;
     this.scope = null;
     this.el = null;
   }
@@ -2312,23 +2379,8 @@ export default class Component {
    * @protected
    */
   __detach() {
-    if (this.__evaluateParent && !this.__controlAttributes) {
-      this.__evaluateParent.__akili.__unbindByNodes([].slice.call(this.el.attributes));
-    }
-
-    if (this.__parent) {
-      this.__parent.__akili.__spliceChild(this.el);
-    }
-  }
-
-  /**
-   * Remove the component with children
-   *
-   * @protected
-   */
-  __destroy() {
-    this.__empty();
-    this.__remove();
+    this.__parent && this.__parent.__akili.__spliceChild(this.el);
+    this.__unbindParentsByNodes([].slice.call(this.el.attributes));
   }
 
   /**
@@ -2336,31 +2388,17 @@ export default class Component {
    *
    * @protected
    */
-  __empty() {
-    let nodes = [];
+  __empty() {    
     this.__removeChildren();
+    const nodes = [];
 
-    const find = (children) => {
-      for (let i = 0, l = children.length; i < l; i++) {
-        let child = children[i];
+    this.__mapNodes(node => {
+      this.__deinitializeNode(node);
+      nodes.push(node);
+    }, { rootAttrs: false });
 
-        if (child.nodeType == 3) {
-          this.__deinitializeNode(child);
-          nodes.push(child);
-        }
-        else if (child.nodeType == 1 && !child.__akili) {
-          for (let k = 0, attrs = child.attributes, c = attrs.length; k < c; k++) {
-            this.__deinitializeNode(child);
-            nodes.push(attrs[i]);
-          }
-
-          find(child.childNodes);
-        }
-      }
-    };
-    
-    find(this.el.childNodes);
     this.__unbindByNodes(nodes);
+    this.__unbindParentsByNodes(nodes);
     this.el.innerHTML = '';
   }
 
@@ -2675,7 +2713,7 @@ export default class Component {
    *
    * @param {Element} parent
    */
-  appendTo(parent) {
+  appendTo(parent) {   
     parent.appendChild(this.el);
     return Akili.compile(this.el, { recompile: { setParents: true, checkChanges: false } });
   }
@@ -2709,7 +2747,7 @@ export default class Component {
    * @returns {*}
    */
   remove() {
-    return this.__destroy.apply(this, arguments);
+    return this.__remove.apply(this, arguments);
   }
 
   created() {}

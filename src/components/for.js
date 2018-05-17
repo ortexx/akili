@@ -170,7 +170,7 @@ export default class For extends Component {
 
     for (let i = index, l = this.iterators.length; i < l; i++) {
       let iterator = this.iterators[i];
-      iterator.__destroy();
+      iterator.__remove();
       this.iterators.splice(i, 1);
       l--;
       i--;
