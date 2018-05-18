@@ -175,7 +175,7 @@ export default class Component {
         let child = children[i];
 
         if (child.nodeType == 3 && this.__initializeNode(child, parent)) {
-          this.__evaluateNode(child, this.__compiling? this.__compiling.checkChanges: false);               
+          this.__evaluateNode(child, this.__compiling? this.__compiling.checkChanges: false);            
         }
         else if (child.nodeType == 1 && !child.__akili) {
           this.__interpolateAttributes(child);
@@ -726,7 +726,7 @@ export default class Component {
         if (val && typeof val == 'object') {
           unbind(val, _keys);
         }
-        
+
         this.__evaluateNested(_keys, true);
 
         if (value === null || typeof value != 'object' || !hasKey) {
@@ -927,15 +927,16 @@ export default class Component {
    * Deinitialize the node
    *
    * @param {Node} node
+   * @param {object} [options]
    * @protected
    */
-  __deinitializeNode(node) {
+  __deinitializeNode(node, options = {}) {
     if (node.__event) {
       node.__event.unbind();
     }
 
-    if (node.__hasBindings) {
-      this.__parent && this.__parent.__akili.__evaluationComponent.__unbindByNodes([node]);          
+    if (node.__hasBindings && !options.saveBindings) {
+      this.__unbindParentsByNodes(node);          
     }
 
     delete node.__hasBindings;
@@ -1812,14 +1813,13 @@ export default class Component {
         value = target;
       }
 
-      for (let k in target) {        
-        if (!target.hasOwnProperty(k)) {
-          continue;
-        }
+      const targetKeys = Object.keys(target);
 
-        let val = target[k];        
-        let keys = [].concat(parents, [k]);   
-        target[k] = observe(val, keys);  
+      for (let i = 0, l = targetKeys.length; i < l; i++) {    
+        const k = targetKeys[i];
+        const val = target[k];        
+        const keys = [].concat(parents, [k]);   
+        target[k] = observe(val, keys);
       }
 
       if (!value.__isProxy) {
@@ -1829,8 +1829,7 @@ export default class Component {
       return value;
     };
 
-    let res = observe(value, startKeys || []);
-    return res;
+    return observe(value, startKeys || []);
   }
 
    /**
@@ -2213,10 +2212,10 @@ export default class Component {
     !Array.isArray(nodes) && (nodes = [nodes]);
 
     const unbind = (obj) => {
-      for (let k in obj) {
-        if (!obj.hasOwnProperty(k)) {
-          continue;
-        }
+      const keys = Object.keys(obj);
+
+      for (let j = 0, c = keys.length; j < c; j++) {
+        const k = keys[j];
         
         if (k == '__data') {
           let data = obj[k] || [];
@@ -2323,37 +2322,46 @@ export default class Component {
   /**
    * Remove all child components
    *
+   * @param {object} [options]
    * @protected
    */
-  __removeChildren() {
+  __removeChildren(options = {}) {
+    let nodes = [];
+
     const remove = (children) => {
       for (let i = 0; i < children.length; i++) {
         let child = children[i];
-
         remove(child.__akili.__children);
-        child.__akili.__remove();
+        nodes = nodes.concat(child.__akili.__remove(options));
         i--;
       }
     };
 
     remove(this.__children);
+    return nodes;
   }
 
   /**
    * Remove the component without children removing
    *
+   * @param {object} [options]
    * @protected
    */
-  __remove() { 
+  __remove(options = {}) { 
+    let nodes = [];
     this.attrs.onRemoved && this.attrs.onRemoved.trigger(undefined, { bubbles: false });   
-    this.__detach();
-    this.__empty();
+    nodes = nodes.concat(this.__detach({ saveBindings: true }));
+    nodes = nodes.concat(this.__empty({ saveBindings: true }));
     this.__clearStoreLinks();    
     this.removed();    
     Akili.removeScope(this.__scope.__name);    
     this.el.remove();
-    
-    return Akili.nextTick(() => {
+
+    if(!options.saveBindings) {
+      this.__unbindParentsByNodes(nodes);
+    }
+
+    Akili.nextTick(() => {
       delete this.el.__akili;
       this.__bindings = null;
       this.__tags = null;    
@@ -2374,35 +2382,52 @@ export default class Component {
       this.scope = null;
       this.el = null;
     });
+
+    return nodes;
   }
 
   /**
    * Detach the component
    *
+   * @param {object} [options]
    * @protected
    */
-  __detach() {
+  __detach(options = {}) {
     this.__parent && this.__parent.__akili.__spliceChild(this.el);
-    this.__unbindParentsByNodes([].slice.call(this.el.attributes));
+    const nodes = [].slice.call(this.el.attributes).filter(node => node.__initialized);
+
+    if(!options.saveBindings) {
+      this.__unbindParentsByNodes(nodes);
+    }
+
+    return nodes;
   }
 
   /**
    * Clear the component html
    *
+   * @param {object} [options]
    * @protected
    */
-  __empty() {    
-    this.__removeChildren();
-    const nodes = [];
+  __empty(options = {}) {    
+    const nodes = this.__removeChildren({ saveBindings: true });
 
     this.__mapNodes(node => {
-      this.__deinitializeNode(node);
-      nodes.push(node);
+      if(!node.__initialized) {
+        return;
+      }
+      
+      this.__deinitializeNode(node, { saveBindings: true });  
+      nodes.push(node);    
     }, { rootAttrs: false });
 
-    this.__unbindByNodes(nodes);
-    this.__unbindParentsByNodes(nodes);
+    if(!options.saveBindings) {
+      this.__unbindByNodes(nodes);
+      this.__unbindParentsByNodes(nodes);
+    }
+
     this.el.innerHTML = '';
+    return nodes;
   }
 
   /**

@@ -157,7 +157,7 @@ export default class For extends Component {
     if(Array.isArray(data)) {
       for (let l = data.length; index < l; index++) {
         loop(index, data[index], index);
-      }     
+      }
     }
     else {
       let keys = Object.keys(data);

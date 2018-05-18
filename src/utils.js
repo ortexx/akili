@@ -490,7 +490,7 @@ utils.compare = function (a, b, options = {}) {
     b = this.isScopeProxy(b)? b.__target: b;
 
     for(let i = 0, l = aKeys.length; i < l; i++) {
-      let key = aKeys[i];
+      const key = aKeys[i];
 
       if (!this.compare(a[key], b[key])) {
         return false;
@@ -529,7 +529,7 @@ utils.createObjectHash = function(obj) {
   let str = JSON.stringify(obj);
 
   for (let i = 0; i < str.length; i++) {
-    let  char = str.charCodeAt(i);
+    let char = str.charCodeAt(i);
     hash = ((hash << 5) - hash) + char;
     hash = hash & hash; 
   }
@@ -721,7 +721,7 @@ utils.setPropertyByKeys = function(keys, object, fn) {
  * @example
  * // returns 5
  * utils.deletePropertyByKeys(['x', 'y'], {x: {y: 5}});
- @example
+ * @example
  * // returns 5
  * utils.deletePropertyByKeys(['x', 'y'], {x: {y: 5}}, val => val != 5);
  *
