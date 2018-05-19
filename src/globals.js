@@ -1,7 +1,7 @@
 import Akili from './akili.js';
 
 /**
- * Globals to use the custom variablres in scope expressions
+ * Globals to use the custom variables in scope expressions
  * 
  * {@link https://akilijs.com/docs/scope#docs_globals}
  */
