@@ -432,7 +432,7 @@ export default class Component {
       let prop = node.__properties[k];
       let value = utils.getPropertyByKeys(prop.keys, prop.component.__scope);
 
-      if (!utils.comparePreviousValue(value, prop.copy)) {
+      if (!utils.comparePreviousValue(value, prop.value, prop.copy)) {
         return true;
       }
     }
@@ -456,7 +456,7 @@ export default class Component {
       return true;
     }
 
-    return !utils.comparePreviousValue(value, prop.copy);
+    return !utils.comparePreviousValue(value, prop.value, prop.copy);
   }
 
   /**
@@ -1994,7 +1994,7 @@ export default class Component {
     let copy = typeof value == 'object'? { hash: utils.createObjectHash(value) }: utils.copy(value);
 
     if (prop) {
-      let res = utils.comparePreviousValue(value, prop.copy);
+      let res = utils.comparePreviousValue(value, prop.value, prop.copy);
       prop.value = value;
       prop.copy = copy;
       return !res;

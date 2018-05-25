@@ -117,7 +117,7 @@ export default class For extends Component {
         iterator.setKey(true);
       }
       
-      if (!utils.comparePreviousValue(value, iterator.comparisonValue)) {
+      if (!utils.comparePreviousValue(value, value, iterator.comparisonValue)) {
         iterator.setValue();
       }
       else {
