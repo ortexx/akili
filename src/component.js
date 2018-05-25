@@ -432,7 +432,7 @@ export default class Component {
       let prop = node.__properties[k];
       let value = utils.getPropertyByKeys(prop.keys, prop.component.__scope);
 
-      if (!utils.comparePreviousValue(value, prop.value, prop.copy)) {
+      if (!node.__component.__compareNodePropertyValue(prop, value)) {
         return true;
       }
     }
@@ -456,7 +456,22 @@ export default class Component {
       return true;
     }
 
-    return !utils.comparePreviousValue(value, prop.value, prop.copy);
+    return !node.__component.__compareNodePropertyValue(prop, value);
+  }
+
+  /**
+   * Compare a node property value
+   * 
+   * @param {object} prop 
+   * @param {*} value 
+   * @param {object} [options] 
+   */
+  __compareNodePropertyValue(prop, value, options = {}) {
+    if(typeof value == 'object') {
+      value = { hash: utils.createObjectHash(value) };
+    }
+  
+    return utils.compare(value, prop.copy, options);
   }
 
   /**
@@ -1994,7 +2009,7 @@ export default class Component {
     let copy = typeof value == 'object'? { hash: utils.createObjectHash(value) }: utils.copy(value);
 
     if (prop) {
-      let res = utils.comparePreviousValue(value, prop.value, prop.copy);
+      let res = node.__component.__compareNodePropertyValue(prop, value);
       prop.value = value;
       prop.copy = copy;
       return !res;

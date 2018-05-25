@@ -504,27 +504,6 @@ utils.compare = function (a, b, options = {}) {
 };
 
 /**
- * Compare the current value with the previous
- *
- * @param {*} current - the current value
- * @param {*} prev - the previous value
- * @param {*} prevCopy - the previous value copy
- * @param {object} [options]
- * @returns {boolean}
- */
-utils.comparePreviousValue = function(current, prev, prevCopy, options) {
-  if(prev !== current) {
-    return false;
-  }
-
-  if(typeof current == 'object') {
-    current = { hash: this.createObjectHash(current) };
-  }
-
-  return this.compare(current, prevCopy, options);
-};
-
-/**
  * Create a string hash from an object
  * 
  * @param {object} obj

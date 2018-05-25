@@ -144,12 +144,6 @@ describe('utils.js', () => {
       });
     });
 
-    describe('.comparePreviousValue()', () => {
-      it('should not be equal', () => {
-        assert.isNotOk(utils.comparePreviousValue({ x: 1 }, { x: 1 }, { x: 1 }));
-      });
-    });
-
     describe('.createObjectHash()', () => {
       it('should be equal', () => {
         assert.equal(utils.createObjectHash({ x: 1, z: { y: 1 } }), utils.createObjectHash({ x: 1, z: { y: 1 } }));
@@ -159,8 +153,6 @@ describe('utils.js', () => {
         assert.notEqual(utils.createObjectHash({ x: 1, z: { y: 2 } }), utils.createObjectHash({ x: 1, z: { y: 3 } }));
       });
     });
-
-    
 
     describe('.decodeHtmlEntities()', () => {
       it('should be without html entities', () => {

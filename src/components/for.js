@@ -37,6 +37,16 @@ export default class For extends Component {
     this.reset();
   }
 
+  __compareNodePropertyValue(prop, value) {
+    const node = prop.node;
+
+    if((node instanceof window.Attr) && node.name == 'in' && prop.value !== value) {
+      return false;
+    }
+    
+    return super.__compareNodePropertyValue.apply(this, arguments);
+  }
+
   created() {    
     this.createIterator();
   }
@@ -117,7 +127,7 @@ export default class For extends Component {
         iterator.setKey(true);
       }
       
-      if (!utils.comparePreviousValue(value, value, iterator.comparisonValue)) {
+      if (!utils.compare(this.__comparisonValue, iterator.comparisonValue)) {
         iterator.setValue();
       }
       else {
