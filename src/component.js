@@ -2018,7 +2018,8 @@ export default class Component {
     node.__properties[this.__createKeysHash(keys)] = {
       component: this,
       value,
-      copy,      
+      copy,
+      node,
       keys,
       evaluated  
     };
