@@ -41,7 +41,7 @@ export default class For extends Component {
       return value;
     }
 
-    return super.__prepareAttributeOut.apply(this, arguments);
+    return super.__prepareAttributeIn.apply(this, arguments);
   }
 
   __compareNodePropertyValue(prop, value) {
