@@ -15,7 +15,6 @@ import utils from '../utils.js';
 export default class For extends Component {
   static matches = '[in]';
   static events = ['out'];
-  static saveAttributeProxyIn = true;  
 
   static define() {
     Akili.component('for', this);
@@ -35,6 +34,14 @@ export default class For extends Component {
     this.iteratorRef = null;
     this.iteratorOuterHTML = null;
     this.reset();
+  }
+
+  __prepareAttributeIn(node, value) {  
+    if((node instanceof window.Attr) && node.name == 'in') {
+      return value;
+    }
+
+    return super.__prepareAttributeOut.apply(this, arguments);
   }
 
   __compareNodePropertyValue(prop, value) {

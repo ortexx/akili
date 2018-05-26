@@ -19,7 +19,7 @@ const store = new Proxy({}, {
       return true;
     }
     
-    value = utils.copy(value);
+    value = utils.copy(value, { plain: true });
     target[key] = value;
     Akili.root && Akili.root.__storeTriggerByName(key, value);    
     return true;

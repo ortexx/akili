@@ -1,5 +1,3 @@
-import utils from './utils';
-
 /**
  * Class for working with events.
  * An instance of this class allows you to trigger custom javascript events.
@@ -7,11 +5,11 @@ import utils from './utils';
  * {@link https://akilijs.com/docs/events}
  */
 export default class EventEmitter {
-  constructor(name, el, component) {
+  constructor(name, node, el, component) {
     this.name = name;
+    this.node = node;
     this.el = el;
     this.component = component;
-    this.elComponent = this.el.__akili || null;
   }
 
   /**
@@ -48,8 +46,8 @@ export default class EventEmitter {
    * @param {object} [options] 
    */
   prepareOptions(options = {}) {
-    options = { bubbles: true, ...options };  
-    this.elComponent && !this.elComponent.__saveAttributeProxyOut && (options.detail = utils.copy(options.detail));
+    options = { bubbles: true, ...options }; 
+    this.node.__component.__prepareAttributeOut(this.node, options.detail);
     return options;
   }
 

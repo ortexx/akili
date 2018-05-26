@@ -17,8 +17,6 @@ export default class Component {
   static booleanAttributes = [];
   static events = [];
   static controlAttributes = false;
-  static saveAttributeProxyIn = false;
-  static saveAttributeProxyOut = false;
   static transparent = false;
   static template = '';
   static templateUrl = '';
@@ -275,8 +273,6 @@ export default class Component {
     this.__scope = __scope;
     this.__events = events;
     this.__controlAttributes = controlAttributes;
-    this.__saveAttributeProxyIn = this.constructor.saveAttributeProxyIn;
-    this.__saveAttributeProxyOut = this.constructor.saveAttributeProxyOut;
 
     Akili.addScope(scope);
     this.scope = this.__nestedObserve(_scope, []);
@@ -828,7 +824,7 @@ export default class Component {
   
         if (node.__attributeOn) {        
           const component = node.__attributeOn;
-          !component.__saveAttributeProxyIn && (value = utils.copy(value));
+          value = component.__prepareAttributeIn(node, value);
           component.__disableAttributeSetter = true;
           component.attrs[camelAttribute] = value;
           component.__disableAttributeSetter = false;
@@ -845,6 +841,26 @@ export default class Component {
     }
 
     return node[key];
+  }
+
+  /**
+   * Prepare the attribute value for getting
+   * 
+   * @param {Node} node
+   * @param {*} value
+   */
+  __prepareAttributeIn(node, value) {    
+    return utils.copy(value, { plain: true });
+  }
+
+  /**
+   * Prepare the attribute value for sending
+   * 
+   * @param {Node} node
+   * @param {*} value
+   */
+  __prepareAttributeOut(node, value) {    
+    return utils.copy(value, { plain: true });
   }
 
   /**
@@ -873,7 +889,7 @@ export default class Component {
         return;
       }
 
-      let emitter = new Akili.EventEmitter(eventName, el, component);
+      const emitter = new Akili.EventEmitter(eventName, node, el, component);
 
       if (node.__expression) {
         emitter.bind((e) => {
@@ -1298,7 +1314,7 @@ export default class Component {
       return;
     }
     
-    value = utils.copy(value);
+    value = utils.copy(value, { plain: true });
     const p = [];
 
     for (let i = 0, l = links.length; i < l; i++) {

@@ -75,6 +75,12 @@ describe('utils.js', () => {
         assert.lengthOf(Object.getOwnPropertyNames(copy), 1);
       });
 
+      it('should not change non-plain object', () => {
+        let obj = { x: new Error('test') };
+        let copy = utils.copy(obj, { plain: true });
+        assert.instanceOf(copy.x, Error);
+      });
+
       it('should copy non-enumerable values', () => {
         let obj = { key: 1 };
         Object.defineProperty(obj, 'nonen', { enumerable: false, value: true });

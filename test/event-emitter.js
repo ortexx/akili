@@ -61,7 +61,7 @@ describe('event-emitter.js', () => {
     
     before(() => {
       el = elements.app;
-      emitter = new EventEmitter('event', el, el.__akili);
+      emitter = new EventEmitter('event', { __component: el.__akili }, el, el.__akili);
       fn = (e) => {
         counter++;
         counter == 1 && assert.equal(e.detail, 1, 'check detail');

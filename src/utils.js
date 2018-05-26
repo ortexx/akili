@@ -384,9 +384,13 @@ utils.copy = function(value, options = {}) {
     return value;
   }
 
-  options = { nested: true, enumerable: true, ...options };
+  options = { nested: true, enumerable: true, plain: false, ...options };
 
   const next = (obj) => {
+    if(options.plain && !this.isPlainObject(obj)) {
+      return obj;
+    }
+
     obj = this.isScopeProxy(obj)? obj.__target: obj;
     let keys = !options.enumerable? Object.getOwnPropertyNames(obj): Object.keys(obj);
     let newObj = Array.isArray(obj)? []: {};
