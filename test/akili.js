@@ -213,7 +213,7 @@ describe('akili.js', () => {
       });
 
       describe('.evaluateTag()', () => {
-        it('should trigger the tag expressions evalauation', () => {
+        it('should trigger the tag expressions evaluation', () => {
           Akili.evaluateTag('globals.globalFn');
           assert.equal(component.globalCounter, 2);
         });
@@ -222,7 +222,6 @@ describe('akili.js', () => {
       describe('.removeTag()', () => {
         it('should remove the tag', () => {
           delete globals.globalFn;
-          Akili.evaluateTag('globals.globalFn');
           assert.equal(component.globalCounter, 2);
         });
       });

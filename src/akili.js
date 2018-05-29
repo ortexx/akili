@@ -50,8 +50,7 @@ Akili.__defaults = [];
  */
 Akili.setDefaults = function () {
   this.options = {
-    debug: true,
-    ignoredTags: ['globals.utils']
+    debug: true
   };
   
   this.__init = null;
@@ -272,7 +271,6 @@ Akili.getAkiliParents = function (el, tree = true) {
 Akili.setTemplate = function (el, template) {
   template = template.replace(/\${(((?!\${)\s*this\.__content\s*)*)}/, el.innerHTML);
   el.innerHTML = template;
-
   return el.innerHTML;
 };
 
@@ -288,11 +286,7 @@ Akili.createScopeName = function () {
 };
 
 /**
- * Isolate function.
- * Every scope variable change calls according node evaluation.
- * For example, if you change some scope variable in the loop - evaluation will be called on the each change.
- * It may be slow for the application.
- * You can isolate this action and run all evaluation process after passed function at once.
+ * Isolate the scope changes
  *
  * @param {function} fn
  * @returns {*}
@@ -727,7 +721,7 @@ Akili.wrap = function (obj, options = {}) {
   let current = obj;
 
   if(typeof obj == 'function') {
-    obj = this.wrapFunction(obj, options);
+    obj = this.wrapFunction(obj);
 
     if(obj === current) {
       return obj;
@@ -771,19 +765,14 @@ Akili.unwrap = function (obj) {
  * Isolate a function
  *
  * @param {function} fn
- * @param {object} [options]
  * @returns {function}
  */
-Akili.wrapFunction = function (fn, options = {}) {
+Akili.wrapFunction = function (fn) {
   if (fn.__akili) {
     return fn;
   }
 
   const akiliWrappedFunction = function () {
-    if(options.tag && Akili.__evaluation && Akili.options.ignoredTags.indexOf(options.tag) == -1) {
-      Akili.__evaluation.component.__addTag(options.tag, Akili.__evaluation.node);
-    }
-
     return Akili.wrapping(() => fn.apply(this, arguments));
   };
 

@@ -6,13 +6,26 @@ import Akili from './akili.js';
  * {@link https://akilijs.com/docs/scope#docs_globals}
  */
 const globals = new Proxy({}, {
-  set: (target, key, value) => {    
-    target[key] = Akili.wrap(value, { tag: `globals.${key}` });
+  get: (target, key) => {
+    const tag = `globals.${key}`;
+
+    if(Akili.__evaluation) {
+      Akili.__evaluation.component.__addTag(tag, Akili.__evaluation.node);
+      return target[key];
+    }
+  },
+  set: (target, key, value) => {
+    const tag = `globals.${key}`; 
+    const prev = target[key];
+    target[key] = Akili.wrap(value);    
+    prev !== value && Akili.evaluateTag(tag);
     return true;
   },
   deleteProperty: (target, key) => {
-    Akili.removeTag(`globals.${key}`);
+    const tag = `globals.${key}`;    
+    Akili.removeTag(tag);
     delete target[key];
+    Akili.evaluateTag(tag);
     return true;
   }
 });

@@ -70,7 +70,7 @@ export default class Component {
     this.__bindings = {};
     this.__tags = {};
     this.__evaluatingEvent = null;
-    this.__recompiling = false;
+    this.__recompiling = null;
     this.__compiling = null;
     this.__disableProxy = {};
     this.__disableStoreKeys = {};
@@ -208,7 +208,7 @@ export default class Component {
       });
     }
     
-    this.__recompiling = false;
+    this.__recompiling = null;
     this.__compiling = null;
 
     return p.then(() => {
@@ -2398,7 +2398,7 @@ export default class Component {
       this.__bindings = null;
       this.__tags = null;    
       this.__evaluatingEvent = null;
-      this.__recompiling = false;
+      this.__recompiling = null;
       this.__compiling = null;
       this.__disableProxy = null;
       this.__disableStoreKeys = null;
