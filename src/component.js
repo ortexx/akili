@@ -482,7 +482,7 @@ export default class Component {
     let componentName = (attrName || tagName).toLowerCase();
     let elementName = node.__element.tagName.toLowerCase();
     let attributeName = (node instanceof window.Attr)? node.name.toLowerCase(): '';        
-    let messages = [ err.message, node.__expression ];
+    let messages = [ err.message, node.__expression.trim() ];
     attributeName && messages.push(`[attribute ${attributeName}]`);
     messages = messages.concat([ `[element ${elementName}]`, `[component ${componentName}]` ]);
     return `Expression error: ` + messages.join('\n\tat ');
@@ -551,7 +551,7 @@ export default class Component {
             // eslint-disable-next-line no-console
             console.warn([
               `For higher performance, don't loop Proxy arrays/objects inside expression functions, or use Akili.unevaluate() to wrap you code.`,
-              `${ node.__expression }`,
+              `${ node.__expression.trim() }`,
               `scope property "${ data.parents.join('.')}"`
             ].join('\n\tat '));
           }
@@ -884,14 +884,14 @@ export default class Component {
     let nodeName = utils.toCamelCase(node.nodeName);
     let component = attributeOf? attributeOf: this;
 
-    if (eventName != node.nodeName) {
+    if (node.__isEvent) {
       if (node.__event) {
         return;
       }
 
       const emitter = new Akili.EventEmitter(eventName, node, el, component);
 
-      if (node.__expression) {
+      if (node.__hasBindings) {
         emitter.bind((e) => {
           return component.__evaluateEvent(node, el, e);
         });
@@ -931,8 +931,8 @@ export default class Component {
       return true;
     }
 
-    const val = node[(node instanceof window.Attr)? 'value': 'nodeValue'].trim();
-    const hasBinding = evaluationRegex.test(val);
+    const val = node[(node instanceof window.Attr)? 'value': 'nodeValue'];
+    const hasBinding = evaluationRegex.test(val.trim());
     const isBoolean = /^boolean-/i.test(node.nodeName);
     const isEvent = /^on-(.+)/i.test(node.nodeName);
 
