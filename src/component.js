@@ -36,7 +36,7 @@ export default class Component {
    * @param {string} expression
    * @param {object} [vars]
    */
-  static parse(context, expression, variables = {}) {
+  static parse(context, expression, variables = {}) {    
     variables = { ...globals, ...variables};
     const keys = [];
     const vars = [];
@@ -47,7 +47,7 @@ export default class Component {
       keys.push(key);
       vars.push(variables[key]);
     }
-    
+
     return new Function(...keys, `${exps.join('; ')}`).apply(context, vars);
   }
 
@@ -144,13 +144,13 @@ export default class Component {
    * @protected
    */
   __create() {
-    this.__compiling = this.__createCompilationOptions();   
+    this.__compiling = this.__createCompilationOptions(); 
     this.__initialize();
     this.__setEvents();
     this.__setParents();
     this.__setBooleanAttributes();
-    this.__defineAttributes();
-    Akili.isolate(() => this.created(this.attrs));       
+    this.__defineAttributes(); 
+    Akili.isolate(() => this.created(this.attrs));  
   }
 
   /**
@@ -163,24 +163,24 @@ export default class Component {
     let control = this.__controlAttributes || !this.__evaluateParent;
     let p = Promise.resolve();
     this.__attributeOf = control? this: this.__evaluateParent.__akili;
-
+    
     if (!this.__recompiling || this.__compiling.newParent || this.__controlAttributes) {
       this.__interpolateAttributes(this.el, this.__attributeOf);
     }
-
+    
     const interpolate = (children, parent) => {
       for (let i = 0, l = children.length; i < l; i++) {
         let child = children[i];
 
-        if (child.nodeType == 3 && this.__initializeNode(child, parent)) {
-          this.__evaluateNode(child, this.__compiling? this.__compiling.checkChanges: false);            
+        if (child.nodeType == 3 && this.__initializeNode(child, parent)) {          
+          this.__evaluateNode(child, this.__compiling? this.__compiling.checkChanges: false);  
         }
         else if (child.nodeType == 1 && !child.__akili) {
           this.__interpolateAttributes(child);
           interpolate(child.childNodes, child);
         }
       }
-    };
+    };    
 
     interpolate(this.el.childNodes, this.el);
     this.__isMounted = true;
@@ -273,8 +273,7 @@ export default class Component {
     this.__scope = __scope;
     this.__events = events;
     this.__controlAttributes = controlAttributes;
-
-    Akili.addScope(scope);
+    Akili.addScope(scope);    
     this.scope = this.__nestedObserve(_scope, []);
     return true;
   }
@@ -349,7 +348,6 @@ export default class Component {
 
       if (!parent.__akili.constructor.transparent) {
         evaluateParent = parent;
-
         break;
       }
     }
@@ -509,7 +507,7 @@ export default class Component {
       return { res: node.__expression };
     }
     
-    let res = node.__expression.replace(evaluationRegexGlobal, (m, d) => {
+    let res = node.__expression.replace(evaluationRegexGlobal, (m, d) => {      
       counter++;
       let evaluate;
       let evaluation = [];
@@ -552,7 +550,7 @@ export default class Component {
             console.warn([
               `For higher performance, don't loop Proxy arrays/objects inside expression functions, or use Akili.unevaluate() to wrap you code.`,
               `${ node.__expression.trim() }`,
-              `scope property "${ data.parents.join('.')}"`
+              `scope property "${ data.parents.join('.') }"`
             ].join('\n\tat '));
           }
           
@@ -800,7 +798,7 @@ export default class Component {
    * @protected
    */
   __evaluateNode(node, check = true) {
-    const key = node instanceof window.Attr? 'value': 'nodeValue';
+    const key = node instanceof window.Attr? 'value': 'nodeValue';  
 
     if (check? this.__checkEvaluation(node): true) {      
       const { res, attributeValue, expression, counter } = this.__evaluate(node);     
@@ -880,8 +878,7 @@ export default class Component {
       return;
     }
 
-    let eventName = node.nodeName.replace(/^on-(.+)/i, '$1');
-    let nodeName = utils.toCamelCase(node.nodeName);
+    let eventName = node.nodeName.replace(/^on-(.+)/i, '$1');    
     let component = attributeOf? attributeOf: this;
 
     if (node.__isEvent) {
@@ -892,9 +889,7 @@ export default class Component {
       const emitter = new Akili.EventEmitter(eventName, node, el, component);
 
       if (node.__hasBindings) {
-        emitter.bind((e) => {
-          return component.__evaluateEvent(node, el, e);
-        });
+        emitter.bind((e) => component.__evaluateEvent(node, el, e));
       }
 
       node.__event = emitter;
@@ -902,7 +897,7 @@ export default class Component {
 
       if (attributeOf) {
         this.__disableAttributeSetter = true;
-        this.attrs[nodeName] = emitter;
+        this.attrs[utils.toCamelCase(node.nodeName)] = emitter;
         this.__disableAttributeSetter = false;
       }
 
@@ -931,10 +926,11 @@ export default class Component {
       return true;
     }
 
-    const val = node[(node instanceof window.Attr)? 'value': 'nodeValue'];
+    const isAttr = node instanceof window.Attr;
+    const val = node[isAttr? 'value': 'nodeValue'];
     const hasBinding = evaluationRegex.test(val.trim());
-    const isBoolean = /^boolean-/i.test(node.nodeName);
-    const isEvent = /^on-(.+)/i.test(node.nodeName);
+    const isBoolean = isAttr? /^boolean-/i.test(node.nodeName): false;
+    const isEvent = isAttr? /^on-(.+)/i.test(node.nodeName): false;
 
     if(!el.__akili && !hasBinding && !isBoolean && !isEvent) {
       return false;
@@ -2426,7 +2422,12 @@ export default class Component {
    */
   __detach(options = {}) {
     this.__parent && this.__parent.__akili.__spliceChild(this.el);
-    const nodes = [].slice.call(this.el.attributes).filter(node => node.__initialized);
+    const nodes = []
+
+    for (let i = 0, l = this.el.attributes.length; i < l; i++) {
+      let node = this.el.attributes[i];
+      node.__initialized && nodes.push(node);
+    }
 
     if(!options.saveBindings) {
       this.__unbindParentsByNodes(nodes);
@@ -2590,7 +2591,7 @@ export default class Component {
    * Create a link to the store
    * 
    * @param {string} name 
-   * @param {string|string[]|function} handler
+   * @param {string|string[]|function} [handler]
    */
   store(name, handler) {
     if (!this.__isMounted) {
@@ -2611,7 +2612,7 @@ export default class Component {
    * Create a link with the attribute
    * 
    * @param {string} name 
-   * @param {string|string[]|function} handler
+   * @param {string|string[]|function} [handler]
    */
   attr(name, handler) {
     if (!this.__isMounted) {

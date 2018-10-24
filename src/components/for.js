@@ -32,6 +32,7 @@ export default class For extends Component {
     
     this.iterators = [];
     this.iteratorRef = null;
+    this.iteratorEl = null;
     this.iteratorOuterHTML = null;
     this.reset();
   }
@@ -55,7 +56,7 @@ export default class For extends Component {
   }
 
   created() {    
-    this.createIterator();
+    this.createIterator();    
   }
 
   compiled() {
@@ -79,7 +80,7 @@ export default class For extends Component {
     if (!el) {
       el = document.createElement('loop');      
       el.innerHTML = this.el.innerHTML; 
-      this.el.innerHTML = '';     
+      this.el.innerHTML = '';
       this.el.appendChild(el);
     }
 
@@ -101,14 +102,14 @@ export default class For extends Component {
     this.html = el.innerHTML;
     this.iteratorRef = el.nextSibling;
     this.iteratorOuterHTML = el.outerHTML;
+    this.iteratorEl = this.createIteratorElement();
     el.remove();
   }
 
   createIteratorElement() {
     let el = document.createElement('template');
     el.innerHTML = this.iteratorOuterHTML;
-    el = el.content.firstChild;
-    return el;
+    return el.content.firstChild;
   }
 
   loop(key, value, index) {
@@ -127,10 +128,10 @@ export default class For extends Component {
         iterator.setIndex(true);
       }
 
-      if (this.__key !== iterator.key) {
+      if (this.__key !== iterator.key) {        
         iterator.setKey();
       }
-      else {
+      else {        
         iterator.setKey(true);
       }
       
@@ -145,7 +146,7 @@ export default class For extends Component {
       return iterator;
     }
     
-    let el = this.createIteratorElement();
+    let el = this.iteratorEl.cloneNode();
     el.innerHTML = this.html;
     this.el.insertBefore(el, this.iteratorRef);
     this.__promises.push(Akili.compile(el));
@@ -167,11 +168,7 @@ export default class For extends Component {
     let index = 0;
     const children = [].slice.call(this.el.children); 
     this.iterators.sort((a, b) => children.indexOf(a.el) - children.indexOf(b.el));
-
-    const loop = (key, value, index) => {
-      let iterator = this.loop(key, value, index);
-      iterator.iterate(index);
-    };
+    const loop = (key, value, index) => this.loop(key, value, index).iterate(index);
 
     if(Array.isArray(data)) {
       for (let l = data.length; index < l; index++) {

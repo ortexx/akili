@@ -578,7 +578,7 @@ router.createStateUrl = function (state, params = {}, query = {}, hash = undefin
 router.prepareStateArgs = function (state, params = {}, query = {}, hash = undefined, options = {}) {
   let args = { params, query, hash, options };
 
-  for(let i = 0; i < 9; i++) {
+  for(let i = 0; i < 999; i++) {
     const paramsTemp = this.prepareStateParams(state, params, args);
     const queryTemp = this.prepareStateQuery(state, query, args);
     const hashTemp = this.prepareStateHash(state, hash, args);
@@ -590,7 +590,13 @@ router.prepareStateArgs = function (state, params = {}, query = {}, hash = undef
       options.emptyHash = '';
     }
 
-    args = { params: paramsTemp, query: queryTemp, hash: hashTemp, options };
+    const newArgs = { params: paramsTemp, query: queryTemp, hash: hashTemp, options };
+
+    if(utils.compare(newArgs, args)) {
+      break;
+    }
+
+    args = newArgs;
   }
     
   return args;

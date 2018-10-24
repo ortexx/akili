@@ -519,7 +519,7 @@ utils.createObjectHash = function(obj) {
   for (let i = 0; i < str.length; i++) {
     let char = str.charCodeAt(i);
     hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; 
+    hash = hash & hash;
   }
 
   return hash + '';
@@ -807,10 +807,11 @@ utils.getOwnPropertyTarget = function(target, key) {
  */
 utils.createRandomString = function(length = 16, fn = null) {
   let str = Math.random().toString(36).substring(2, length + 2);
-  let val = '';
+  let now = Date.now();
+  let val = '';  
 
   for (let i = 0, l = str.length; i < l; i++) {
-    if (Math.random() > 0.66) {
+    if (!(now % i)) {
       val += str[i].toUpperCase();
     }
     else {

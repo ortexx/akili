@@ -280,9 +280,7 @@ Akili.setTemplate = function (el, template) {
  * @returns {string}
  */
 Akili.createScopeName = function () {
-  return utils.createRandomString(16, (str) => {
-    return !!this.__scopes[str];
-  });
+  return utils.createRandomString(16, str => !!this.__scopes[str]);
 };
 
 /**
@@ -472,12 +470,13 @@ Akili.compile = function (root, options = { recompile: false }) {
     }
   };
 
+  
   nestedInitializing(root);
   let p = [];
 
   for (let i = 0, l = elements.length; i < l; i++) {
-    let component = elements[i];
-    p.push(component.__compile());
+    let component = elements[i];    
+    p.push(component.__compile());    
   }
 
   return Promise.all(p).then(() => {

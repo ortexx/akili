@@ -1,4 +1,5 @@
 const webpack = require('webpack');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const path = require('path');
 const pack = require('./package.json');
 
@@ -8,7 +9,7 @@ let entry = {
 
 let plugins = [];
 let minimize = process.env.MINIMIZE;
-let watch = !process.env.BUILD;
+let build = process.env.BUILD;
 
 let banner = `Akili is a javascript framework\n
 const Akili = makeItEasy(js + html);\n
@@ -21,18 +22,12 @@ plugins.push(new webpack.BannerPlugin({
   banner: banner.trim()
 }));
 
-plugins.push(new webpack.optimize.UglifyJsPlugin({
-  include: /\.min\.js$/,
-  minimize: true,
-  compress: {
-    warnings: false
-  }
-}));
-
 minimize && (entry['akili.min'] = entry.akili);
 
 let config = {
-  watch: watch,
+  mode: build? 'production': 'development',
+  performance: { hints: false },
+  watch: !build,  
   bail: true,
   devtool: "inline-source-map",
   entry: entry,
@@ -40,8 +35,21 @@ let config = {
     path: path.join(__dirname, "/dist"),
     filename: "[name].js"
   },
+  optimization: {
+    minimizer: [
+      new UglifyJsPlugin({
+        include: /\.min\.js$/,
+        uglifyOptions: {
+          minimize: true,
+          compress: {
+            warnings: false
+          }
+        }       
+      })
+    ]
+  },
   module: {
-    loaders: [
+    rules: [
       {
         enforce: "pre",
         test: /\.js$/,
@@ -58,7 +66,7 @@ let config = {
       }
     ]
   },
-  plugins: plugins
+  plugins: plugins  
 };
 
 module.exports = config;
