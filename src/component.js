@@ -2297,7 +2297,7 @@ export default class Component {
     let nodes = {};
     this.attrs.onRemoved && this.attrs.onRemoved.trigger(undefined, { bubbles: false }); 
     this.removed();   
-    nodes = { ...nodes, ...this.__detach({ saveBindings: true }), ...this.__empty({ saveBindings: true, rootAttrs: options.rootAttrs }) };
+    nodes = { ...nodes, ...this.__detach({ saveBindings: true, removeTags: true }), ...this.__empty({ saveBindings: true }) };
     this.__clearStoreLinks();  
     Akili.removeScope(this.__scope.__name);    
     this.el.remove();
@@ -2306,33 +2306,6 @@ export default class Component {
       this.__unbindByNodes(nodes);   
       this.__unbindParentsByNodes(nodes);
     }
-
-    Akili.nextTick(() => {
-      delete this.el.__akili;
-      delete this.__isMounted;
-      delete this.__isCompiled;
-      delete this.__isResolved;
-      delete this.__cancelled;
-      delete this.__prevent;
-      delete this.__content;
-      this.__bindings = null;
-      this.__evaluatingEvent = null;
-      this.__recompiling = null;
-      this.__compiling = null;
-      this.__disableProxy = null;
-      this.__disableStoreKeys = null;
-      this.__disableAttrKeys = null;
-      this.__children = null;
-      this.__parent = null;
-      this.__parents = null;      
-      this.__attrs = null;
-      this.__attrLinks = null;
-      this.__storeLinks = null;
-      this.__attributeOf = null;
-      this.__evaluationComponent = null;
-      this.scope = null;
-      this.el = null;
-    });
 
     return nodes;
   }
@@ -2350,7 +2323,11 @@ export default class Component {
 
     for (let i = 0, l = this.el.attributes.length; i < l; i++) {
       let node = this.el.attributes[i];
-      node.__initialized && (nodes[node.__name] = node);
+
+      if(node.__initialized) {
+        nodes[node.__name] = node;
+        options.removeTags && Akili.removeTag(node);
+      }
     }
 
     if(!options.saveBindings) {
