@@ -951,6 +951,10 @@ export default class Component {
    * @protected
    */
   __deinitializeNode(node, options = {}) {
+    if(!node.__initialized) {
+      return;
+    }
+    
     if (node.__event) {
       node.__event.remove();
     }
@@ -2171,17 +2175,7 @@ export default class Component {
    * @protected
    */
   __unbindByNodes(nodes) {
-    nodes instanceof Node && (nodes = [nodes]); 
-
-    if(Array.isArray(nodes)) {
-      const arr = nodes;
-      nodes = {};
-
-      for (let i = 0, l = arr.length; i < l; i++) {
-        const node = arr[i];
-        nodes[node.__name] = node;
-      } 
-    }
+    nodes instanceof Node && (nodes = [nodes]);
 
     const unbind = (obj, parent, key) => {
       const keys = Object.keys(obj);
@@ -2196,7 +2190,7 @@ export default class Component {
           for (let i = 0; i < l; i++) {
             let bind = data[i];
             
-            if (nodes[bind.node.__name]) {
+            if (nodes.indexOf(bind.node) != -1) {
               delete bind.node;            
               data.splice(i, 1);
               i--;
@@ -2271,13 +2265,13 @@ export default class Component {
    * @protected
    */
   __removeChildren(options = {}) {
-    let nodes = {};
+    let nodes = [];
 
     const remove = (children) => {
       for (let i = 0; i < children.length; i++) {
         let child = children[i];
         remove(child.__akili.__children);
-        nodes = { ...nodes, ...child.__akili.__remove(options) };
+        nodes = nodes.concat(child.__akili.__remove(options));
         i--;
       }
     };
@@ -2294,15 +2288,15 @@ export default class Component {
    * @protected
    */
   __remove(options = {}) { 
-    let nodes = {};
+    let nodes = [];
     this.attrs.onRemoved && this.attrs.onRemoved.trigger(undefined, { bubbles: false }); 
     this.removed();   
-    nodes = { ...nodes, ...this.__detach({ saveBindings: true, removeTags: true }), ...this.__empty({ saveBindings: true }) };
+    nodes = nodes.concat(this.__detach({ saveBindings: true, deinitializeNodes: true }).concat(this.__empty({ saveBindings: true })));
     this.__clearStoreLinks();  
     Akili.removeScope(this.__scope.__name);    
     this.el.remove();
 
-    if(!options.saveBindings) {   
+    if(!options.saveBindings) {
       this.__unbindByNodes(nodes);   
       this.__unbindParentsByNodes(nodes);
     }
@@ -2319,14 +2313,14 @@ export default class Component {
    */
   __detach(options = {}) {
     this.__parent && this.__parent.__akili.__spliceChild(this.el);
-    const nodes = {};
+    const nodes = [];
 
     for (let i = 0, l = this.el.attributes.length; i < l; i++) {
       let node = this.el.attributes[i];
 
       if(node.__initialized) {
-        nodes[node.__name] = node;
-        options.removeTags && Akili.removeTag(node);
+        nodes.push(node);
+        options.deinitializeNodes && this.__deinitializeNode(node, { saveBindings: true });
       }
     }
 
@@ -2345,7 +2339,7 @@ export default class Component {
    * @protected
    */
   __empty(options = {}) {    
-    const nodes = this.__removeChildren({ saveBindings: true, rootAttrs: true });
+    const nodes = this.__removeChildren({ saveBindings: true });
     
     this.__mapNodes(node => {      
       if(node.nodeType == 1) {
@@ -2358,8 +2352,8 @@ export default class Component {
       }      
       
       this.__deinitializeNode(node, { saveBindings: true });  
-      nodes[node.__name] = node;
-    }, { rootAttrs: options.rootAttrs });
+      nodes.push(node);
+    }, { rootAttrs: false });
 
     if(!options.saveBindings) {
       this.__unbindByNodes(nodes);
