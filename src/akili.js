@@ -848,12 +848,17 @@ Akili.hasTag = function(tag, node) {
  * Remove the tag
  * 
  * @param {string} [tag]
- * @param {Node|Node[]} [node]
+ * @param {Node} [node]
  */
 Akili.removeTag = function (tag, node) {
   if(typeof tag == 'object') {
     node = tag;
-    tag = undefined;    
+    tag = undefined;
+  }
+
+  if(!tag) { 
+    delete this.__tags[node.__name];
+    return;
   }
 
   if(!node) {
@@ -870,16 +875,6 @@ Akili.removeTag = function (tag, node) {
     }
 
     return;    
-  }
-
-  if(!tag) {    
-    !Array.isArray(node) && (node = [node]);
-
-    for (let i = 0, l = node.length; i < l; i++) {
-      delete this.__tags[node[i].__name]
-    }
-
-    return;
   }
 
   for(let key in this.__tags[node.__name]) {

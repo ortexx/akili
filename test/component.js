@@ -400,10 +400,8 @@ describe('component.js', () => {
         let keys = ['data'];
         let parents = [];
         let obj;
-
         component.__bindNode(list, component, keys, parents, 1);
         obj = list[0];
-
         assert.equal(obj.component, component, 'check component');
         assert.equal(obj.keysString, Akili.joinBindingKeys(keys), 'check keysString');
         assert.equal(Akili.joinBindingKeys(obj.keys), Akili.joinBindingKeys(keys), 'check keys');
@@ -465,10 +463,7 @@ describe('component.js', () => {
 
       describe('.__bind()', () => {
         it('should create a binding', () => {
-          let data = {
-            node: node
-          };
-
+          let data = { node }
           component.__bind(keys, data);
           assert.strictEqual(data, component.__bindings.new.__data[0]);
         });
@@ -478,11 +473,9 @@ describe('component.js', () => {
         it('should set a node property', () => {
           let obj;
           let _keys;
-
           component.__setNodeProperty(node, keys, 1);
           _keys = Object.keys(node.__properties);
           obj = node.__properties[_keys[_keys.length - 1]];
-
           assert.equal(obj.component, component, 'check component');
           assert.equal(obj.keys.join('.'), keys.join('.'), 'check keys');
           assert.equal(obj.value, 1, 'check value');
@@ -493,7 +486,6 @@ describe('component.js', () => {
       describe('.__getNodeProperty()', () => {
         it('should get a node property', () => {
           let obj = component.__getNodeProperty(node, keys);
-
           assert.equal(obj.component, component, 'check component');
           assert.equal(obj.keys.join('.'), keys.join('.'), 'check keys');
           assert.equal(obj.value, 1, 'check value');
@@ -507,7 +499,6 @@ describe('component.js', () => {
           let prevHash = _keys[_keys.length - 1];
           let prevProperty = node.__properties[prevHash];
           let property;
-
           component.__deleteNodeProperty(node, keys);
           _keys = Object.keys(node.__properties);
           property = node.__properties[_keys[_keys.length - 1]];
@@ -520,11 +511,9 @@ describe('component.js', () => {
         it('should unbind keys', () => {
           let _keys;
           let prop;
-
           component.__unbind(keys);
           _keys = Object.keys(node.__properties);
           prop = node.__properties[_keys[_keys.length - 1]];
-
           assert.isNotOk(component.__bindings.new);
           assert.notEqual(prop.keys.join('.'), keys.join('.'));
         });
@@ -532,8 +521,8 @@ describe('component.js', () => {
 
       describe('.__unbindByNodes()', () => {
         it('should unbind by nodes', () => {
-          component.__unbindByNodes([component.__bindings.htmlTwo.__data[0].node]);
-
+          const node = component.__bindings.htmlTwo.__data[0].node;
+          component.__unbindByNodes([node]);
           assert.isNotOk(component.__bindings.htmlTwo);
         });
       });

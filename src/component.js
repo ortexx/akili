@@ -957,10 +957,10 @@ export default class Component {
 
     if (node.__hasBindings && !options.saveBindings) {
       this.__unbindByNodes(node);
-      this.__unbindParentsByNodes(node); 
-      Akili.removeTag(node);
+      this.__unbindParentsByNodes(node);       
     }
-    
+
+    Akili.removeTag(node);    
     delete node.__name;
     delete node.__hasBindings;
     delete node.__isBoolean;
@@ -2099,7 +2099,8 @@ export default class Component {
   /**
    * Get all nodes
    * 
-   * @protected
+   * @returns {Node[]}
+   * @protected 
    */
   __getAllNodes() {
     const nodes = [];
@@ -2164,14 +2165,24 @@ export default class Component {
   }
 
   /**
-   * Unbind data by nodes
+   * Unbind data by nodes hash
    *
-   * @param {Node|Node[]} nodes
+   * @param {object|Node[]|Node} nodes
    * @protected
    */
   __unbindByNodes(nodes) {
-    !Array.isArray(nodes) && (nodes = [nodes]);
-     
+    nodes instanceof Node && (nodes = [nodes]); 
+
+    if(Array.isArray(nodes)) {
+      const arr = nodes;
+      nodes = {};
+
+      for (let i = 0, l = arr.length; i < l; i++) {
+        const node = arr[i];
+        nodes[node.__name] = node;
+      } 
+    }
+
     const unbind = (obj, parent, key) => {
       const keys = Object.keys(obj);
 
@@ -2185,7 +2196,7 @@ export default class Component {
           for (let i = 0; i < l; i++) {
             let bind = data[i];
             
-            if (nodes.indexOf(bind.node) != -1) {
+            if (nodes[bind.node.__name]) {
               delete bind.node;            
               data.splice(i, 1);
               i--;
@@ -2256,16 +2267,17 @@ export default class Component {
    * Remove all child components
    *
    * @param {object} [options]
+   * @returns {object}
    * @protected
    */
   __removeChildren(options = {}) {
-    let nodes = [];
+    let nodes = {};
 
     const remove = (children) => {
       for (let i = 0; i < children.length; i++) {
         let child = children[i];
         remove(child.__akili.__children);
-        nodes = nodes.concat(child.__akili.__remove(options));
+        nodes = { ...nodes, ...child.__akili.__remove(options) };
         i--;
       }
     };
@@ -2278,14 +2290,14 @@ export default class Component {
    * Remove the component without children removing
    *
    * @param {object} [options]
+   * @returns {object}
    * @protected
    */
   __remove(options = {}) { 
-    let nodes = [];
+    let nodes = {};
     this.attrs.onRemoved && this.attrs.onRemoved.trigger(undefined, { bubbles: false }); 
     this.removed();   
-    nodes = nodes.concat(this.__detach({ saveBindings: true }));
-    nodes = nodes.concat(this.__empty({ saveBindings: true }));
+    nodes = { ...nodes, ...this.__detach({ saveBindings: true }), ...this.__empty({ saveBindings: true, rootAttrs: options.rootAttrs }) };
     this.__clearStoreLinks();  
     Akili.removeScope(this.__scope.__name);    
     this.el.remove();
@@ -2293,7 +2305,6 @@ export default class Component {
     if(!options.saveBindings) {   
       this.__unbindByNodes(nodes);   
       this.__unbindParentsByNodes(nodes);
-      Akili.removeTag(nodes);
     }
 
     Akili.nextTick(() => {
@@ -2330,15 +2341,16 @@ export default class Component {
    * Detach the component
    *
    * @param {object} [options]
+   * @returns {object}
    * @protected
    */
   __detach(options = {}) {
     this.__parent && this.__parent.__akili.__spliceChild(this.el);
-    const nodes = []
+    const nodes = {};
 
     for (let i = 0, l = this.el.attributes.length; i < l; i++) {
       let node = this.el.attributes[i];
-      node.__initialized && nodes.push(node);
+      node.__initialized && (nodes[node.__name] = node);
     }
 
     if(!options.saveBindings) {
@@ -2352,11 +2364,12 @@ export default class Component {
    * Clear the component html
    *
    * @param {object} [options]
+   * @returns {object}
    * @protected
    */
   __empty(options = {}) {    
-    const nodes = this.__removeChildren({ saveBindings: true });
-
+    const nodes = this.__removeChildren({ saveBindings: true, rootAttrs: true });
+    
     this.__mapNodes(node => {      
       if(node.nodeType == 1) {
         node.remove();
@@ -2365,16 +2378,15 @@ export default class Component {
 
       if(!node.__initialized) {
         return;
-      }
+      }      
       
       this.__deinitializeNode(node, { saveBindings: true });  
-      nodes.push(node);    
-    }, { rootAttrs: false });
+      nodes[node.__name] = node;
+    }, { rootAttrs: options.rootAttrs });
 
     if(!options.saveBindings) {
       this.__unbindByNodes(nodes);
       this.__unbindParentsByNodes(nodes);
-      Akili.removeTag(nodes);
     }
 
     this.el.innerHTML = '';
