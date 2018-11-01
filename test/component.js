@@ -1,5 +1,6 @@
 import { assert } from 'chai';
 import Akili from '../src/akili.js';
+import utils from '../src/utils.js';
 import Home from './app/home.js';
 import elements from './app/elements.js';
 
@@ -301,41 +302,7 @@ describe('component.js', () => {
       it('should call onEvent function', () => {
         assert.equal(component.onEventCount, 1);
       });
-    });
-
-    describe('.__clearEmptyBindings()', () => {
-      it('should clear empty bindings', () => {
-        let obj = {
-          data: {
-            __data: [],
-            0: {
-              title: {
-                __data: [1]
-              },
-              value: {}
-            },
-            1: {
-              title: {
-                __data: []
-              }
-            }
-          }
-        };
-
-        let clearObj = {
-          data: {
-            0: {
-              title: {
-                __data: [1]
-              }
-            }
-          }
-        };
-
-        component.__clearEmptyBindings(obj);
-        assert.equal(JSON.stringify(obj), JSON.stringify(clearObj));
-      });
-    });
+    });  
 
     describe('component attributes manipulation', () => {
       it('should change attribute', () => {
@@ -519,7 +486,7 @@ describe('component.js', () => {
           assert.equal(obj.component, component, 'check component');
           assert.equal(obj.keys.join('.'), keys.join('.'), 'check keys');
           assert.equal(obj.value, 1, 'check value');
-          assert.equal(obj.copy, 1, 'check copy');
+          assert.equal(obj.hash, utils.createHash(obj.value), 'check hash');
         });
       });
 
@@ -530,7 +497,7 @@ describe('component.js', () => {
           assert.equal(obj.component, component, 'check component');
           assert.equal(obj.keys.join('.'), keys.join('.'), 'check keys');
           assert.equal(obj.value, 1, 'check value');
-          assert.equal(obj.copy, 1, 'check copy');
+          assert.equal(obj.hash, utils.createHash(obj.value), 'check hash');
         });
       });
 
@@ -568,36 +535,6 @@ describe('component.js', () => {
           component.__unbindByNodes([component.__bindings.htmlTwo.__data[0].node]);
 
           assert.isNotOk(component.__bindings.htmlTwo);
-        });
-      });
-
-      describe('.__addTag()', () => {
-        it('should create a new tag', () => {
-          component.__addTag('custom', node);
-          assert.lengthOf(component.__tags.custom, 1);
-        });
-      });
-
-      describe('.__hasTag()', () => {
-        it('should have the tag', () => {          
-          assert.isOk(component.__hasTag('custom', node));
-        });
-
-        it('should not have the tag', () => {          
-          assert.isNotOk(component.__hasTag('non-existent', node));
-        });
-      });
-
-      describe('.__removeTag()', () => {
-        it('should remove the tag by node', () => {
-          component.__removeTag('custom', node);
-          assert.isUndefined(component.__tags.custom);
-        });
-
-        it('should remove the tag fully', () => {
-          component.__addTag('custom', node);
-          component.__removeTag('custom');
-          assert.isUndefined(component.__tags.custom);
         });
       });
     });

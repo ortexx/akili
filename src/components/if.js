@@ -27,6 +27,7 @@ export default class If extends Component {
 
     this.html = this.el.innerHTML;
     this.el.innerHTML = '';
+    this.prevState = false;
     this.state = false;
     this.active = false;
     this.recreate = false;
@@ -36,7 +37,13 @@ export default class If extends Component {
 
   compiled() {
     this.attr('recreate', this.setRecreation);
-    return this.attr('is', val => (this.state = !!val, this.setState()));
+    return this.attr('is', this.setIs);
+  }
+
+  setIs(val) {  
+    this.prevState = this.state;
+    this.state = !!val;
+    return this.setState();
   }
 
   setActivity(active) {
@@ -58,15 +65,15 @@ export default class If extends Component {
 
     next.__akili.setActivity(this.active || this.state);
     next.__akili.setRecreation(this.recreate);
-    result = next.__akili.setState();
+    result = next.__akili.setState();    
     return Promise.resolve(res).then(() =>  result);
   }
 
   compilation() {
-    let res;
+    let res = Promise.resolve();
 
     if (this.state && !this.active) {
-      if (this.recreate || !this.isCompiled) {
+      if ((this.recreate || !this.isCompiled) && this.prevState !== this.state) {
         res = this.compile();
       }
 
@@ -76,7 +83,7 @@ export default class If extends Component {
       if (this.recreate) {
         this.empty();
       }
-      else if (!this.isCompiled) {
+      else if (!this.isCompiled && this.prevState !== this.state) {
         res = this.compile();
       }
 
@@ -88,7 +95,8 @@ export default class If extends Component {
 
   compile() {
     let res;
-    this.el.innerHTML = this.html;    
+    this.empty();
+    this.el.innerHTML = this.html;   
     res = Akili.compile(this.el, { recompile: true });
     this.isCompiled = true;
     return res;

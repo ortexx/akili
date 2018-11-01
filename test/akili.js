@@ -212,9 +212,19 @@ describe('akili.js', () => {
         });
       });
 
-      describe('.evaluateTag()', () => {
+      describe('.hasTag()', () => {
+        it('should returns true', () => {          
+          assert.ok(Akili.hasTag('globalFn'));
+        });
+
+        it('should returns false', () => {          
+          assert.notOk(Akili.hasTag('nonexistent'));
+        });
+      });
+
+      describe('.triggerTag()', () => {
         it('should trigger the tag expressions evaluation', () => {
-          Akili.evaluateTag('globals.globalFn');
+          Akili.triggerTag('globalFn');
           assert.equal(component.globalCounter, 2);
         });
       });
@@ -222,7 +232,7 @@ describe('akili.js', () => {
       describe('.removeTag()', () => {
         it('should remove the tag', () => {
           delete globals.globalFn;
-          assert.equal(component.globalCounter, 2);
+          assert.notOk(Akili.hasTag('globalFn'));
         });
       });
     });

@@ -1,3 +1,13 @@
+# 1.0.x (November 01, 2018)
+
+* made a lot of optimizations
+* added non-plain objects to store
+* improved globals and tags system
+* fixed expressions trim
+* added __utils.debounce()__
+* fixed __router.prepareStateArgs()__
+
+
 # 0.7.x (May 08, 2018)
 
 * added tags system

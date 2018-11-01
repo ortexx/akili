@@ -60,6 +60,7 @@ Akili.setDefaults = function () {
   this.__scopes = {};
   this.__storeLinks = {};
   this.__window = {};
+  this.__tags = {};
   this.__isolation = null;
   this.__evaluation = null;
   this.__wrapping = false;
@@ -73,7 +74,7 @@ Akili.setDefaults = function () {
     delete globals[key];
   }
 
-  globals.utils = utils;
+  globals.__target.utils = utils;
 
   this.components = {};
   this.services = {};
@@ -299,10 +300,6 @@ Akili.isolate = function (fn) {
   let props = [];
 
   for (let k in this.__isolation) {
-    if (!this.__isolation.hasOwnProperty(k)) {
-      continue;
-    }
-
     props.push(this.__isolation[k]);
   }
 
@@ -315,7 +312,6 @@ Akili.isolate = function (fn) {
     prop.component.__evaluateByKeys(prop.keys, val, prop.isDeleted);
   }
 
-  props = null;
   return res;
 };
 
@@ -556,7 +552,6 @@ Akili.removeAlias = function (selector) {
  */
 Akili.isolateArrayPrototype = function () {
   this.__window.Array = { prototype: {} };
-
   let keys = Object.getOwnPropertyNames(Array.prototype);
 
   for (let i = 0, l = keys.length; i < l; i++) {
@@ -622,7 +617,7 @@ Akili.isolateEvents = function () {
     if (!this.__akiliListeners[name]) {
       this.__akiliListeners[name] = [];
     }
-
+    
     if(typeof fn === 'function') {
       args[1] = function () {
         return Akili.isolate(() => fn.apply(this, arguments));
@@ -720,7 +715,7 @@ Akili.wrap = function (obj, options = {}) {
   let current = obj;
 
   if(typeof obj == 'function') {
-    obj = this.wrapFunction(obj);
+    obj = this.wrapFunction(obj, options);
 
     if(obj === current) {
       return obj;
@@ -764,14 +759,19 @@ Akili.unwrap = function (obj) {
  * Isolate a function
  *
  * @param {function} fn
+ * @param {object} [options] 
  * @returns {function}
  */
-Akili.wrapFunction = function (fn) {
+Akili.wrapFunction = function (fn, options = {}) {
   if (fn.__akili) {
     return fn;
   }
 
   const akiliWrappedFunction = function () {
+    if(options.tag && Akili.__evaluation) {
+      Akili.addTag(options.tag, Akili.__evaluation.node);
+    }
+
     return Akili.wrapping(() => fn.apply(this, arguments));
   };
 
@@ -792,63 +792,125 @@ Akili.wrapFunction = function (fn) {
 };
 
 /**
- * Evaluate the tags node expressions
+ * Add the tag
  * 
- * @param {string|string[]} tags
+ * @param {string} tag
+ * @param {Node} node
  */
-Akili.evaluateTag = function (tags) {
-  if(!this.root) {
+Akili.addTag = function (tag, node) {
+  if(this.hasTag(tag, node)) {
     return;
   }
-  
-  if(!Array.isArray(tags)) {
-    tags = [tags];
+
+  if(!this.__tags[node.__name]) {
+    this.__tags[node.__name] = {};    
   }
 
-  const children = this.root.children();
-  
-  for(let i = 0, l = children.length; i < l; i++) {
-    const child = children[i];
-    const childTags = child.__tags;    
+  if(!this.__tags[node.__name][tag]) {
+    this.__tags[node.__name][tag] = [];    
+  }
 
-    for(let j = 0, s = tags.length; j < s; j++) {
-      const tag = tags[j];
-      
-      if(!childTags[tag]) {
-        continue;
-      }
-  
-      for(let k = 0, c = childTags[tag].length; k < c; k++) {
-        const obj = childTags[tag][k];
-        child.__evaluateNode(obj.node, false);
-      }
-    }
-  }  
+  this.__tags[node.__name][tag].push({ node });
 }
 
 /**
- * Remove the tags
+ * Check the tag exists
  * 
- * @param {string|string[]} tags
+ * @param {string} tag
+ * @param {Node} [node]
+ * @returns {boolean}
  */
-Akili.removeTag = function (tags) {
-  if(!this.root) {
+Akili.hasTag = function(tag, node) {
+  if(!node){
+    for(let key in this.__tags) {
+      for(let k in this.__tags[key]) {
+        if(k == tag) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  if(!this.__tags[node.__name]) {
+    return false;    
+  }
+
+  if(!this.__tags[node.__name][tag]) {
+    return false;    
+  } 
+
+  return true;
+}
+
+/**
+ * Remove the tag
+ * 
+ * @param {string} [tag]
+ * @param {Node|Node[]} [node]
+ */
+Akili.removeTag = function (tag, node) {
+  if(typeof tag == 'object') {
+    node = tag;
+    tag = undefined;    
+  }
+
+  if(!node) {
+    for(let key in this.__tags) {
+      for(let k in this.__tags[key]) {
+        if(k == tag) {
+          delete this.__tags[key][k]
+        }
+      }
+  
+      if(!Object.keys(this.__tags[key]).length) {
+        delete this.__tags[key];
+      }
+    }
+
+    return;    
+  }
+
+  if(!tag) {    
+    !Array.isArray(node) && (node = [node]);
+
+    for (let i = 0, l = node.length; i < l; i++) {
+      delete this.__tags[node[i].__name]
+    }
+
     return;
   }
-  
-  if(!Array.isArray(tags)) {
-    tags = [tags];
+
+  for(let key in this.__tags[node.__name]) {
+    if(key == tag) {
+      delete this.__tags[node.__name][key];
+    }
   }
 
-  const children = this.root.children();
-  
-  for(let i = 0, l = children.length; i < l; i++) {
-    const child = children[i]; 
+  if(!Object.keys(this.__tags[node.__name]).length) {
+    delete this.__tags[node.__name];
+  }
+}
 
-    for(let j = 0, s = tags.length; j < s; j++) {
-      child.__removeTag(tags[j]);
+/**
+ * Evaluate the tag node expressions
+ * 
+ * @param {string} tag
+ */
+Akili.triggerTag = function (tag) {
+  for(let key in this.__tags) {
+    for(let k in this.__tags[key]) {
+      if(k == tag) {
+        const arr = this.__tags[key][k];
+
+        for(let i = 0, l = arr.length; i < l; i++) {
+          const obj = arr[i];
+          obj.node.__component.__evaluateNode(obj.node, false);
+        }
+      }
     }
-  }  
+  }
 }
 
 /**
@@ -895,10 +957,6 @@ Akili.init = function (root) {
     window.AKILI_CLIENT = {
       html: this.prepareServerSideHtml()      
     }
-  }
-
-  for(let key in this.options.globals) {
-    this.options.globals[key] = this.wrap(this.options.globals[key], { tag: `globals.${key}` });
   }
   
   return this.compile(this.__root).then(() => {

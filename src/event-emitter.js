@@ -81,4 +81,16 @@ export default class EventEmitter {
   unbind() {
     this.fn && this.el.removeEventListener(this.name, this.fn);
   }
+
+  /**
+   * Remove the emitter
+   */
+  remove() {
+    this.unbind();
+    delete this.name;
+    delete this.name;
+    this.node = null;
+    this.component = null;
+    this.el = null;
+  }
 }

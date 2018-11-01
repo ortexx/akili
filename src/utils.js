@@ -508,16 +508,18 @@ utils.compare = function (a, b, options = {}) {
 };
 
 /**
- * Create a string hash from an object
+ * Create hash from a string
  * 
- * @param {object} obj
+ * @param {*} source
+ * @returns {string}
  */
-utils.createObjectHash = function(obj) {
+utils.createHash = function(source) {
+  typeof source == 'object' && (source = JSON.stringify(source))
+  typeof source != 'string' && (source = '⠀' + String(source));
   let hash = 0;
-  let str = JSON.stringify(obj);
 
-  for (let i = 0; i < str.length; i++) {
-    let char = str.charCodeAt(i);
+  for (let i = 0; i < source.length; i++) {
+    let char = source.charCodeAt(i);
     hash = ((hash << 5) - hash) + char;
     hash = hash & hash;
   }
@@ -825,5 +827,23 @@ utils.createRandomString = function(length = 16, fn = null) {
 
   return val;
 };
+
+/**
+ *  Create a function with the debounce
+ *
+ * @param {function} fn
+ * @param {number} delay
+ * @returns {fn}
+ */
+utils.debounce = function(fn, delay = 0) {  
+  return () => {
+    clearTimeout(fn.__debounceTimeout);
+    fn.__debounceTimeout = setTimeout(() => {
+      fn();
+      clearTimeout(fn.__debounceTimeout);
+      delete fn.__debounceTimeout;
+    }, delay);
+  };
+}
 
 export default utils;

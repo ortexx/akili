@@ -150,13 +150,13 @@ describe('utils.js', () => {
       });
     });
 
-    describe('.createObjectHash()', () => {
+    describe('.createHash()', () => {
       it('should be equal', () => {
-        assert.equal(utils.createObjectHash({ x: 1, z: { y: 1 } }), utils.createObjectHash({ x: 1, z: { y: 1 } }));
+        assert.equal(utils.createHash({ x: 1, z: { y: 1 } }), utils.createHash({ x: 1, z: { y: 1 } }));
       });
 
       it('should not be equal', () => {
-        assert.notEqual(utils.createObjectHash({ x: 1, z: { y: 2 } }), utils.createObjectHash({ x: 1, z: { y: 3 } }));
+        assert.notEqual(utils.createHash({ x: 1, z: { y: 2 } }), utils.createHash({ x: 1, z: { y: 3 } }));
       });
     });
 

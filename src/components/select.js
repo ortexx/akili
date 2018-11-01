@@ -68,7 +68,7 @@ export default class Select extends For {
   }
 
   createIteratorElement() {
-    let el = super.createIteratorElement();
+    let el = super.createIteratorElement.apply(this, arguments);
 
     if (!el.hasAttribute('value')) {
       el.setAttribute('value', this.html.trim());

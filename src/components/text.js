@@ -1,4 +1,5 @@
 import Component from '../component.js';
+import utils from '../utils.js';
 
 /**
  * Base component to work with text elements.
@@ -18,26 +19,16 @@ export default class Text extends Component {
 
     this.valueKey = 'value';
     this.debounceInterval = 500;
-    this.debounceTimeout = null;
   }
 
   compiled() {
     if(this.el.hasAttribute('on-debounce')) {
-      this.el.addEventListener('input', () => {        
-        this.debounceTimeout && clearTimeout(this.debounceTimeout);
-        this.debounceTimeout = setTimeout(() => {
-          this.attrs.onDebounce.trigger(undefined, { bubbles: true });
-        }, this.debounceInterval);
-      });
+      this.el.addEventListener('input', utils.debounce(() => this.attrs.onDebounce.trigger(undefined, { bubbles: true }), this.debounceInterval));
     }
 
     this.attr('focus', this.setFocus);
     this.attr('value', this.setValue);
     this.attr('debounce', this.setDebounce);
-  }
-
-  removed() {
-    this.debounceTimeout && clearTimeout(this.debounceTimeout);
   }
 
   setDebounce(interval) {

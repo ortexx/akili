@@ -206,7 +206,7 @@ export class Request {
    * @returns {string}
    */
   createCacheHash(data) {
-    return utils.createObjectHash(data);
+    return utils.createHash(data);
   }
 
   /**

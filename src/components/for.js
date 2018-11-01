@@ -31,9 +31,7 @@ export default class For extends Component {
     super(...args);
     
     this.iterators = [];
-    this.iteratorRef = null;
     this.iteratorEl = null;
-    this.iteratorOuterHTML = null;
     this.reset();
   }
 
@@ -61,6 +59,12 @@ export default class For extends Component {
 
   compiled() {
     this.attr('in', this.draw);
+  }
+
+  removed() {
+    delete this.html;
+    this.iterators = null;
+    this.iteratorEl = null; 
   }
 
   createIterator() {
@@ -100,15 +104,13 @@ export default class For extends Component {
     }
 
     this.html = el.innerHTML;
-    this.iteratorRef = el.nextSibling;
-    this.iteratorOuterHTML = el.outerHTML;
-    this.iteratorEl = this.createIteratorElement();
+    this.iteratorEl = this.createIteratorElement(el.outerHTML);
     el.remove();
   }
 
-  createIteratorElement() {
+  createIteratorElement(html) {
     let el = document.createElement('template');
-    el.innerHTML = this.iteratorOuterHTML;
+    el.innerHTML = html;
     return el.content.firstChild;
   }
 
@@ -116,7 +118,7 @@ export default class For extends Component {
     this.__index = index;
     this.__key = key;
     this.__value = value;    
-    this.__comparisonValue = typeof value == 'object'? { hash: utils.createObjectHash(value) }: utils.copy(value);
+    this.__hash = utils.createHash(value);
 
     if(this.iterators.length > index) {
       let iterator = this.iterators[index];
@@ -135,7 +137,7 @@ export default class For extends Component {
         iterator.setKey(true);
       }
       
-      if (!utils.compare(this.__comparisonValue, iterator.comparisonValue)) {
+      if (!utils.compare(this.__hash, iterator.hash)) {
         iterator.setValue();
       }
       else {
@@ -148,7 +150,7 @@ export default class For extends Component {
     
     let el = this.iteratorEl.cloneNode();
     el.innerHTML = this.html;
-    this.el.insertBefore(el, this.iteratorRef);
+    this.el.appendChild(el);
     this.__promises.push(Akili.compile(el));
     this.iterators.push(el.__akili);
     return el.__akili;
@@ -166,8 +168,6 @@ export default class For extends Component {
 
     this.data = data;   
     let index = 0;
-    const children = [].slice.call(this.el.children); 
-    this.iterators.sort((a, b) => children.indexOf(a.el) - children.indexOf(b.el));
     const loop = (key, value, index) => this.loop(key, value, index).iterate(index);
 
     if(Array.isArray(data)) {
@@ -183,7 +183,7 @@ export default class For extends Component {
         loop(key, data[key], index);
       }
     }
-
+    
     for (let i = index, l = this.iterators.length; i < l; i++) {
       let iterator = this.iterators[i];
       iterator.__remove();
@@ -206,9 +206,9 @@ export default class For extends Component {
     this.__index = 0;
     this.__key = '';
     this.__value = null;
-    this.__comparisonValue = null;
+    this.__hash = '';
     this.__promises = [];
-  }
+  }  
 }
 
 /**
@@ -257,6 +257,15 @@ export class Loop extends For {
     }
   }
 
+  removed() {
+    super.removed.apply(this, arguments);
+    this.for = null;
+    delete this.value;
+    delete this.key;
+    delete this.index;
+    delete this.hash;    
+  }
+
   setIndex(target) {
     this.index = this.for.__index;
     this.scope.__set('loopIndex', this.index, false, target);
@@ -270,7 +279,7 @@ export class Loop extends For {
   setValue(target) {
     this.value = this.for.__value;
     this.scope.__set('loopValue', this.value, true, target);
-    this.comparisonValue =  this.for.__comparisonValue;
+    this.hash = this.for.__hash;
   }
 
   iterate() {}
