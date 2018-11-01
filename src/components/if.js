@@ -27,7 +27,6 @@ export default class If extends Component {
 
     this.html = this.el.innerHTML;
     this.el.innerHTML = '';
-    this.prevState = false;
     this.state = false;
     this.active = false;
     this.recreate = false;
@@ -40,8 +39,7 @@ export default class If extends Component {
     return this.attr('is', this.setIs);
   }
 
-  setIs(val) {  
-    this.prevState = this.state;
+  setIs(val) {
     this.state = !!val;
     return this.setState();
   }
@@ -73,7 +71,7 @@ export default class If extends Component {
     let res = Promise.resolve();
 
     if (this.state && !this.active) {
-      if ((this.recreate || !this.isCompiled) && this.prevState !== this.state) {
+      if (this.recreate || !this.isCompiled) {
         res = this.compile();
       }
 
@@ -83,7 +81,7 @@ export default class If extends Component {
       if (this.recreate) {
         this.empty();
       }
-      else if (!this.isCompiled && this.prevState !== this.state) {
+      else if (!this.isCompiled) {
         res = this.compile();
       }
 
