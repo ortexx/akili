@@ -74,7 +74,7 @@ Akili.setDefaults = function () {
     delete globals[key];
   }
 
-  globals.__target.utils = utils;
+  globals.__target.utils = this.wrap(utils);
 
   this.components = {};
   this.services = {};
