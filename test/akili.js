@@ -230,6 +230,14 @@ describe('akili.js', () => {
       });
 
       describe('.removeTag()', () => {
+        it('should remove the tag by node', () => {
+          const key = Object.keys(Akili.__tags)[0];
+          const obj  = Akili.__tags[key]['globalFn'][0];
+          Akili.removeTag('globalFn', obj.node);
+          assert.notOk(Akili.hasTag('globalFn'));
+          Akili.__tags[key] = { globalFn: [obj] };
+        });        
+
         it('should remove the tag', () => {
           delete globals.globalFn;
           assert.notOk(Akili.hasTag('globalFn'));
