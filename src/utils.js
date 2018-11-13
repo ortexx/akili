@@ -650,7 +650,7 @@ utils.hasPropertyByKeys = function(keys, object) {
   keys.reduce((o, k) => {
     i++;
 
-    if (typeof o != 'object') {
+    if (!o || typeof o != 'object') {
       return !!o;
     }
 
@@ -686,7 +686,7 @@ utils.setPropertyByKeys = function(keys, object, fn) {
   keys.reduce((o, k) => {
     i++;
 
-    if (typeof o != 'object') {
+    if (!o || typeof o != 'object') {
       return;
     }
 
@@ -728,7 +728,7 @@ utils.deletePropertyByKeys = function(keys, object, fn) {
   keys.reduce((o, k) => {
     i++;
 
-    if (typeof o != 'object') {
+    if (!o || typeof o != 'object') {
       return;
     }
 

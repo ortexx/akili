@@ -2169,9 +2169,9 @@ export default class Component {
   }
 
   /**
-   * Unbind data by nodes hash
+   * Unbind data by nodes
    *
-   * @param {object|Node[]|Node} nodes
+   * @param {Node|Node[]} nodes
    * @protected
    */
   __unbindByNodes(nodes) {
@@ -2261,7 +2261,7 @@ export default class Component {
    * Remove all child components
    *
    * @param {object} [options]
-   * @returns {object}
+   * @returns {Node[]}
    * @protected
    */
   __removeChildren(options = {}) {
@@ -2284,7 +2284,7 @@ export default class Component {
    * Remove the component without children removing
    *
    * @param {object} [options]
-   * @returns {object}
+   * @returns {Node[]}
    * @protected
    */
   __remove(options = {}) { 
@@ -2335,7 +2335,7 @@ export default class Component {
    * Clear the component html
    *
    * @param {object} [options]
-   * @returns {object}
+   * @returns {Node[]}
    * @protected
    */
   __empty(options = {}) {    

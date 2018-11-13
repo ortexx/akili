@@ -21,6 +21,10 @@ export default class EventEmitter {
    * @returns {Promise}
    */
   trigger(data, options = {}, force = false) {
+    if(this.__removed) {
+      return;
+    }
+
     if (force || !this.inEvaluating()) {
       this.el.dispatchEvent(new CustomEvent(this.name, this.prepareOptions({ detail: data,  ...options })));
     }   
@@ -35,6 +39,10 @@ export default class EventEmitter {
    * @returns {Promise}
    */
   dispatch(_Event, options = {}, force = false) {
+    if(this.__removed) {
+      return;
+    }
+
     if (force || !this.inEvaluating()) {
       this.el.dispatchEvent(new _Event(this.name, this.prepareOptions(options)));
     }
@@ -92,5 +100,6 @@ export default class EventEmitter {
     this.node = null;
     this.component = null;
     this.el = null;
+    this.__removed = true;
   }
 }

@@ -168,6 +168,9 @@ export default class For extends Component {
 
     this.data = data;   
     let index = 0;
+    const children = [].slice.call(this.el.children); 
+    this.iterators.sort((a, b) => children.indexOf(a.el) - children.indexOf(b.el));
+    this.__children.sort((a, b) => children.indexOf(a) - children.indexOf(b));
     const loop = (key, value, index) => this.loop(key, value, index).iterate(index);
 
     if(Array.isArray(data)) {
