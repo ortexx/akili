@@ -7,7 +7,7 @@ import utils from './utils.js';
 
 export const evaluationRegex = /\${(((?!\${).)*)}/;
 export const evaluationRegexGlobal = new RegExp(evaluationRegex.source, "g");
-export const systemAttributes = ['component', 'scope'];
+export const systemAttributes = ['component', 'scope', 'no-ssr'];
 
 /**
  * Base class from which all components are inherited

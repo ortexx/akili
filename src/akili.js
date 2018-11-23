@@ -455,6 +455,14 @@ Akili.initialize = function (el, options = {}) {
 Akili.compile = function (root, options = { recompile: false }) {  
   let elements = [];
 
+  if(window.AKILI_SSR) {
+    const arr = root.querySelectorAll('[no-ssr]');
+
+    for(let i = 0, l = arr.length; i < l; i++) {
+      arr[i].remove();
+    }
+  }
+
   const nestedInitializing = (el) => {
     let component = this.initialize(el, options);
     let children = el.children;
