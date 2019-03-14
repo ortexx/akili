@@ -52,5 +52,8 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/ortexx/akili"
+  },
+  "engines": {
+    "node": ">=8.0.0"
   }
 }

@@ -30,7 +30,7 @@ let config = {
   watch: !build,  
   bail: true,
   devtool: "inline-source-map",
-  entry: entry,
+  entry,
     output: {
     path: path.join(__dirname, "/dist"),
     filename: "[name].js",
@@ -64,7 +64,7 @@ let config = {
       }
     ]
   },
-  plugins: plugins  
+  plugins  
 };
 
 module.exports = config;
