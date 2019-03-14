@@ -1,5 +1,5 @@
 const webpack = require('webpack');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 const path = require('path');
 const pack = require('./package.json');
 
@@ -31,20 +31,18 @@ let config = {
   bail: true,
   devtool: "inline-source-map",
   entry: entry,
-  output: {
+    output: {
     path: path.join(__dirname, "/dist"),
-    filename: "[name].js"
+    filename: "[name].js",
+    library: 'Akili',
+    libraryExport: "default",
+    libraryTarget: 'umd'
   },
   optimization: {
     minimizer: [
-      new UglifyJsPlugin({
+      new TerserPlugin({
         include: /\.min\.js$/,
-        uglifyOptions: {
-          minimize: true,
-          compress: {
-            warnings: false
-          }
-        }       
+        extractComments: false
       })
     ]
   },
