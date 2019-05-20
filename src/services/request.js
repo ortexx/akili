@@ -279,7 +279,7 @@ export class Request {
    *
    * @param {object} obj
    * @param {FormData} [data]
-   * @param {string} [namespace]   *
+   * @param {string} [namespace]
    * @returns {FormData}
    */
   createFormData(obj, data = null, namespace = '') {

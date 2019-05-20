@@ -1051,4 +1051,5 @@ Akili.deinit = function () {
 };
 
 export default Akili;
+window.Akili = Akili;
 Akili.setDefaults();
