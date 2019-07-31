@@ -3,7 +3,7 @@ import Akili from './akili.js';
 const obj = {};
 
 /**
- * Globals to use the custom variables in scope expressions
+ * Globals is for using the custom variables in html
  * 
  * {@link https://akilijs.com/docs/scope#docs_globals}
  */

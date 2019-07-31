@@ -2,7 +2,7 @@ import Akili from '../akili.js';
 import utils from '../utils.js';
 
 /**
- * Store allows you to save and distribute data.
+ * Store allows you to save and share data.
  * 
  * {@link https://akilijs.com/docs/store}
  */

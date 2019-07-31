@@ -3,7 +3,7 @@ import Akili from '../akili.js';
 
 /**
  * Request class.
- * An instance of this class allows you to make requests.
+ * The instance of this class allows you to make requests.
  * 
  * {@link https://akilijs.com/docs/requests}
  */
@@ -11,8 +11,6 @@ export class Request {
   __cache = {};
 
   /**
-   * Constructor
-   * 
    * @param {string} baseUrl
    * @param {object} [defaults] 
    */
@@ -27,7 +25,7 @@ export class Request {
   }
 
   /**
-   * Send request with any method
+   * Send the request
    *
    * @param {object} options
    * @returns {Promise}
@@ -147,7 +145,7 @@ export class Request {
   }
 
   /**
-   * Get headers of a XMLHttpRequest instance
+   * Get the headers of an XMLHttpRequest instance
    * 
    * @param {XMLHttpRequest}
    */
@@ -171,7 +169,7 @@ export class Request {
   }
 
   /**
-   * Get cache
+   * Get the cache
    * 
    * @param {string} hash
    * @returns {object}
@@ -181,7 +179,7 @@ export class Request {
   }
 
   /**
-   * Create cache
+   * Create the cache
    * 
    * @param {string} hash
    * @param {object} result
@@ -191,7 +189,7 @@ export class Request {
   }
 
   /**
-   * Remove cache
+   * Remove the cache
    * 
    * @param {string} hash
    */
@@ -200,7 +198,7 @@ export class Request {
   }
 
   /**
-   * Create a hash to save in the cache
+   * Create a hash for saving in the cache
    * 
    * @param {object} data
    * @returns {string}
@@ -210,7 +208,7 @@ export class Request {
   }
 
   /**
-   * Convert object to query string
+   * Convert the object to a query string
    *
    * @param {object} obj
    * @returns {string}
@@ -242,7 +240,7 @@ export class Request {
   }
 
   /**
-   * Convert query string to object
+   * Convert the query string to an object
    *
    * @param {string} str
    * @returns {object}
@@ -275,7 +273,7 @@ export class Request {
   }
 
   /**
-   * Create multipart form data from object
+   * Create multipart form data from the object
    *
    * @param {object} obj
    * @param {FormData} [data]
@@ -305,7 +303,7 @@ export class Request {
   }
 
   /**
-   * Transform data before a request
+   * Transform the data before the request
    *
    * @param {XMLHttpRequest} xhr
    * @param {object} options
@@ -316,7 +314,7 @@ export class Request {
   }
 
   /**
-   * Transform data after a request
+   * Transform the data after the request
    *
    * @param {object} result
    * @returns {object}
@@ -329,7 +327,7 @@ export class Request {
   }
 
   /**
-   *  Make GET request
+   *  Make a GET request
    *
    * @param {string} url
    * @param {object} options
@@ -338,12 +336,11 @@ export class Request {
   get(url, options = {}) {
     options.url = url;
     options.method = 'GET';
-
     return this.query(options);
   }
 
   /**
-   *  Make DELETE request
+   * Makea a DELETE request
    *
    * @param {string} url
    * @param {object} options
@@ -352,12 +349,11 @@ export class Request {
   delete(url, options = {}) {
     options.url = url;
     options.method = 'DELETE';
-
     return this.query(options);
   }
 
   /**
-   *  Make POST request
+   * Make a POST request
    *
    * @param {string} url
    * @param {object} options
@@ -366,12 +362,11 @@ export class Request {
   post(url, options = {}) {
     options.url = url;
     options.method = 'POST';
-
     return this.query(options);
   }
 
   /**
-   *  Make PUT request
+   * Make a PUT request
    *
    * @param {string} url
    * @param {object} options
@@ -380,12 +375,11 @@ export class Request {
   put(url, options = {}) {
     options.url = url;
     options.method = 'PUT';
-
     return this.query(options);
   }
 
   /**
-   *  Make PATCH request
+   *  Make a PATCH request
    *
    * @param {string} url
    * @param {object} options
@@ -394,12 +388,11 @@ export class Request {
   patch(url, options = {}) {
     options.url = url;
     options.method = 'PATCH';
-
     return this.query(options);
   }
 
-   /**
-   *  Make HEAD request
+  /**
+   * Make a HEAD request
    *
    * @param {string} url
    * @param {object} options
@@ -408,7 +401,6 @@ export class Request {
   head(url, options = {}) {
     options.url = url;
     options.method = 'HEAD';
-
     return this.query(options);
   }
 }
@@ -416,7 +408,7 @@ export class Request {
 const request = new Request();
 
 /**
- * Set router's default variables
+ * Set the default variables
  */
 request.setDefaults = function () {
   this.__instances = {};
@@ -424,7 +416,7 @@ request.setDefaults = function () {
 }
 
 /**
- * Add new request instance to the main service
+ * Add a new instance
  *
  * @param {string} name
  * @param {Request} instance
@@ -434,7 +426,7 @@ request.addInstance = function(name, instance) {
 };
 
 /**
- * Remove instance
+ * Remove the instance
  *
  * @param {string} name
  */
@@ -443,7 +435,7 @@ request.removeInstance = function(name) {
 };
 
 /**
- * Deinit router
+ * Deinitialize the service
  */
 request.deinit = function() {
   this.setDefaults();

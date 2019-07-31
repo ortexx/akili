@@ -23,7 +23,7 @@ export default class Component {
   static scope = null;
 
   /**
-   * Function to define the component
+   * Define the component
    */
   static define() {
     Akili.component('component', Component);
@@ -50,9 +50,7 @@ export default class Component {
     return new Function(...keys, `${exps.join('; ')}`).apply(context, vars);
   }
 
-  /**
-   * Constructor
-   * 
+  /** 
    * @param {Element} el 
    * @param {object} [scope] 
    */
@@ -87,7 +85,7 @@ export default class Component {
   }
 
   /**
-   * Create compilation options 
+   * Create the compilation options 
    * 
    * @param {object} [options]
    * @protected
@@ -104,7 +102,7 @@ export default class Component {
   }
 
   /**
-   * Create recompilation options 
+   * Create the recompilation options 
    * 
    * @param {object} [options]
    * @protected
@@ -114,14 +112,13 @@ export default class Component {
       ...this.__createCompilationOptions(),
       setEvents: false,
       setParents: false,
-      setBooleanAttributes: false,
       defineAttributes: false,
       ...options 
     };
   }
  
   /**
-   * Called on the recompilation
+   * Recompile the component
    * 
    * @param {object} [options]
    * @protected
@@ -138,7 +135,7 @@ export default class Component {
   }
 
   /**
-   * Called on the creation
+   * Create the component
    *
    * @protected
    */
@@ -153,7 +150,7 @@ export default class Component {
   }
 
   /**
-   * Called on the compilation
+   * Compile the node
    *
    * @protected
    * @returns {Promise}
@@ -236,7 +233,7 @@ export default class Component {
   }
 
   /**
-   * Part of the {@see Component#__compile} method
+   * Initialize the component
    *
    * @protected
    */
@@ -278,7 +275,7 @@ export default class Component {
   }
 
   /**
-   * Set boolean attributes
+   * Set the boolean attributes
    *
    * @protected
    */
@@ -312,7 +309,7 @@ export default class Component {
   }
 
   /**
-   * Set events
+   * Set the events
    *
    * @protected
    */
@@ -328,7 +325,7 @@ export default class Component {
   }
 
   /**
-   * Set component parents
+   * Set the component parents
    *
    * @protected
    */
@@ -367,7 +364,7 @@ export default class Component {
   }
 
   /**
-   * Add child element to the list
+   * Add the child element to the list
    *
    * @param {Element} el
    * @protected
@@ -377,7 +374,7 @@ export default class Component {
   }
 
   /**
-   * Splice child from the list
+   * Splice the child from the list
    *
    * @param {Element} el
    * @protected
@@ -395,7 +392,7 @@ export default class Component {
   }
 
   /**
-   * You can change expression before parsing here
+   * Get the parsed expression
    *
    * @param {string} expression
    * @returns {*}
@@ -406,7 +403,7 @@ export default class Component {
   }
 
   /**
-   * Check node has any property changes or not
+   * Check the need of the avaluation
    *
    * @param {Node} node
    * @returns {boolean}
@@ -434,7 +431,7 @@ export default class Component {
   }
 
   /**
-   *  Check node has changed on the certain keys
+   * Check the node properties change
    *
    * @param {Node} node
    * @param {string[]} keys
@@ -453,11 +450,12 @@ export default class Component {
   }
 
   /**
-   * Compare a node property value
+   * Compare the node property value
    * 
    * @param {object} prop 
    * @param {*} value 
    * @param {object} [options] 
+   * @protected
    */
   __compareNodePropertyValue(prop, value, options = {}) {  
     return utils.compare(utils.createHash(value), prop.hash, options);
@@ -468,6 +466,7 @@ export default class Component {
    * 
    * @param {Node} node 
    * @param {Error} err 
+   * @protected
    */
   __createExceptionMessage(node, err) {
     let tagName = node.__component.el.tagName;
@@ -482,7 +481,7 @@ export default class Component {
   }
 
   /**
-   * Evaluate node expression
+   * Evaluate the node expression
    *
    * @param {Node} node
    * @returns {*}
@@ -586,7 +585,7 @@ export default class Component {
   }
 
   /**
-   * Bind the node and set property
+   * Bind the node and set the property
    *
    * @param {Node} node
    * @param {string[]} keys
@@ -605,7 +604,7 @@ export default class Component {
   }
 
   /**
-   * Nested evaluation by keys
+   * Nested evaluation by the keys
    *
    * @param {string[]} keys
    * @param {boolean} [withoutParents=false] - if true evaluation will be only for the current keys
@@ -695,7 +694,7 @@ export default class Component {
   }
 
   /**
-   * Evaluate value by keys
+   * Evaluate the value by the keys
    *
    * @param {string[]} keys
    * @param {*} value
@@ -747,7 +746,7 @@ export default class Component {
   }
 
   /**
-   * Evaluate event expression
+   * Evaluate the event expression
    *
    * @param {Node} node
    * @param {Element} el
@@ -783,7 +782,7 @@ export default class Component {
   }
 
   /**
-   * Check changes and evaluate the passed node
+   * Evaluate the node expression with check
    *
    * @param {Node} node
    * @param {boolean} [check]
@@ -834,10 +833,11 @@ export default class Component {
   }
 
   /**
-   * Prepare the attribute value for getting
+   * Prepare the attribute value for receiving
    * 
    * @param {Node} node
    * @param {*} value
+   * @protected
    */
   __prepareAttributeIn(node, value) {    
     return utils.copy(value, { plain: true });
@@ -848,13 +848,14 @@ export default class Component {
    * 
    * @param {Node} node
    * @param {*} value
+   * @protected
    */
   __prepareAttributeOut(node, value) {    
     return utils.copy(value, { plain: true });
   }
 
   /**
-   * Attribute node initializing
+   * Initialize the attributes
    *
    * @param {Node} node
    * @param {Element} el
@@ -980,10 +981,10 @@ export default class Component {
   }
 
   /**
-   * Interpolate attributes of the element
+   * Interpolate the element attributes
    *
    * @param {Element} el
-   * @param {Component} [attributeOf=null] - if node is linked with parent scope
+   * @param {Component} [attributeOf=null] - if the node has link with the parent scope
    * @protected
    */
   __interpolateAttributes(el, attributeOf = null) {
@@ -993,7 +994,7 @@ export default class Component {
   }
 
   /**
-   * Define attributes as proxy
+   * Define the attributes as a proxy
    *
    * @protected
    */
@@ -1052,7 +1053,7 @@ export default class Component {
   }
 
   /**
-   * Set proxy to object
+   * Convert the object to a proxy
    *
    * @param {object} obj
    * @param {string[]} parents
@@ -1216,7 +1217,10 @@ export default class Component {
   }
 
   /**
-   * Trigger store and attributes change
+   * Trigger the store and the attributes change
+   * 
+   * @param {string[]} keys 
+   * @protected
    */
   __triggerStoreAndAttr(keys) {
     for(let i = 0, l = keys.length; i < l; i++) {
@@ -1235,7 +1239,7 @@ export default class Component {
   }
 
   /**
-   * Create hash for the keys
+   * Create the hash for the keys
    * 
    * @param {string[]} keys 
    * @returns {string}    
@@ -1249,6 +1253,8 @@ export default class Component {
    * Get the store of the disablement type
    * 
    * @param {string} type 
+   * @returns {object}
+   * @protected
    */
   __getDisablementTypeStore(type) {
     return ({
@@ -1369,7 +1375,7 @@ export default class Component {
   }
 
   /**
-   * Create a store link with the scope property
+   * Create the store link with the scope property
    * 
    * @param {string} name 
    * @param {string|string[]} keys
@@ -1424,7 +1430,7 @@ export default class Component {
   }
 
   /**
-   * Create a store link with the function
+   * Create the store link with the function
    * 
    * @param {string} name 
    * @param {function} fn   
@@ -1554,7 +1560,7 @@ export default class Component {
   }
 
   /**
-   * Trigger an attribute event by the keys
+   * Trigger the attribute event by the keys
    * 
    * @param {string[]} keys 
    * @param {*} value    
@@ -1590,7 +1596,7 @@ export default class Component {
   }
 
   /**
-   * Trigger an attribute event by the name
+   * Trigger the attribute event by the name
    * 
    * @param {string} name 
    * @param {*} value 
@@ -1625,7 +1631,7 @@ export default class Component {
   }
 
   /**
-   * Create an attribute link with the scope property
+   * Create the  attribute link with the scope property
    * 
    * @param {string} name 
    * @param {string|string[]} keys
@@ -1670,7 +1676,7 @@ export default class Component {
   }
 
   /**
-   * Create an attribute link with the function
+   * Create the attribute link with the function
    * 
    * @param {string} name 
    * @param {function} fn
@@ -1703,7 +1709,7 @@ export default class Component {
       let attrsKeys = Object.keys(this.__attrs).filter(k => !(this.__attrs[k] instanceof Akili.EventEmitter));
       let p = [];
 
-      for (let i = 0, l = attrsKeys.length ; i < l; i++) {
+      for (let i = 0, l = attrsKeys.length; i < l; i++) {
         let key = attrsKeys[i];
         let val = this.__attrs[key];
         p.push(Akili.unisolate(() => fn.call(this, val, utils.toDashCase(key))));
@@ -1755,7 +1761,7 @@ export default class Component {
     }
   }
 
-   /**
+  /**
    * Remove the attribute link with the function
    * 
    * @param {string} name 
@@ -1802,7 +1808,7 @@ export default class Component {
   }
 
   /**
-   * Nested observing the value
+   * Nested observing of the value
    *
    * @param {*} value
    * @param {string[]} [startKeys]
@@ -1889,7 +1895,7 @@ export default class Component {
   }
 
   /**
-   * Prepare the node to binding
+   * Prepare the node to the binding
    *
    * @param {object} bind - by default is component.__evaluation.list
    * @param {string[]} keys
@@ -1929,7 +1935,7 @@ export default class Component {
   }
 
   /**
-   * Check the key is system binding thing
+   * Check the key is the system
    *
    * @param {string} key
    * @returns {boolean}
@@ -1940,7 +1946,7 @@ export default class Component {
   }
 
   /**
-   * Get binding by keys
+   * Get a binding by the keys
    *
    * @param {string[]} keys
    * @returns {object|null}
@@ -1951,7 +1957,7 @@ export default class Component {
   }
 
   /**
-   * Get all nested bindings by keys
+   * Get all nested bindings by the keys
    * 
    * @param {string[]} keys 
    */
@@ -1981,7 +1987,7 @@ export default class Component {
   }
 
   /**
-   * Get binding by keys
+   * Get a binding by the keys
    *
    * @param {string[]} keys
    * @param {Node} node
@@ -2064,7 +2070,7 @@ export default class Component {
   }
 
   /**
-   * Map nodes
+   * Map the nodes
    * 
    * @param {function} fn
    * @param {object} [options]
@@ -2113,7 +2119,7 @@ export default class Component {
   }
   
   /**
-   * Bind data with the keys
+   * Bind the data with the keys
    *
    * @param {string[]} keys
    * @param {object} data
@@ -2169,7 +2175,7 @@ export default class Component {
   }
 
   /**
-   * Unbind data by nodes
+   * Unbind the data by nodes
    *
    * @param {Node|Node[]} nodes
    * @protected
@@ -2216,7 +2222,7 @@ export default class Component {
   }
 
   /**
-   * Remove all parents bindings with the nodes
+   * Remove all parent bindings with the nodes
    * 
    * @param {Node|Node[]} nodes
    * @protected
@@ -2258,7 +2264,7 @@ export default class Component {
   }
 
   /**
-   * Remove all child components
+   * Remove all children
    *
    * @param {object} [options]
    * @returns {Node[]}
@@ -2281,7 +2287,7 @@ export default class Component {
   }
 
   /**
-   * Remove the component without children removing
+   * Remove the component without the children removing
    *
    * @param {object} [options]
    * @returns {Node[]}
@@ -2365,7 +2371,7 @@ export default class Component {
   }
 
   /**
-   * Get parent components
+   * Get the parent components
    *
    * @param {string} [selector='']
    * @param {boolean} [findAll=true] - get array if true
@@ -2406,7 +2412,7 @@ export default class Component {
   }
 
   /**
-   * Get child components
+   * Get the child components
    *
    * @param {string} [selector='']
    * @param {boolean} [findAll=true] - get array if true
@@ -2450,7 +2456,7 @@ export default class Component {
   }
 
   /**
-   * Get nearest components
+   * Get the nearest components
    *
    * @param {string} [selector='']
    * @param {boolean} [findAll=true] - get array if true
@@ -2489,7 +2495,7 @@ export default class Component {
   }
 
   /**
-   * Create a link to the store
+   * Create the link with the store
    * 
    * @param {string} name 
    * @param {string|string[]|function} handler
@@ -2510,7 +2516,7 @@ export default class Component {
   }
 
   /**
-   * Create a link with the attribute
+   * Create the link with the attribute
    * 
    * @param {string} name 
    * @param {string|string[]|function} handler
@@ -2573,7 +2579,7 @@ export default class Component {
   }
 
   /**
-   * Check the component matches selector
+   * Check the component using the selector
    *
    * @param {string|function} selector
    * @returns {boolean}
@@ -2587,7 +2593,7 @@ export default class Component {
   }
 
   /**
-   * Get closest parent component by selector
+   * Get the closest parent component by the selector
    *
    * @param {string|function} [selector='']
    * @param {number|number[]} [levels=null]
@@ -2598,7 +2604,7 @@ export default class Component {
   }
 
   /**
-   * Get array of parent components by selector
+   * Get an array of parent components by the selector
    *
    * @param {string|function} [selector='']
    * @param {number|number[]} [levels=null]
@@ -2609,7 +2615,7 @@ export default class Component {
   }
 
   /**
-   * Get closest child component by selector
+   * Get the closest child component by the selector
    *
    * @param {string|function} [selector='']
    * @param {number|number[]} [levels=null]
@@ -2620,7 +2626,7 @@ export default class Component {
   }
 
   /**
-   * Get array of child components by selector
+   * Get an array of child components by the selector
    *
    * @param {string|function} [selector='']
    * @param {number|number[]} [levels=null]
@@ -2631,7 +2637,7 @@ export default class Component {
   }
 
   /**
-   * Get array of components left from the current by selector
+   * Get an array of components left from the current by the selector
    *
    * @param {string|function} [selector='']
    * @returns {Component[]}
@@ -2641,7 +2647,7 @@ export default class Component {
   }
 
   /**
-   * Get array of components right from the current by selector
+   * Get an array of components right from the current by the selector
    *
    * @param {string|function} [selector='']
    * @returns {Component[]}
@@ -2651,7 +2657,7 @@ export default class Component {
   }
 
   /**
-   * Get closest component left from the current by selector
+   * Get the closest leftcomponent by the selector
    *
    * @param {string|function} [selector='']
    * @returns {Component}
@@ -2661,7 +2667,7 @@ export default class Component {
   }
 
   /**
-   * Get closest component right from the current by selector
+   * Get the closest right component by the selector
    *
    * @param {string|function} [selector='']
    * @returns {Component}
@@ -2671,7 +2677,7 @@ export default class Component {
   }
 
   /**
-   * Change element parent
+   * Change the element parent
    *
    * @param {Element} parent
    */
@@ -2681,21 +2687,21 @@ export default class Component {
   }
 
   /**
-   * Cancel component compilation
+   * Cancel the component compilation
    */
   cancel() {
     this.__cancelled = true;
   }
 
   /**
-   * Compale the component, but cancel the compilation inside of it
+   * Compile the component but prevent the compilation inside
    */
   prevent() {
     this.__prevent = true;
   }
 
   /**
-   * Clear element html
+   * Clear the element content
    *
    * @returns {*}
    */
@@ -2704,7 +2710,7 @@ export default class Component {
   }
 
   /**
-   * Remove element
+   * Remove the element
    *
    * @returns {*}
    */

@@ -4,14 +4,14 @@ import Akili from '../akili.js';
 
 /**
  * Component for links.
- * It works with router too. 
+ * It works with router as well. 
  * 
  * {@link https://akilijs.com/docs/components#docs_links}
  * 
  * @tag a
  * @selector a[state]:not([url]),a[url]:not([state])
- * @attr {string} [url] - url to go on click
- * @attr {string} [state] - state of router to go on click {@link https://akilijs.com/docs/routing}
+ * @attr {string} [url] - url to go
+ * @attr {string} [state] - state to go {@link https://akilijs.com/docs/routing}
  * @attr {object} [params] - params for the state {@link https://akilijs.com/docs/routing#docs_state_params}
  * @attr {object} [query] - query for the state {@link https://akilijs.com/docs/routing#docs_state_query}
  * @attr {string} [hash] - hash for the state {@link https://akilijs.com/docs/routing#docs_state_hash}

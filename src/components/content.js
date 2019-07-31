@@ -2,7 +2,7 @@ import Text from './text.js';
 import Akili from '../akili.js';
 
 /**
- * Component for elements with contenteditable attribute.
+ * Component for elements with the contenteditable attribute.
  * 
  * {@link https://akilijs.com/docs/components#docs_contenteditable}
  * 

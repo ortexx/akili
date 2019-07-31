@@ -1,14 +1,14 @@
 import EventEmitter from './event-emitter.js'
 
 /**
- * An object with a lot of useful functions
+ * The object with a lot of useful functions
  * 
  * {@link https://akilijs.com/docs/utils}
  */
 const utils = {};
 
 /**
- * Create class attribute from an object
+ * Create the class attribute from the object
  *
  * @example
  * // returns "red active"
@@ -35,7 +35,7 @@ utils.class = function (obj) {
 };
 
 /**
- * Create style attribute from an object
+ * Create the style attribute from the object
  *
  * @example
  * // returns "color:red;width:10px"
@@ -62,7 +62,7 @@ utils.style = function(obj) {
 };
 
 /**
- * Extended split of the string
+ * Split the string extended
  * 
  * @example
  * // returns ["Hello", "World"]
@@ -116,7 +116,7 @@ utils.split = function(str, del = '', exclude = []) {
 }
 
 /**
- * Filter an array
+ * Filter the array
  *
  * @example
  * // returns [1, 11]
@@ -147,9 +147,9 @@ utils.split = function(str, del = '', exclude = []) {
  * utils.filter([{x: 1, y: 2}, {x: 3, y: 3}, {x: 2, y: 1}], '1', [['x'], ['y']]);
  *
  * @param {Array} arr
- * @param {string|RegExp|function} handler - type of filtering
- * @param {string[]|string} [keys] - filter in the keys if array elements are object
- * @returns {Array} - returns other array
+ * @param {string|RegExp|function} handler - type of the filtering
+ * @param {string[]|string} [keys] - filter by the keys
+ * @returns {Array} 
  */
 utils.filter = function (arr, handler, keys = null) {
   let res = [];
@@ -190,7 +190,7 @@ utils.filter = function (arr, handler, keys = null) {
 };
 
 /**
- * Order an array
+ * Sort the array
  *
  * @example
  * // returns [1, 2, 3]
@@ -303,7 +303,7 @@ utils.sort = function(arr, keys = true, order = []) {
 };
 
 /**
- * Return new object with the specified keys
+ * Return a new object with the specified keys
  * 
  * @example
  * // returns {x: 1, z: 1}
@@ -328,7 +328,7 @@ utils.includeKeys = function(obj, keys) {
 }
 
 /**
- * Return new object without the specified keys
+ * Return a new object without the specified keys
  * 
  * @example
  * // returns {x: 1, z: 1}
@@ -353,7 +353,7 @@ utils.excludeKeys = function(obj, keys) {
 }
 
 /**
- * Check the value is component scope proxy object
+ * Check the value is the scope proxy object
  *
  * @param {*} val
  * @returns {boolean}
@@ -363,7 +363,7 @@ utils.isScopeProxy = function(val) {
 };
 
 /**
- * Check the value is plain object
+ * Check the value is a plain object
  *
  * @param {*} obj
  * @returns {boolean}
@@ -419,7 +419,7 @@ utils.copy = function(value, options = {}) {
 };
 
 /**
- * Change the value to attribute appropriate format
+ * Change the attribute value to the appropriate format
  *
  * @param {*} value
  * @returns {*}
@@ -508,7 +508,7 @@ utils.compare = function (a, b, options = {}) {
 };
 
 /**
- * Create hash from a string
+ * Create a hash from the string
  * 
  * @param {*} source
  * @returns {string}
@@ -528,7 +528,7 @@ utils.createHash = function(source) {
 }
 
 /**
- * Encode html entities
+ * Encode the html entities
  *
  * @example
  * // returns "you &amp me"
@@ -548,7 +548,7 @@ utils.encodeHtmlEntities = function(html) {
 };
 
 /**
- * Decode html entities
+ * Decode the html entities
  *
  * @example
  * // returns "you & me"
@@ -568,7 +568,7 @@ utils.decodeHtmlEntities = function(html) {
 };
 
 /**
- * Change string from dash to camel case format
+ * Convert the string from a dash to a camel case
  *
  * @param {string} str
  * @returns {string}
@@ -588,7 +588,7 @@ utils.capitalize = function(str) {
 };
 
 /**
- * Change string from camel to dash case format
+ * Convert the string from a camel to a dash case
  *
  * @param {string} str
  * @returns {string}
@@ -598,7 +598,7 @@ utils.toDashCase = function(str) {
 };
 
 /**
- * Get nested object property by array keys
+ * Get the nested object property by array keys
  *
  * @example
  * // returns 5
@@ -632,7 +632,7 @@ utils.getPropertyByKeys = function(keys, object) {
 };
 
 /**
- * Check nested objects tree has property or not
+ * Check the object nested property existence
  *
  * @example
  * // returns true
@@ -666,8 +666,7 @@ utils.hasPropertyByKeys = function(keys, object) {
 };
 
 /**
- * Set nested objects tree property
- * Returns changed property object
+ * Set the object nested property value
  *
  * @example
  * // returns {y: 6}
@@ -703,10 +702,8 @@ utils.setPropertyByKeys = function(keys, object, fn) {
 };
 
 /**
- *
- * Delete property from nested objects tree
- * Returns deleted property value
- * You can cancel deleting if will return false in the callback function
+ * Delete the property from the object
+ * You can cancel the deletion returning false in the callback function
  *
  * @example
  * // returns 5
@@ -801,7 +798,7 @@ utils.getOwnPropertyTarget = function(target, key) {
 };
 
 /**
- * Generate random string
+ * Generate a random string
  *
  * @param {number} length
  * @param {function} fn
@@ -829,7 +826,7 @@ utils.createRandomString = function(length = 16, fn = null) {
 };
 
 /**
- *  Create a function with the debounce
+ * Create a function with the debounce
  *
  * @param {function} fn
  * @param {number} delay

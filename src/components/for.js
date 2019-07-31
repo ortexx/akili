@@ -121,30 +121,16 @@ export default class For extends Component {
     this.__hash = utils.createHash(value);
 
     if(this.iterators.length > index) {
-      let iterator = this.iterators[index];
-        
-      if (this.__index !== iterator.index) {
-        iterator.setIndex();
-      }
-      else {
-        iterator.setIndex(true);
-      }
-
-      if (this.__key !== iterator.key) {        
-        iterator.setKey();
-      }
-      else {        
-        iterator.setKey(true);
-      }
-      
-      if (!utils.compare(this.__hash, iterator.hash)) {
-        iterator.setValue();
-      }
-      else {
-        iterator.setValue(true);
-      }
-
-      this.__promises.push(Akili.compile(iterator.el, { recompile: { checkChanges: true } }));
+      let iterator = this.iterators[index];        
+      iterator.setIndex(this.__index === iterator.index);     
+      iterator.setKey(this.__key === iterator.key);
+      iterator.setValue(utils.compare(this.__hash, iterator.hash));
+      this.__promises.push(Akili.compile(iterator.el, { 
+        recompile: { 
+          checkChanges: true,
+          setBooleanAttributes: false
+        } 
+      }));
       return iterator;
     }
     

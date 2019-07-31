@@ -5,7 +5,7 @@ import Route from '../components/route.js';
 
 /**
  * Transition class.
- * An instance of this class consists the last actual router transition information.
+ * The instance of this class includes the last actual router transition information.
  * 
  * {@link https://akilijs.com/docs/routing#docs_transition}
  */
@@ -152,7 +152,7 @@ export class Transition {
 const router = {};
 
 /**
- * Set router's default variables
+ * Set the default values
  */
 router.setDefaults = function () {
   this.baseUrl = "/";
@@ -165,7 +165,7 @@ router.setDefaults = function () {
 }
 
 /**
- * Add new state to the router
+ * Add a new state
  *
  * @param {string} name - state name. To set parents you can use dot, e.g. 'app.article.edit'
  * @param {string} pattern - url pattern like 'app/article/:id'
@@ -213,7 +213,7 @@ router.add = function (name, pattern, options = {}) {
 };
 
 /**
- * Remove state from the list
+ * Remove the state
  *
  * @param {string} name
  */
@@ -228,7 +228,7 @@ router.remove = function(name) {
 };
 
 /**
- * Check state exists
+ * Check the state exists
  *
  * @param {string} name
  * @returns {boolean}
@@ -244,7 +244,7 @@ router.has = function(name) {
 };
 
 /**
- * Change the state to the passed
+ * Change the state
  *
  * @param {string} state
  * @param {object} [params] - params for state {id: 1} => '/app/:id' => '/app/1'
@@ -275,7 +275,7 @@ router.back = function() {
 };
 
 /**
- * Go to any way
+ * Go to some position
  */
 router.go = function() {
   return window.history.go.apply(window.history, arguments);
@@ -289,7 +289,7 @@ router.forward = function() {
 };
 
 /**
- * Change state by url
+ * Change the state by the url
  *
  * @param {string} url
  * @param {object} [options]
@@ -302,7 +302,8 @@ router.location = function (url, options = {}) {
 };
 
 /**
- * Router initialization. Should be called before Akili.init()
+ * Initialize the router. 
+ * Must be called before Akili.init()
  *
  * @param {string} [defaultUrl]
  * @param {boolean} [hashMode=true]
@@ -377,7 +378,7 @@ router.initState = function (state) {
 }
 
 /**
- * Get state by name
+ * Get the state by the name
  *
  * @param {string} name
  * @returns {object|null}
@@ -395,7 +396,7 @@ router.getState = function (name) {
 };
 
 /**
- * Set state
+ * Set the state
  *
  * @param {string} name
  * @param {string} pattern
@@ -409,7 +410,7 @@ router.setState = function (name, pattern, options = {}) {
 };
 
 /**
- * Remove state by name
+ * Remove the state by the name
  *
  * @param {string} name
  */
@@ -426,7 +427,7 @@ router.removeState = function (name) {
 };
 
 /**
- * Set url
+ * Set the url
  *
  * @param {string} url
  */
@@ -435,7 +436,7 @@ router.setUrl = function (url) {
 };
 
 /**
- * Set url using history
+ * Set the url using the history
  *
  * @param url
  */
@@ -444,7 +445,7 @@ router.setHistoryUrl = function (url) {
 };
 
 /**
- * Set url using hash
+ * Set the url using the hash
  *
  * @param url
  */
@@ -453,7 +454,7 @@ router.setHashUrl = function (url) {
 };
 
 /**
- * Replace url
+ * Replace the url
  *
  * @param {string} url
  */
@@ -462,7 +463,7 @@ router.replaceUrl = function (url) {
 };
 
 /**
- * Set url using history
+ * Replace the url using the history
  *
  * @param url
  */
@@ -471,7 +472,7 @@ router.replaceHistoryUrl = function (url) {
 };
 
 /**
- * Set url using hash
+ * Replace the url using the hash
  *
  * @param url
  */
@@ -480,7 +481,7 @@ router.replaceHashUrl = function (url) {
 };
 
 /**
- * Get url
+ * Get the url
  *
  * @returns {string}
  */
@@ -489,7 +490,7 @@ router.getUrl = function () {
 };
 
 /**
- * Get url using history
+ * Get the url using the history
  *
  * @returns {string}
  */
@@ -498,7 +499,7 @@ router.getHistoryUrl = function () {
 };
 
 /**
- * Get url using hash
+ * Get the url using the hash
  *
  * @returns {string}
  */
@@ -507,7 +508,7 @@ router.getHashUrl = function () {
 };
 
 /**
- * Get query params
+ * Get the query params
  *
  * @returns {object}
  */
@@ -516,7 +517,7 @@ router.getUrlQuery = function() {
 };
 
 /**
- * Get query params using history
+ * Get the query params using the history
  *
  * @returns {object}
  */
@@ -525,7 +526,7 @@ router.getHistoryUrlQuery = function() {
 };
 
 /**
- * Get query params using hash
+ * Get the query params using the hash
  *
  * @returns {object}
  */
@@ -534,7 +535,7 @@ router.getHashUrlQuery = function() {
 };
 
 /**
- * Create url by data
+ * Create the url
  *
  * @param {string|Object} state
  * @param {object} [params]
@@ -643,7 +644,7 @@ router.prepareStateQuery = function(state, query, args) {
 }
 
 /**
- * Merge list items as transition objects
+ * Create the state arguments
  * 
  * @param {object[]} list
  * @param {object} [args]
@@ -718,7 +719,7 @@ router.prepareStateHash = function(state, hash, args) {
 }
 
 /**
- * Remove all unnecessary slashes from an url
+ * Remove all unnecessary slashes from the url
  *
  * @param {string} url
  * @returns {string}
@@ -728,7 +729,7 @@ router.splitSlashes = function (url) {
 };
 
 /**
- * Get state url content
+ * Get the pattern info
  *
  * @param {string|Object} state
  * @param {string} url
@@ -768,7 +769,7 @@ router.getPatternContent = function (state, url) {
 };
 
 /**
- * Check the state is active now
+ * Check the state is active
  *
  * @param {string|Object} state
  * @param {boolean} includes
@@ -786,7 +787,7 @@ router.isActiveState = function(state, includes = false) {
 };
 
 /**
- * Check the current url includes a state
+ * Check the current url includes the state
  *
  * @param {string|Object} state
  * @returns {boolean}
@@ -796,7 +797,7 @@ router.inActiveState = function(state) {
 };
 
 /**
- * Get route component by level
+ * Get the route component by the level
  *
  * @param {number} level
  */
@@ -822,7 +823,7 @@ router.getRoute = function (level) {
 };
 
 /**
- * Get the first match
+ * Get the patterns array info
  *
  * @param {array} arr
  * @param {string} url
@@ -844,7 +845,7 @@ router.getArrayPatternContent = function (arr, url) {
 };
 
 /**
- * Get states by level
+ * Get the states by the level
  *
  * @param {number} level
  * @returns {Array}
@@ -882,7 +883,7 @@ router.reload = function(...args) {
 }
 
 /**
- * Isolate the function to not trigger router handlers inside
+ * Isolate the function
  *
  * @param {function} fn
  * @returns {*}
@@ -895,7 +896,7 @@ router.isolate = function (fn) {
 }
 
 /**
- * Change state
+ * Change the state
  * 
  * @param {object} [options]
  */
@@ -1007,7 +1008,7 @@ router.changeState = function (options = {}) {
 };
 
 /**
- * Deinit router
+ * Deinitialize the router
  */
 router.deinit = function () {
   window.removeEventListener('popstate', this.__onStateChangeHandler);

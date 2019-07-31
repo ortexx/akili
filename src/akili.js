@@ -37,7 +37,7 @@ import utils from './utils.js';
 import globals from './globals.js';
 
 /**
- * The framework object
+ * The framework main object
  * 
  * {@link https://akilijs.com/docs/getting-started}
  */
@@ -46,7 +46,7 @@ const Akili = {};
 Akili.__defaults = [];
 
 /**
- * Set the framework's default variables
+ * Set the default things
  */
 Akili.setDefaults = function () {
   this.options = {
@@ -75,10 +75,8 @@ Akili.setDefaults = function () {
   }
 
   globals.__target.utils = this.wrap(utils);
-
   this.components = {};
   this.services = {};
-
   this.Component = Component;
   this.EventEmitter = EventEmitter;
   this.Scope = Scope;
@@ -109,7 +107,7 @@ Akili.setDefaults = function () {
   this.services.store = store;
 
   this.define();
-  this.errorHandling();
+  this.handleErrors();
   this.isolateEvents();
   this.isolateArrayPrototype();
   this.isolateWindowFunctions(); 
@@ -120,7 +118,7 @@ Akili.setDefaults = function () {
 }
 
 /**
- * Define all default components
+ * Define the default components
  */
 Akili.define = function () {
   A.define();
@@ -145,7 +143,7 @@ Akili.define = function () {
 };
 
 /**
- * Set defaults
+ * Set the defaults
  * 
  * @param {function} fn 
  */
@@ -182,7 +180,7 @@ Akili.clearGlobals = function () {
 };
 
 /**
- * Join binding keys
+ * Join the binding keys
  *
  * @param {string[]} keys binding keys
  */
@@ -191,7 +189,7 @@ Akili.joinBindingKeys = function (keys) {
 };
 
 /**
- * Add scope to the scopes list
+ * Add the scope
  *
  * @param scope
  */
@@ -204,7 +202,7 @@ Akili.addScope = function (scope) {
 };
 
 /**
- * Get scope from the scopes list
+ * Get the scope
  *
  * @param {string} name - scope name
  * @returns {Scope}
@@ -214,7 +212,7 @@ Akili.getScope = function (name) {
 };
 
 /**
- * Delete scope from the scopes list
+ * Remove the scope
  *
  * @param {string} name - scope name
  */
@@ -228,7 +226,7 @@ Akili.removeScope = function (name) {
 };
 
 /**
- * Get all elements with attached Akili components
+ * Get all elements that is wrapped in the Akili component
  *
  * @param {Element} el
  * @param {boolean} [tree=true] - return array of the parents if true, closest parent if false
@@ -258,7 +256,7 @@ Akili.getAkiliParents = function (el, tree = true) {
 };
 
 /**
- * Set element inner html with content replacement
+ * Create the template
  *
  * @example
  * // returns "<i>Hello</i><b>World</b>"
@@ -276,7 +274,7 @@ Akili.setTemplate = function (el, template) {
 };
 
 /**
- * Generate unique scope name
+ * Generate the unique scope name
  *
  * @returns {string}
  */
@@ -316,7 +314,7 @@ Akili.isolate = function (fn) {
 };
 
 /**
- * Stop evaluation before the function and continue after
+ * Stop the evaluation inside the function
  *
  * @param {function} fn
  * @returns {*}
@@ -331,7 +329,7 @@ Akili.unevaluate = function (fn) {
 };
 
 /**
- * Evaluate only root properties
+ * Evaluate only the root properties
  *
  * @param {function} fn
  * @returns {*}
@@ -348,7 +346,7 @@ Akili.wrapping = function (fn) {
 }
 
 /**
- * Stop isolation before the function and continue after
+ * Stop the isolation inside the function
  *
  * @param {function} fn
  * @returns {*}
@@ -373,7 +371,7 @@ Akili.nextTick = function (fn) {
 };
 
 /**
- * Initialize element
+ * Initialize the element
  *
  * @param {Element} el
  * @param {object} [options={}]
@@ -473,7 +471,6 @@ Akili.compile = function (root, options = { recompile: false }) {
       nestedInitializing(child);
     }
   };
-
   
   nestedInitializing(root);
   let p = [];
@@ -496,7 +493,8 @@ Akili.compile = function (root, options = { recompile: false }) {
 };
 
 /**
- * Register the component or get it if fn is not passed
+ * Register the component.
+ * Or get it if the function is not passed
  *
  * @param {string} name
  * @param {Component} [fn]
@@ -526,7 +524,8 @@ Akili.removeComponent = function (name) {
 };
 
 /**
- * Register the selector alias or get it if component name is not passed
+ * Register the selector alias.
+ * Or get it if the component name is not passed
  *
  * @param {string} selector - DOM selector
  * @param {string} [componentName]
@@ -556,7 +555,7 @@ Akili.removeAlias = function (selector) {
 };
 
 /**
- * Isolate array prototype functions
+ * Isolate the array prototype functions
  */
 Akili.isolateArrayPrototype = function () {
   this.__window.Array = { prototype: {} };
@@ -585,7 +584,7 @@ Akili.isolateArrayPrototype = function () {
 };
 
 /**
- * Isolate some window functions
+ * Isolate the window functions
  */
 Akili.isolateWindowFunctions = function () {
   this.__window.setTimeout = setTimeout;
@@ -602,7 +601,7 @@ Akili.isolateWindowFunctions = function () {
 };
 
 /**
- * Isolate event listeners
+ * Isolate the event listeners
  */
 Akili.isolateEvents = function () {
   this.__window.Element = { prototype: {} };
@@ -672,7 +671,7 @@ Akili.isolateEvents = function () {
 };
 
 /**
- * Wrap the function callback to an isolate context
+ * Wrap the function callback with the isolation context
  *
  * @param {function} fn
  * @param {number|string|number[]|string[]} [pos="last"]
@@ -714,7 +713,7 @@ Akili.createCallbackIsolation = function (fn, pos = 'last') {
 };
 
 /**
- * Wrap objects/classes to isolate and unevaluate data
+ * Wrap the object/function to isolate and unevaluate data
  *
  * @param {object|function} obj
  * @param {object} [options] 
@@ -755,7 +754,7 @@ Akili.wrap = function (obj, options = {}) {
 };
 
 /**
- * Unwrap objects/classes
+ * Unwrap the object/function
  *
  * @param {object|function} obj
  */
@@ -764,7 +763,7 @@ Akili.unwrap = function (obj) {
 }
 
 /**
- * Isolate a function
+ * Isolate the function
  *
  * @param {function} fn
  * @param {object} [options] 
@@ -897,7 +896,7 @@ Akili.removeTag = function (tag, node) {
 }
 
 /**
- * Evaluate the tag node expressions
+ * Evaluate the tag expressions
  * 
  * @param {string} tag
  */
@@ -917,14 +916,14 @@ Akili.triggerTag = function (tag) {
 }
 
 /**
- * Error handling
+ * Handle the errors
  */
-Akili.errorHandling = function () {
+Akili.handleErrors = function () {
   window.addEventListener('error', this.__onError);
 };
 
 /**
- * Trigger an initialization status
+ * Trigger the initialization status
  *
  * @param {boolean} status
  */
@@ -976,7 +975,7 @@ Akili.init = function (root) {
 };
 
 /**
- * Initialize server-side rendering html
+ * Initialize the SSR html
  * 
  * @param {string} html
  */
@@ -997,7 +996,7 @@ Akili.initServerSideHtml = function (html) {
 }
 
 /**
- * Initialize server-side rendering request cache
+ * Initialize the SSR cache
  * 
  * @param {object} obj
  */
@@ -1015,14 +1014,14 @@ Akili.initServerSideRequestCache = function (obj) {
 }
 
 /**
- * Prepare server-side rendering html
+ * Prepare the SSR html
  */
 Akili.prepareServerSideHtml = function () {
   return this.__root.outerHTML;
 }
 
 /**
- * Prepare server-side rendering request cache
+ * Prepare the SSR cache
  */
 Akili.prepareServerSideRequestCache = function () {
   let cache = { __main: request.__cache };

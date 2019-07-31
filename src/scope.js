@@ -20,7 +20,8 @@ export default class Scope {
   }
 
   /**
-   * Set a scope value
+   * Set the scope value
+   * 
    * @param {string|string[]} keys
    * @param {*} value
    * @param {boolean} [strict=false] - without object copying

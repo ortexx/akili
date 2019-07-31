@@ -1,6 +1,5 @@
 /**
- * Class for working with events.
- * An instance of this class allows you to trigger custom javascript events.
+ * Class to work with events.
  * 
  * {@link https://akilijs.com/docs/events}
  */
@@ -15,7 +14,7 @@ export default class EventEmitter {
   /**
    * Trigger the event
    *
-   * @param {*} data - sending data. Will be in the event.detail
+   * @param {*} data
    * @param {object} [options]
    * @param {boolean} [force]
    * @returns {Promise}
@@ -49,7 +48,7 @@ export default class EventEmitter {
   }
 
   /**
-   * Prepere an event options
+   * Prepere the event options
    * 
    * @param {object} [options] 
    */
@@ -60,7 +59,7 @@ export default class EventEmitter {
   }
 
   /**
-   * Check event callback doesn't run recursive
+   * Check the event callback doesn't run recursively
    *
    * @returns {boolean}
    */
