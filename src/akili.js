@@ -605,6 +605,11 @@ Akili.isolateWindowFunctions = function () {
  */
 Akili.isolateEvents = function () {
   this.__window.Element = { prototype: {} };
+
+  if(window.AKILI_SSR) {
+    return;
+  }
+  
   this.__window.Element.prototype.addEventListener = Element.prototype.addEventListener;
   this.__window.Element.prototype.removeEventListener = Element.prototype.removeEventListener;
   this.__window.Element.prototype.remove = Element.prototype.remove;
