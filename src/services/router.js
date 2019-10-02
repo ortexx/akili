@@ -607,7 +607,15 @@ router.prepareStateArgs = function (state, params = {}, query = {}, hash = undef
  */
 router.prepareStateParams = function(state, params, args) {
   typeof state !== 'object' && (state = this.getState(state));
-  return this.createStateArgs(params, state.params, args);
+  const states = state.name.split('.');
+  params = Object.assign({}, params);
+
+  for(let i = states.length - 1; i >= 0; i--) {
+    const current = states.slice(0, states.length - i).join('.');
+    params = this.createStateObjectArgs(params, this.getState(current).params, args);
+  }
+
+  return params;
 }
 
 /**
@@ -619,16 +627,25 @@ router.prepareStateParams = function(state, params, args) {
  */
 router.prepareStateQuery = function(state, query, args) {  
   typeof state !== 'object' && (state = this.getState(state));
-  return this.createStateArgs(query, state.query, args);
+  const states = state.name.split('.');
+  query = Object.assign({}, query);
+
+  for(let i = states.length - 1; i >= 0; i--) {
+    const current = states.slice(0, states.length - i).join('.');
+    query = this.createStateObjectArgs(query, this.getState(current).query, args);
+  }
+
+  return query;
 }
 
 /**
  * Create the state arguments
  * 
- * @param {object[]} list
+ * @param {object} current
+ * @param {object} defaults
  * @param {object} [args]
  */
-router.createStateArgs = function (current, defaults, args = { params: {}, query: {} }) {
+router.createStateObjectArgs = function (current, defaults, args = { params: {}, query: {} }) {
   const all = Object.assign({}, current);
 
   for(let key in defaults) {
@@ -669,16 +686,37 @@ router.prepareStateHash = function(state, hash, args) {
   }
 
   typeof state !== 'object' && (state = this.getState(state));
+  const states = state.name.split('.');
 
-  if(typeof state.hash == 'function') {
-    return state.hash(args);
+  for(let i = states.length - 1; i >= 0; i--) {
+    const current = states.slice(0, states.length - i).join('.');
+    hash = this.createStateHashArgs(hash, this.getState(current).hash, args);
   }
-
-  if(hash === undefined) {
-    return state.hash;
-  }
-
+  
   return hash;
+}
+
+/**
+ * Create the state hash arguments
+ * 
+ * @param {string|null} current
+ * @param {string|null} defaults
+ * @param {object} [args]
+ */
+router.createStateHashArgs = function (current, defaults, args = { params: {}, query: {} }) {
+  if(current === null) {
+    return current;
+  }
+
+  if(typeof defaults == 'function') {
+    return defaults(args);
+  }
+
+  if(current === undefined) {
+    return defaults;
+  }
+
+  return current;
 }
 
 /**
