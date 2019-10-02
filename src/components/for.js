@@ -63,8 +63,10 @@ export default class For extends Component {
 
   removed() {
     delete this.html;
-    this.iterators = null;
-    this.iteratorEl = null; 
+    delete this.iterators;
+    delete this.iteratorEl; 
+    delete this.__iterator;
+    delete this.__value;
   }
 
   createIterator() {
@@ -127,8 +129,7 @@ export default class For extends Component {
       iterator.setValue(utils.compare(this.__hash, iterator.hash));
       this.__promises.push(Akili.compile(iterator.el, { 
         recompile: { 
-          checkChanges: true,
-          setBooleanAttributes: false
+          checkChanges: true
         } 
       }));
       return iterator;
@@ -152,7 +153,7 @@ export default class For extends Component {
       data = [];
     }
 
-    this.data = data;   
+    this.data = data;
     let index = 0;
     const children = [].slice.call(this.el.children); 
     this.iterators.sort((a, b) => children.indexOf(a.el) - children.indexOf(b.el));
@@ -248,11 +249,8 @@ export class Loop extends For {
 
   removed() {
     super.removed.apply(this, arguments);
-    this.for = null;
+    delete this.for;
     delete this.value;
-    delete this.key;
-    delete this.index;
-    delete this.hash;    
   }
 
   setIndex(target) {

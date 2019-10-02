@@ -46,7 +46,7 @@ export default class Component {
       keys.push(key);
       vars.push(variables[key]);
     }
-
+    
     return new Function(...keys, `${exps.join('; ')}`).apply(context, vars);
   }
 
@@ -156,9 +156,9 @@ export default class Component {
    * @returns {Promise}
    */
   __compile() {
-    let control = this.__controlAttributes || !this.__evaluateParent;
+    let control = this.__controlAttributes || !this.__evaluationParent;
     let p = Promise.resolve();
-    this.__attributeOf = control? this: this.__evaluateParent.__akili;
+    this.__attributeOf = control? this: this.__evaluationParent.__akili;
     
     if (!this.__recompiling || this.__compiling.newParent || this.__controlAttributes) {
       this.__interpolateAttributes(this.el, this.__attributeOf);
@@ -337,13 +337,13 @@ export default class Component {
     }
 
     let newParent = this.__parent !== parents[0];
-    let evaluateParent = null;
+    let evaluationParent = null;
 
     for (let i = 0, l = parents.length; i < l; i++) {
       let parent = parents[i];
 
       if (!parent.__akili.constructor.transparent) {
-        evaluateParent = parent;
+        evaluationParent = parent;
         break;
       }
     }
@@ -352,13 +352,13 @@ export default class Component {
     newParent && this.__detach();
 
     if (this.constructor.transparent) {
-      this.__evaluationComponent = evaluateParent.__akili;
+      this.__evaluationComponent = evaluationParent.__akili;
     }
 
-    this.__evaluateParent = evaluateParent;
+    this.__evaluationParent = evaluationParent;
     this.__parent = parents[0];
     this.__parents = parents;
-    this.scope.__parent = this.__evaluateParent.__akili.scope;
+    this.scope.__parent = this.__evaluationParent.__akili.scope;
     !this.__recompiling && this.__parent.__akili.__addChild(this.el);
     Object.setPrototypeOf(this.scope, this.__parent.__akili.__scope);
   }
@@ -962,7 +962,7 @@ export default class Component {
 
     if (node.__hasBindings && !options.saveBindings) {
       this.__unbindByNodes(node);
-      this.__unbindParentsByNodes(node);       
+      this.__unbindParentsByNodes(node);    
     }
 
     Akili.removeTag(node);    
@@ -2299,14 +2299,24 @@ export default class Component {
     this.removed();   
     nodes = nodes.concat(this.__detach({ saveBindings: true, deinitializeNodes: true }).concat(this.__empty({ saveBindings: true })));
     this.__clearStoreLinks();  
-    Akili.removeScope(this.__scope.__name);    
+    this.__scope.__remove();
+    delete this.__scope;
+    delete this.scope;
     this.el.remove();
-
+    delete this.el.__akili;
+    delete this.el;    
+    delete this.__parent;    
+    delete this.__attributeOf;
+    delete this.__evaluationComponent;
+    delete this.__evaluationParent;
+    
     if(!options.saveBindings) {
       this.__unbindByNodes(nodes);   
       this.__unbindParentsByNodes(nodes);
     }
-
+    
+    this.__parents && (this.__parents.length = 0);    
+    delete this.__parents;
     return nodes;
   }
 

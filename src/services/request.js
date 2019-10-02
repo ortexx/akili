@@ -407,13 +407,8 @@ export class Request {
 
 const request = new Request();
 
-/**
- * Set the default variables
- */
-request.setDefaults = function () {
-  this.__instances = {};
-  this.__cache = {};
-}
+request.__instances = {};
+request.__cache = {};
 
 /**
  * Add a new instance
@@ -421,7 +416,7 @@ request.setDefaults = function () {
  * @param {string} name
  * @param {Request} instance
  */
-request.addInstance = function(name, instance) {
+request.addInstance = function (name, instance) {
   this.__instances[name] = instance;
 };
 
@@ -430,17 +425,9 @@ request.addInstance = function(name, instance) {
  *
  * @param {string} name
  */
-request.removeInstance = function(name) {
+request.removeInstance = function (name) {
   delete this.__instances[name];
 };
-
-/**
- * Deinitialize the service
- */
-request.deinit = function() {
-  this.setDefaults();
-};
-
 
 Object.defineProperty(request, 'use', {
   get: () => {
@@ -450,4 +437,3 @@ Object.defineProperty(request, 'use', {
 
 request.Request = Request;
 export default request;
-request.setDefaults();

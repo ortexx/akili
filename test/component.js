@@ -25,7 +25,7 @@ describe('component.js', () => {
     describe('.__create()', () => {
       before(() => {
         component.__create();
-        parentComponent = component.__evaluateParent.__akili;
+        parentComponent = component.__evaluationParent.__akili;
       });
 
       it('should call created function', () => {
@@ -55,7 +55,7 @@ describe('component.js', () => {
         });
 
         it('should has evaluate parent', () => {
-          assert.strictEqual(component.__evaluateParent, elements.app);
+          assert.strictEqual(component.__evaluationParent, elements.app);
         });
       });
     });
@@ -132,11 +132,11 @@ describe('component.js', () => {
       });
 
       it('should create component attribute "parent"', () => {
-        assert.equal(component.attrs.parent, component.__evaluateParent.__akili.scope.homeAttr);
+        assert.equal(component.attrs.parent, component.__evaluationParent.__akili.scope.homeAttr);
       });
 
       it('should create component attribute "parentTwo"', () => {
-        assert.equal(component.attrs.parentTwo, component.__evaluateParent.__akili.scope.homeAttrTwo);
+        assert.equal(component.attrs.parentTwo, component.__evaluationParent.__akili.scope.homeAttrTwo);
       });
 
       it('should create component attribute "onAction"', () => {
@@ -536,7 +536,7 @@ describe('component.js', () => {
       });
 
       it('should has new evaluation parent', () => {
-        assert.strictEqual(component.__evaluateParent, elements.sectionEmpty);
+        assert.strictEqual(component.__evaluationParent, elements.sectionEmpty);
       });
 
       it('should has new scope proto', () => {

@@ -44,4 +44,16 @@ export default class Scope {
       strict && (this.__component.__disableProxyRedefining = false);
     });
   }
+
+  /**
+   * Remove the scope
+   * 
+   * @protected
+   */
+  __remove() {    
+    delete this.__el;
+    delete this.__component;
+    delete this.__parent;
+    Akili.removeScope(this.__name);
+  }
 }

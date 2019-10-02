@@ -43,79 +43,58 @@ import globals from './globals.js';
  */
 const Akili = {};
 
-Akili.__defaults = [];
+Akili.options = {
+  debug: true
+};
 
-/**
- * Set the default things
- */
-Akili.setDefaults = function () {
-  this.options = {
-    debug: true
-  };
-  
-  this.__init = null;
-  this.__cleared = false;
-  this.__components = {};
-  this.__aliases = {};
-  this.__scopes = {};
-  this.__storeLinks = {};
-  this.__window = {};
-  this.__tags = {};
-  this.__isolation = null;
-  this.__evaluation = null;
-  this.__wrapping = false;
-  this.__onError = () => this.triggerInit(false);
-  
-  this.htmlBooleanAttributes = [
-    'disabled', 'contenteditable', 'hidden'
-  ];
+Akili.__init = null;
+Akili.__root = null;
+Akili.__components = {};
+Akili.__aliases = {};
+Akili.__scopes = {};
+Akili.__storeLinks = {};
+Akili.__window = {};
+Akili.__tags = {};
+Akili.__isolation = null;
+Akili.__evaluation = null;
+Akili.__wrapping = false;  
+Akili.__rootOuterHTML = '';
+Akili.__onError = () => this.triggerInit(false);
 
-  for(let key in globals) {
-    delete globals[key];
-  }
+Akili.htmlBooleanAttributes = [
+  'disabled', 'contenteditable', 'hidden'
+];
 
-  globals.__target.utils = this.wrap(utils);
-  this.components = {};
-  this.services = {};
-  this.Component = Component;
-  this.EventEmitter = EventEmitter;
-  this.Scope = Scope;
-  this.utils = utils;
-  this.globals = globals;
-  this.components.A = A;
-  this.components.Audio = Audio;
-  this.components.Content = Content;
-  this.components.For = For;
-  this.components.Embed = Embed;
-  this.components.If = If;
-  this.components.Include = Include;
-  this.components.Input = Input;
-  this.components.Iframe = Iframe;
-  this.components.Image = Image;
-  this.components.Object = Objects;
-  this.components.Radio = Radio;
-  this.components.Route = Route;
-  this.components.Select = Select;
-  this.components.Source = Source;
-  this.components.Text = Text;
-  this.components.Textarea = Textarea;
-  this.components.Track = Track;
-  this.components.Url = Url;
-  this.components.Video = Video;
-  this.services.request = request;
-  this.services.router = router;
-  this.services.store = store;
-
-  this.define();
-  this.handleErrors();
-  this.isolateEvents();
-  this.isolateArrayPrototype();
-  this.isolateWindowFunctions(); 
-  
-  for(let i = 0, l = this.__defaults.length; i < l; i++) {
-    this.__defaults[i]();
-  }
-}
+Akili.components = {};
+Akili.services = {};
+Akili.Component = Component;
+Akili.EventEmitter = EventEmitter;
+Akili.Scope = Scope;
+Akili.utils = utils;
+Akili.globals = globals;
+Akili.components.A = A;
+Akili.components.Audio = Audio;
+Akili.components.Content = Content;
+Akili.components.For = For;
+Akili.components.Embed = Embed;
+Akili.components.If = If;
+Akili.components.Include = Include;
+Akili.components.Input = Input;
+Akili.components.Iframe = Iframe;
+Akili.components.Image = Image;
+Akili.components.Object = Objects;
+Akili.components.Radio = Radio;
+Akili.components.Route = Route;
+Akili.components.Select = Select;
+Akili.components.Source = Source;
+Akili.components.Text = Text;
+Akili.components.Textarea = Textarea;
+Akili.components.Track = Track;
+Akili.components.Url = Url;
+Akili.components.Video = Video;
+Akili.services.request = request;
+Akili.services.router = router;
+Akili.services.store = store;
 
 /**
  * Define the default components
@@ -143,21 +122,11 @@ Akili.define = function () {
 };
 
 /**
- * Set the defaults
- * 
- * @param {function} fn 
- */
-Akili.defaults = function (fn) {  
-  this.__defaults.push(fn);
-  fn();
-}
-
-/**
  * Clear the global context
  */
 Akili.clearGlobals = function () {
-  if(this.__cleared) {
-    return;
+  for(let key in globals) {
+    delete globals[key];
   }
 
   for (let key in this.__window.Element.prototype) {
@@ -176,7 +145,6 @@ Akili.clearGlobals = function () {
   window.setInterval = this.__window.setInterval;
   window.Promise = this.__window.Promise;
   window.removeEventListener('error', this.__onError);
-  this.__cleared = true;
 };
 
 /**
@@ -217,11 +185,6 @@ Akili.getScope = function (name) {
  * @param {string} name - scope name
  */
 Akili.removeScope = function (name) {
-  const scope = this.__scopes[name];
-  scope.__el = null;
-  scope.__component = null;
-  scope.__parent = null;
-  this.__scopes[name] = null;
   delete this.__scopes[name];
 };
 
@@ -601,6 +564,16 @@ Akili.isolateWindowFunctions = function () {
 };
 
 /**
+ * Isolate the globals
+ */
+Akili.isolateGlobals = function () {  
+  globals.__target.utils = this.wrap(utils); 
+  Akili.isolateEvents();
+  Akili.isolateArrayPrototype();
+  Akili.isolateWindowFunctions();
+};
+
+/**
  * Isolate the event listeners
  */
 Akili.isolateEvents = function () {
@@ -943,8 +916,9 @@ Akili.triggerInit = function (status) {
  * @param {Element} [root]
  * @returns {Promise}
  */
-Akili.init = function (root) {
+Akili.init = function (root) { 
   root = root || document.body;
+  this.__rootOuterHTML = root.outerHTML;
 
   if(!(root instanceof Element)) {
     throw new Error(`Root element must be an html element`);
@@ -962,7 +936,7 @@ Akili.init = function (root) {
   }
   else {
     window.AKILI_CLIENT = {
-      html: this.prepareServerSideHtml()      
+      html: this.prepareServerSideHtml()
     }
   }
   
@@ -978,6 +952,50 @@ Akili.init = function (root) {
     throw err;
   });
 };
+
+/**
+ * Deinitialize the application
+ */
+Akili.deinit = function () { 
+  this.__root && (this.__root.outerHTML = this.__rootOuterHTML);
+
+  for(let key in this.__scopes) {
+    const component = this.__scopes[key].__component;
+    component && component.remove();
+  }
+
+  this.__rootOuterHTML = '';
+  this.__init = null;
+  this.__root = null;
+  this.__scopes = {};
+  this.__storeLinks = {};
+  this.__tags = {};
+};
+
+/**
+ * Destroy the framework
+ */
+Akili.destroy = function () {
+  this.deinit();  
+  this.clearGlobals();
+
+  let storeKeys = Object.keys(store.__target);
+  
+  for(let i = 0, l = storeKeys.length; i < l; i++) {
+    delete store.__target[storeKeys[i]];
+  }
+
+  router.__init && router.deinit();
+  delete window.AKILI_SERVER;
+  delete window.AKILI_CLIENT;
+  delete window.AKILI_SSR;
+
+  for(let key in Akili) {
+    delete Akili[key];
+  }
+
+  delete window.Akili;
+}
 
 /**
  * Initialize the SSR html
@@ -1038,22 +1056,8 @@ Akili.prepareServerSideRequestCache = function () {
   return cache;
 }
 
-/**
- * Deinitialize the application
- */
-Akili.deinit = function () {
-  this.clearGlobals();
-  router.deinit();
-  request.deinit();
-  let storeKeys = Object.keys(store.__target);
-  
-  for(let i = 0, l = storeKeys.length; i < l; i++) {
-    delete store.__target[storeKeys[i]];
-  }
-
-  this.setDefaults();
-};
-
 export default Akili;
 window.Akili = Akili;
-Akili.setDefaults();
+Akili.define();
+Akili.handleErrors();
+Akili.isolateGlobals();

@@ -15,13 +15,6 @@ describe('akili.js', () => {
         scope = new Akili.Scope(name, document.createElement('div'));
       });
 
-      describe('.defaults()', () => {
-        it('should add the handler', () => {
-          Akili.defaults(() => Akili.__testDefaults? Akili.__testDefaults++: Akili.__testDefaults = 1);
-          assert.equal(Akili.__testDefaults, 1);
-        });
-      });
-
       describe('.addScope()', () => {
         it('should add new scope to the scopes list', () => {
           Akili.addScope(scope);

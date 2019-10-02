@@ -151,18 +151,13 @@ export class Transition {
  */
 const router = {};
 
-/**
- * Set the default values
- */
-router.setDefaults = function () {
-  this.baseUrl = "/";
-  this.states = [];
-  this.hashMode = true;
-  this.__redirects = 0;
-  this.__init = false;
-  this.__paramRegex = /(\/?:([\w\d-]+))/g;
-  this.__routeSelector = c => c instanceof Route;
-}
+router.baseUrl = "/";
+router.states = [];
+router.hashMode = true;
+router.__redirects = 0;
+router.__init = false;
+router.__paramRegex = /(\/?:([\w\d-]+))/g;
+router.__routeSelector = c => c instanceof Route;
 
 /**
  * Add a new state
@@ -579,7 +574,7 @@ router.createStateUrl = function (state, params = {}, query = {}, hash = undefin
 router.prepareStateArgs = function (state, params = {}, query = {}, hash = undefined, options = {}) {
   let args = { params, query, hash, options };
 
-  for(let i = 0; i < 999; i++) {
+  for(let i = 0; i < 27; i++) {
     const paramsTemp = this.prepareStateParams(state, params, args);
     const queryTemp = this.prepareStateQuery(state, query, args);
     const hashTemp = this.prepareStateHash(state, hash, args);
@@ -612,15 +607,7 @@ router.prepareStateArgs = function (state, params = {}, query = {}, hash = undef
  */
 router.prepareStateParams = function(state, params, args) {
   typeof state !== 'object' && (state = this.getState(state));
-  const list = [params];
-  const states = state.name.split('.');
-
-  for(let i = 0, l = states.length; i < l; i++) {
-    let current = states.slice(0, states.length - i).join('.');
-    list.push(this.getState(current).params);
-  }
-
-  return this.createStateArgs(list, args);
+  return this.createStateArgs(params, state.params, args);
 }
 
 /**
@@ -632,15 +619,7 @@ router.prepareStateParams = function(state, params, args) {
  */
 router.prepareStateQuery = function(state, query, args) {  
   typeof state !== 'object' && (state = this.getState(state));
-  const list = [query];
-  const states = state.name.split('.');  
-
-  for(let i = 0, l = states.length; i < l; i++) {
-    const current = states.slice(0, states.length - i).join('.');
-    list.push(this.getState(current).query);
-  }
- 
-  return this.createStateArgs(list, args);
+  return this.createStateArgs(query, state.query, args);
 }
 
 /**
@@ -649,35 +628,28 @@ router.prepareStateQuery = function(state, query, args) {
  * @param {object[]} list
  * @param {object} [args]
  */
-router.createStateArgs = function (list, args = { params: {}, query: {} }) {
-  const all = {};
-  const excluded = {};
+router.createStateArgs = function (current, defaults, args = { params: {}, query: {} }) {
+  const all = Object.assign({}, current);
 
-  for(let i = 0, l = list.length; i < l; i++) {
-    const obj = list[i];
-    const keys = Object.keys(obj);
- 
-    for(let k = 0, c = keys.length; k < c; k++) {
-      let key = keys[k];
-      let val = obj[key];
+  for(let key in defaults) {
+    let val = defaults[key];
 
-      if(excluded[key]) {
-        continue;
-      }
+    if(all[key] === null) {
+      continue;
+    }
 
-      val = typeof val == 'function'? val(args): val;
+    if(typeof val == 'function') {
+      all[key] = val(args);
+    }
 
-      if(val === undefined) {
-        continue;
-      }
-
-      if(val === null) {
-        delete all[key];
-        excluded[key] = true;
-        continue;
-      }
-
+    if(all[key] === undefined) {
       all[key] = val;
+    }
+  }
+
+  for(let key in all) {
+    if(all[key] === null) {
+      delete all[key];
     }
   }
 
@@ -697,22 +669,13 @@ router.prepareStateHash = function(state, hash, args) {
   }
 
   typeof state !== 'object' && (state = this.getState(state));
-  const states = state.name.split('.');
 
-  for(let i = 0, l = states.length; i < l; i++) {
-    const current = states.slice(0, states.length - i).join('.');
-    let val = this.getState(current).hash;
-    val = typeof val == 'function'? val(args): val;
+  if(typeof state.hash == 'function') {
+    return state.hash(args);
+  }
 
-    if(val === undefined) {
-      continue;
-    }
-
-    if(val === null) {
-      return null;
-    }
-
-    hash = val;
+  if(hash === undefined) {
+    return state.hash;
   }
 
   return hash;
@@ -1012,9 +975,8 @@ router.changeState = function (options = {}) {
  */
 router.deinit = function () {
   window.removeEventListener('popstate', this.__onStateChangeHandler);
-  router.setDefaults();
+  this.__init = false;
 };
 
 router.Transition = Transition;
 export default router;
-router.setDefaults();

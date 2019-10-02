@@ -514,7 +514,7 @@ utils.compare = function (a, b, options = {}) {
  * @returns {string}
  */
 utils.createHash = function(source) {
-  typeof source == 'object' && (source = JSON.stringify(source))
+  typeof source == 'object' && (source = JSON.stringify(source));
   typeof source != 'string' && (source = '⠀' + String(source));
   let hash = 0;
 
