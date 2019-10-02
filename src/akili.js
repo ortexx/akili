@@ -59,7 +59,7 @@ Akili.__isolation = null;
 Akili.__evaluation = null;
 Akili.__wrapping = false;  
 Akili.__rootOuterHTML = '';
-Akili.__onError = () => this.triggerInit(false);
+Akili.__onError = () => Akili.triggerInit(false);
 
 Akili.htmlBooleanAttributes = [
   'disabled', 'contenteditable', 'hidden'
@@ -568,9 +568,9 @@ Akili.isolateWindowFunctions = function () {
  */
 Akili.isolateGlobals = function () {  
   globals.__target.utils = this.wrap(utils); 
-  Akili.isolateEvents();
-  Akili.isolateArrayPrototype();
-  Akili.isolateWindowFunctions();
+  this.isolateEvents();
+  this.isolateArrayPrototype();
+  this.isolateWindowFunctions();
 };
 
 /**
