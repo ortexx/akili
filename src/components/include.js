@@ -45,10 +45,10 @@ export default class Include extends Component {
 
     return request.get(url, {
       cache: this.cache,
-      onStart: (xhr) => {
+      onStart: xhr => {
         this.connection = xhr;
       }
-    }).then((res) => {
+    }).then(res => {
       this.connection = null;
       this.empty();
       this.el.innerHTML = this.html;
@@ -57,7 +57,7 @@ export default class Include extends Component {
       return Akili.compile(this.el, { recompile: true }).then(() => {
         this.attrs.onLoad.trigger(undefined, { bubbles: false });
       });
-    }).catch((err) => {
+    }).catch(err => {
       this.attrs.onError.trigger(err, { bubbles: false });
       throw err;
     });

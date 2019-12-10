@@ -101,55 +101,55 @@ describe('request.js', () => {
   describe('Request', () => {
     describe('.query()', () => {
       it('should make query request', () => {
-        return request.query({ url: 'ping'}).then((res) => {
+        return request.query({ url: 'ping'}).then(res => {
           assert.equal(res.data, 'ok');
         });
       });
 
-      it('should get the bad response', (done) => {
+      it('should get the bad response', done => {
         request.query({ url: 'non-existent'}).then(() => {
           done(new Error('must be an error response'))
         }).catch(() => done());
       });
 
-      it('should handle bad status pattern', (done) => {
+      it('should handle bad status pattern', done => {
         request.query({ url: 'status404'}).then(() => {
           done(new Error('must be an error response'))
         }).catch(() => done());
       });      
 
       it('should make GET request', () => {
-        return request.get('get').then((res) => {
+        return request.get('get').then(res => {
           assert.equal(res.data, 'ok');
         });
       });
 
       it('should make POST request', () => {
-        return request.post('post').then((res) => {
+        return request.post('post').then(res => {
           assert.equal(res.data, 'ok');
         });
       });
 
       it('should make PUT request', () => {
-        return request.put('put').then((res) => {
+        return request.put('put').then(res => {
           assert.equal(res.data, 'ok');
         });
       });
 
       it('should make DELETE request', () => {
-        return request.delete('delete').then((res) => {
+        return request.delete('delete').then(res => {
           assert.equal(res.data, 'ok');
         });
       });
 
       it('should make PATCH request', () => {
-        return request.patch('patch').then((res) => {
+        return request.patch('patch').then(res => {
           assert.equal(res.data, 'ok');
         });
       });
 
       it('should make HEAD request', () => {
-        return request.head('head').then((res) => {
+        return request.head('head').then(res => {
           assert.equal(res.data, 'ok');
         });
       });
@@ -160,7 +160,7 @@ describe('request.js', () => {
               id: 1 
             },
             onProgress: () => {}
-          }).then((res) => {
+          }).then(res => {
           assert.equal(JSON.stringify(res.data), JSON.stringify({ success: true }));
         });
       });
@@ -172,26 +172,26 @@ describe('request.js', () => {
             file: new Blob([1, 0]),
             date: new Date()
           } 
-        }).then((res) => {
+        }).then(res => {
           assert.equal(res.data, 'ok');
         });
       });
 
       it('should set "responseType" option', () => {
-        return request.get('ping', { responseType: 'json' }).then((res) => {
+        return request.get('ping', { responseType: 'json' }).then(res => {
           assert.equal(res.responseType, 'json');
         });
       });
 
       it('should set "withCredentials" option', () => {
-        return request.get('ping', { withCredentials: true }).then((res) => {
+        return request.get('ping', { withCredentials: true }).then(res => {
           assert.isOk(res.withCredentials);
         });
       });
 
       it('should create cache', () => {
-        return request.get('ping', { cache: 1000 }).then((res) => {
-          return request.get('ping', { cache: true }).then((result) => {
+        return request.get('ping', { cache: 1000 }).then(res => {
+          return request.get('ping', { cache: true }).then(result => {
             assert.equal(JSON.stringify(res), JSON.stringify(result));
           });
         });

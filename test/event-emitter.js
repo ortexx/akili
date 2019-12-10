@@ -62,7 +62,7 @@ describe('event-emitter.js', () => {
     before(() => {
       el = elements.app;
       emitter = new EventEmitter('event', { __component: el.__akili }, el, el.__akili);
-      fn = (e) => {
+      fn = e => {
         counter++;
         counter == 1 && assert.equal(e.detail, 1, 'check detail');
         counter > 1 &&  assert.instanceOf(e, Event, 'check event instance');

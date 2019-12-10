@@ -221,7 +221,7 @@ export class Request {
       return '';
     }
 
-    return Object.keys(obj).map((k) => {
+    return Object.keys(obj).map(k => {
       let ks = encodeURIComponent(k);
 
       if (Array.isArray(obj[k])) {
@@ -230,7 +230,7 @@ export class Request {
       }
       else if (obj[k] && typeof obj[k] === 'object') {
         let opt = [];
-        Object.keys(obj[k]).map((key) => opt.push(ks + `[${key}]` + eq + encodeURIComponent(obj[k][key])));
+        Object.keys(obj[k]).map(key => opt.push(ks + `[${key}]` + eq + encodeURIComponent(obj[k][key])));
         return opt.join(sep);
       }
       else {

@@ -50,10 +50,15 @@ export default class Scope {
    * 
    * @protected
    */
-  __remove() {    
-    delete this.__el;
-    delete this.__component;
-    delete this.__parent;
+  __remove() {
     Akili.removeScope(this.__name);
+
+    for(let key in this) {
+      if(!this.hasOwnProperty(key)) {
+        continue;
+      }
+
+      delete this[key];
+    }
   }
 }

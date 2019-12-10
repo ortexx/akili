@@ -28,7 +28,7 @@ export default class Route extends Component {
   setTransition(transition, load = true) {
     let state = transition.path.state;
 
-    const getParentScopeTransition = (path) => {
+    const getParentScopeTransition = path => {
       if (path.parent) {
         if (path.parent.component) {
           return path.parent.component.__scope.__transition.path;
@@ -40,7 +40,7 @@ export default class Route extends Component {
       return null;
     }
 
-    const compile = (html) => { 
+    const compile = html => { 
       this.empty();  
       let name = 'component';
 

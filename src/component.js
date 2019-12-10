@@ -20,7 +20,7 @@ export default class Component {
   static transparent = false;
   static template = '';
   static templateUrl = '';
-  static scope = null;
+  static scope = null;  
 
   /**
    * Define the component
@@ -189,7 +189,7 @@ export default class Component {
       });
 
       if (this.constructor.templateUrl) {
-        p = request.get(this.constructor.templateUrl, { cache: this.constructor.templateCache }).then((res) => {
+        p = request.get(this.constructor.templateUrl, { cache: this.constructor.templateCache }).then(res => {
           this.el.innerHTML = this.__content;
           Akili.setTemplate(this.el, res.data);
           delete this.__content;          
@@ -282,7 +282,7 @@ export default class Component {
   __setBooleanAttributes() {
     this.booleanAttributes = [].concat(Akili.htmlBooleanAttributes, this.constructor.booleanAttributes);
 
-    const setAttr = (el) => {
+    const setAttr = el => {
       for (let i = 0, attrs = el.attributes, l = attrs.length; i < l; i++) {
         let node = attrs[i];
 
@@ -476,7 +476,7 @@ export default class Component {
     let attributeName = (node instanceof window.Attr)? node.name.toLowerCase(): '';        
     let messages = [ err.message, node.__expression.trim() ];
     attributeName && messages.push(`[attribute ${attributeName}]`);
-    messages = messages.concat([ `[element ${elementName}]`, `[component ${componentName}]` ]);
+    messages = messages.concat([`[element ${elementName}]`, `[component ${componentName}]`]);
     return `Expression error: ` + messages.join('\n\tat ');
   }
 
@@ -493,7 +493,7 @@ export default class Component {
     let expression;
     const evalComponent = node.__attributeOf || node.__component;
 
-    if (node.__component.parents((com) => com.__prevent).length) {
+    if (node.__component.parents(com => com.__prevent).length) {
       return { res: node.__expression };
     }
 
@@ -632,7 +632,7 @@ export default class Component {
 
     let propsLength = props.length;
 
-    const elEvaluate = (element) => {
+    const elEvaluate = element => {
       const component = element.__akili;     
 
       for (let m = 0; m < propsLength; m++) {
@@ -682,7 +682,7 @@ export default class Component {
       return component;
     };
 
-    const evaluate = (elements) => {
+    const evaluate = elements => {
       for (let i = 0, l = elements.length; i < l; i++) {
         let component = elEvaluate(elements[i]);
         evaluate(component.__children);
@@ -882,7 +882,7 @@ export default class Component {
       const emitter = new Akili.EventEmitter(eventName, node, el, component);
 
       if (node.__hasBindings) {
-        emitter.bind((e) => component.__evaluateEvent(node, el, e));
+        emitter.bind(e => component.__evaluateEvent(node, el, e));
       }
 
       node.__event = emitter;
@@ -960,11 +960,11 @@ export default class Component {
       node.__event.remove();
     }
 
-    if (node.__hasBindings && !options.saveBindings) {
-      this.__unbindByNodes(node);
+    if (node.__hasBindings && !options.saveBindings) { 
+      this.__unbindByNodes(node);     
       this.__unbindParentsByNodes(node);    
     }
-
+    
     Akili.removeTag(node);    
     delete node.__name;
     delete node.__hasBindings;
@@ -977,7 +977,7 @@ export default class Component {
     delete node.__event;    
     delete node.__initialized;
     delete node.__component;
-    delete node.__element;
+    delete node.__element;    
   }
 
   /**
@@ -1739,8 +1739,8 @@ export default class Component {
       keys = [keys];
     }
 
-    let keyString = Akili.joinBindingKeys(keys);
-    let arr = this.__attrLinks[keyString];
+    const keyString = Akili.joinBindingKeys(keys);
+    const arr = this.__attrLinks[keyString];
 
     if (!arr.length) {
       return;
@@ -1773,7 +1773,7 @@ export default class Component {
       return;
     }
 
-    let links = this.__attrLinks[name];
+    const links = this.__attrLinks[name];
     
     for (let i = links.length - 1; i >= 0; i--) {
       let res = links[i];
@@ -1906,7 +1906,7 @@ export default class Component {
    * @protected
    */
   __bindNode(bind, realComponent, keys, parents, value, notBinding = false, evaluated = false) {
-    let parentKeysString = Akili.joinBindingKeys(parents);
+    const parentKeysString = Akili.joinBindingKeys(parents);
     let component = this;
 
     if (bind.length && !notBinding) {
@@ -1970,7 +1970,7 @@ export default class Component {
 
     let data = [];
 
-    const collect = (obj) => {
+    const collect = obj => {
       data = data.concat(obj.__data || []);
 
       for (let key in obj) {
@@ -1995,14 +1995,14 @@ export default class Component {
    * @protected
    */
   __getBoundNode(keys, node) {
-    let bind =  utils.getPropertyByKeys(keys, this.__bindings);
+    const bind =  utils.getPropertyByKeys(keys, this.__bindings);
 
     if (!bind || !bind.__data || !bind.__data.length) {
       return null;
     }
 
     for (let i = 0, l = bind.__data.length; i < l; i++) {
-      let data = bind.__data[i];
+      const data = bind.__data[i];
 
       if (data.node === node) {
         return data;
@@ -2023,8 +2023,8 @@ export default class Component {
    * @protected
    */
   __setNodeProperty(node, keys, value, evaluated = false) {
-    let prop = this.__getNodeProperty(node, keys);    
-    let hash = utils.createHash(value);
+    const prop = this.__getNodeProperty(node, keys);    
+    const hash = utils.createHash(value);
 
     if (prop) {
       let res = node.__component.__compareNodePropertyValue(prop, value);
@@ -2065,7 +2065,7 @@ export default class Component {
    * @protected
    */
   __deleteNodeProperty(node, keys) {
-    let hash = `${this.__scope.__name}.${Akili.joinBindingKeys(keys)}`;
+    const hash = `${this.__scope.__name}.${Akili.joinBindingKeys(keys)}`;
     delete node.__properties[hash];
   }
 
@@ -2079,7 +2079,7 @@ export default class Component {
   __mapNodes(fn, options = {}) {
     options = { rootAttrs: true, attrs: true, node: true, el: true, ...options };
 
-    const find = (el) => {
+    const find = el => {
       if(!el) {
         return;
       }
@@ -2164,7 +2164,7 @@ export default class Component {
       this.__deleteNodeProperty(node, keys);
     }
 
-    utils.deletePropertyByKeys(keys, this.__bindings, (value) => {
+    utils.deletePropertyByKeys(keys, this.__bindings, value => {
       if (Object.keys(value).length > 1) {
         value.__data = [];
         return false;
@@ -2249,10 +2249,6 @@ export default class Component {
         const link = arr[i];
   
         if (link.component === this) {
-          for(let k in link) {
-            delete link[k]
-          }
-
           arr.splice(i, 1);
         }
       }
@@ -2261,6 +2257,40 @@ export default class Component {
         delete links[key];
       }
     }
+  }
+
+  /**
+   * Remove the component without the children removing
+   *
+   * @param {object} [options]
+   * @returns {Node[]}
+   * @protected
+   */
+  __remove(options = {}) {
+    this.attrs.onRemoved && this.attrs.onRemoved.trigger(undefined, { bubbles: false }); 
+    this.removed();
+    const detachNodes = this.__detach({ saveBindings: true, deinitializeNodes: true });
+    const nodes = [].concat(detachNodes, this.__empty({ saveBindings: true })); 
+    this.__unbindByNodes(detachNodes);
+    !options.saveBindings && this.__unbindParentsByNodes(nodes);    
+    this.__clearStoreLinks();  
+    this.__scope.__remove();
+    delete this.__scope;
+    delete this.scope; 
+    this.el.remove();
+    delete this.el.__akili;
+    delete this.el;    
+    delete this.__parent;    
+    delete this.__attributeOf;
+    delete this.__evaluationComponent;
+    delete this.__evaluationParent;   
+    delete this.__parents;
+    delete this.__bindings;
+    delete this.__attrLinks;
+    delete this.__storeLinks;
+    delete this.__attrs;
+    delete this.attrs;
+    return nodes;
   }
 
   /**
@@ -2273,50 +2303,12 @@ export default class Component {
   __removeChildren(options = {}) {
     let nodes = [];
 
-    const remove = (children) => {
-      for (let i = 0; i < children.length; i++) {
-        let child = children[i];
-        remove(child.__akili.__children);
-        nodes = nodes.concat(child.__akili.__remove(options));
-        i--;
-      }
-    };
-
-    remove(this.__children);
-    return nodes;
-  }
-
-  /**
-   * Remove the component without the children removing
-   *
-   * @param {object} [options]
-   * @returns {Node[]}
-   * @protected
-   */
-  __remove(options = {}) { 
-    let nodes = [];
-    this.attrs.onRemoved && this.attrs.onRemoved.trigger(undefined, { bubbles: false }); 
-    this.removed();   
-    nodes = nodes.concat(this.__detach({ saveBindings: true, deinitializeNodes: true }).concat(this.__empty({ saveBindings: true })));
-    this.__clearStoreLinks();  
-    this.__scope.__remove();
-    delete this.__scope;
-    delete this.scope;
-    this.el.remove();
-    delete this.el.__akili;
-    delete this.el;    
-    delete this.__parent;    
-    delete this.__attributeOf;
-    delete this.__evaluationComponent;
-    delete this.__evaluationParent;
-    
-    if(!options.saveBindings) {
-      this.__unbindByNodes(nodes);   
-      this.__unbindParentsByNodes(nodes);
+    for (let i = 0; i < this.__children.length; i++) {
+      let child = this.__children[i];
+      nodes = nodes.concat(child.__akili.__remove(options));
+      i--;
     }
-    
-    this.__parents && (this.__parents.length = 0);    
-    delete this.__parents;
+
     return nodes;
   }
 
@@ -2340,10 +2332,7 @@ export default class Component {
       }
     }
 
-    if(!options.saveBindings) {
-      this.__unbindParentsByNodes(nodes);
-    }
-
+    !options.saveBindings && this.__unbindParentsByNodes(nodes);
     return nodes;
   }
 
@@ -2371,11 +2360,9 @@ export default class Component {
       nodes.push(node);
     }, { rootAttrs: false });
 
-    if(!options.saveBindings) {
-      this.__unbindByNodes(nodes);
-      this.__unbindParentsByNodes(nodes);
-    }
+    this.__unbindByNodes(nodes);
 
+    !options.saveBindings && this.__unbindParentsByNodes(nodes);
     this.el.innerHTML = '';
     return nodes;
   }
@@ -2397,7 +2384,7 @@ export default class Component {
       levels = [levels];
     }
 
-    const find = (parent) => {
+    const find = parent => {
       if (!parent) {
         return;
       }
@@ -2438,7 +2425,7 @@ export default class Component {
       levels = [levels];
     }
 
-    const find = (children) => {
+    const find = children => {
       for (let i = 0, l = children.length; i < l; i++) {
         let child = children[i];
 
@@ -2733,4 +2720,8 @@ export default class Component {
   recompiled() {}
   resolved() {}
   removed() {}
+
+  get transition() {
+    return this.__scope.__transition || null;
+  }
 }

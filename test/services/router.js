@@ -13,7 +13,7 @@ class RouterComponent extends Component {
 describe('router.js', () => {
   describe('router', () => {
     function onStateChange(callback, event = 'popstate') {
-      const fn = (e) => {
+      const fn = e => {
         callback(e);
         window.removeEventListener(event, fn);
       };
@@ -78,10 +78,10 @@ describe('router.js', () => {
     describe('.add()', () => {
       it('should add new state', () => {
         router.add('x', '/x/:id', { 
-          params: { id: (args) => args.params.id || 4 }, 
-          query: { z: (args) => args.query.z || 3 } 
+          params: { id: args => args.params.id || 4 }, 
+          query: { z: args => args.query.z || 3 } 
         });
-        routeOptions.forEach((route) => router.add(route));
+        routeOptions.forEach(route => router.add(route));
         assert.equal(router.states[0].name, 'x');
       });
 
@@ -201,7 +201,7 @@ describe('router.js', () => {
     });
 
     describe('.back()', () => {
-      it('should go back', (done) => {
+      it('should go back', done => {
         onStateChange(() => {
           assert.equal(location.href, indexHref);
           done();
@@ -212,7 +212,7 @@ describe('router.js', () => {
     });
 
     describe('.forward()', () => {
-      it('should go forward', (done) => {
+      it('should go forward', done => {
         onStateChange(() => {
           assert.equal(location.pathname + location.search, '/x/1?z=2');
           done();
@@ -223,7 +223,7 @@ describe('router.js', () => {
     });
 
     describe('.go()', () => {
-      it('should go 1 step back', (done) => {
+      it('should go 1 step back', done => {
         onStateChange(() => {
           assert.equal(location.href, indexHref);
           done();
@@ -255,7 +255,7 @@ describe('router.js', () => {
     });
 
     describe('Transition.prototype.redirect()', () => {
-      it('should redirect', (done) => {
+      it('should redirect', done => {
         onStateChange(() => {
           assert.equal(location.pathname + location.search, '/4');
           done();
@@ -266,7 +266,7 @@ describe('router.js', () => {
     });
 
     describe('Transition.prototype.reload()', () => {
-      it('should redirect', (done) => {
+      it('should redirect', done => {
         onStateChange(() => {
           assert.equal(location.pathname + location.search, '/3?type=4');
           done();
@@ -277,7 +277,7 @@ describe('router.js', () => {
     });
 
     describe('.reload()', () => {
-      it('should redirect', (done) => {
+      it('should redirect', done => {
         onStateChange(() => {
           assert.equal(location.pathname + location.search, '/3?type=4&z=1');
           done();
@@ -288,7 +288,7 @@ describe('router.js', () => {
     });
 
     describe('wrong url', () => {
-      it('should set the default url', (done) => {   
+      it('should set the default url', done => {   
         router.defaultUrl = '/3';  
 
         onStateChange(() => {

@@ -38,7 +38,7 @@ export default class A extends Component {
   }
 
   compiled() {
-    this.el.addEventListener('click', (e) => {
+    this.el.addEventListener('click', e => {
       e.preventDefault();
 
       if (this.isUrl) {

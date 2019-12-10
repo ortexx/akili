@@ -18,7 +18,7 @@ export default class All extends Component {
         on-compiled="\${ this.compiled = true }"
         on-recompiled="\${ this.recompiled = true }"
         on-resolved="\${ this.resolved = true }"
-        on-removed="\${ this.removed = true }"
+        on-removed="\${ this.__component.checkRemovedEvent = true }"
       >
         location link
       </a>

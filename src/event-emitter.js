@@ -95,10 +95,9 @@ export default class EventEmitter {
   remove() {
     this.unbind();
     delete this.name;
-    delete this.name;
-    this.node = null;
-    this.component = null;
-    this.el = null;
+    delete this.node;
+    delete this.component
+    delete this.el;
     this.__removed = true;
   }
 }

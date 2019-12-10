@@ -20,7 +20,7 @@ describe('include.js', () => {
     });
 
     describe('.getTemplate()', () => {
-      it('should not set wrong template', (done) => {
+      it('should not set wrong template', done => {
         component.setTemplate('undefined').then(() => {
           done(new Error('Must throw an exception'));
         }).catch(() => done());

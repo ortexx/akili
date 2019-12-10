@@ -62,6 +62,8 @@ export default class For extends Component {
   }
 
   removed() {
+    super.removed.apply(this, arguments);
+    this.iteratorEl && this.iteratorEl.remove();
     delete this.html;
     delete this.iterators;
     delete this.iteratorEl; 
@@ -166,7 +168,7 @@ export default class For extends Component {
       }
     }
     else {
-      let keys = Object.keys(data);
+      const keys = Object.keys(data);
 
       for (let l = keys.length; index < l; index++) {
         let key = keys[index];

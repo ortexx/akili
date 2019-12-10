@@ -16,8 +16,8 @@ export class Transition {
     this.path = null;
     this.routes = [];
     this.states = {};
-    this.__cancelled = false;
-    this.__finised = false;
+    this.__cancelled = false;    
+    this.__finished = false;
   }
 
   /**
@@ -140,7 +140,8 @@ export class Transition {
    * Finish the transition
    */
   finish() {
-    this.__finised = true;
+    this.__finished = true;
+    delete this.previous;    
   }
 }
 
@@ -309,13 +310,13 @@ router.init = function (defaultUrl = '', hashMode = true) {
   window.history.pushState = function() {
     let res = oldPushState.apply(this, arguments);
     // eslint-disable-next-line no-console
-    router.changeState().catch((err) => console.error(err));
+    router.changeState().catch(err => console.error(err));
     return res;
   };
 
   this.__onStateChangeHandler = () => {
     // eslint-disable-next-line no-console
-    this.changeState().catch((err) => console.error(err));
+    this.changeState().catch(err => console.error(err));
   };
 
   this.defaultUrl = defaultUrl;
@@ -805,7 +806,7 @@ router.inActiveState = function(state) {
 router.getRoute = function (level) {
   let i = 0;
 
-  const find = (el) => {
+  const find = el => {
     let route = el.child(this.__routeSelector);
 
     if (!route) {
@@ -916,7 +917,7 @@ router.changeState = function (options = {}) {
   
   window.dispatchEvent(new CustomEvent('state-change', { detail: transition }));
 
-  const next = (states) => {    
+  const next = states => {    
     if (!states.length) {
       return Promise.resolve();
     }
@@ -953,9 +954,9 @@ router.changeState = function (options = {}) {
       isDifferent = transition.isRouteChanged(transition.path);
     }
        
-    let load = isDifferent && options.reload !== false;
+    let load = isDifferent && options.reload !== false;    
 
-    return Promise.resolve(load? state.handler(transition): transition.path.data).then((data) => {       
+    return Promise.resolve(load? state.handler(transition): transition.path.data).then(data => {        
       transition.path.data = data;
       state.title && (document.title = typeof state.title == 'function'? state.title(transition): state.title);
 

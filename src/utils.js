@@ -386,7 +386,7 @@ utils.copy = function(value, options = {}) {
 
   options = { nested: true, enumerable: true, plain: false, ...options };
 
-  const next = (obj) => {
+  const next = obj => {
     if(options.plain && !this.isPlainObject(obj)) {
       return obj;
     }
@@ -466,7 +466,7 @@ utils.compare = function (a, b, options = {}) {
 
     options = { enumerable: true, ignoreUndefined: true, ...options };
 
-    const clearUndefined = (val) => {
+    const clearUndefined = val => {
       let obj = Array.isArray(val)? []: {};
       let keys = !options.enumerable? Object.getOwnPropertyNames(): Object.keys(val);
 
@@ -755,7 +755,7 @@ utils.deletePropertyByKeys = function(keys, object, fn) {
  */
 
 utils.getEnumerablePropertyTarget = function(target, key) {
-  const check = (obj) => {
+  const check = obj => {
     if (obj.propertyIsEnumerable(key)) {
       return obj;
     }
@@ -780,7 +780,7 @@ utils.getEnumerablePropertyTarget = function(target, key) {
  * @returns {object}
  */
 utils.getOwnPropertyTarget = function(target, key) {
-  const check = (obj) => {
+  const check = obj => {
     if (obj.hasOwnProperty(key)) {
       return obj;
     }

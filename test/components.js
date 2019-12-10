@@ -95,7 +95,7 @@ describe('components/', () => {
   });
 
   describe('Include', () => {
-    it('should load a template', (done) => {
+    it('should load a template', done => {
       let include = document.createElement('include');
 
       include.setAttribute('url', 'include.html');
@@ -125,7 +125,7 @@ describe('components/', () => {
         assert.equal(input.el.value, '1');
       });
 
-      it('should change scope input value with debounce', (done) => {
+      it('should change scope input value with debounce', done => {
         const fn = () => {
           assert.equal(component.scope.cInputValue, '21');
           input.el.removeEventListener('debounce', fn);
@@ -310,7 +310,7 @@ describe('components/', () => {
 
   describe('Route, A', () => {
     function onStateChange(callback) {
-      let fn = (e) => {
+      let fn = e => {
         window.removeEventListener('state-changed', fn);
         callback(e);
       };
@@ -318,7 +318,7 @@ describe('components/', () => {
       window.addEventListener('state-changed', fn);
     }
 
-    it('should set the default url', (done) => {
+    it('should set the default url', done => {
       onStateChange(() => {
         assert.equal(location.pathname + location.search, '/3');
         done();
@@ -347,7 +347,7 @@ describe('components/', () => {
         route = component.child('route');
       });
 
-      it('should change state by click', (done) => {
+      it('should change state by click', done => {
         onStateChange(() => {
           assert.equal(location.pathname, '/1', 'check url');
           assert.equal(route.el.querySelector('x').innerHTML, '1', 'check html');
@@ -357,7 +357,7 @@ describe('components/', () => {
         component.child('a[state]').el.click();
       });
 
-      it('should change to 1-1', (done) => {
+      it('should change to 1-1', done => {
         onStateChange(() => {
           assert.equal(route.el.querySelector('y').innerHTML, '1-1');
           done();
@@ -365,14 +365,14 @@ describe('components/', () => {
 
         let state = router.getState('1.1');
 
-        state.handler = (transition) => {
+        state.handler = transition => {
           assert.equal(transition.path.state.name, '1.1', 'check transition');
         };
 
         router.state('1.1');
       });
 
-      it('should change to 1-2', (done) => {
+      it('should change to 1-2', done => {
         onStateChange(() => {
           assert.equal(route.el.querySelector('z').innerHTML, '1-2');
           done();
@@ -381,7 +381,7 @@ describe('components/', () => {
         router.state('1.2');
       });
 
-      it('should change to 2', (done) => {
+      it('should change to 2', done => {
         onStateChange(() => {
           assert.equal(route.el.querySelector('w').innerHTML, '2');
           done();
@@ -398,10 +398,9 @@ describe('components/', () => {
       assert.isTrue(a.scope.compiled, 'on-compiled');
       assert.isTrue(a.scope.resolved, 'on-resolved');
       Akili.compile(a.el, { recompile: true });
-      assert.isTrue(a.scope.recompiled, 'on-recompiled');  
-      const scope = a.scope;
+      assert.isTrue(a.scope.recompiled, 'on-recompiled'); 
       a.remove();
-      assert.isTrue(scope.removed, 'on-removed');
+      assert.isTrue(a.checkRemovedEvent, 'on-removed');
     });
   });
 });

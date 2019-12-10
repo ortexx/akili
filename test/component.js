@@ -528,6 +528,18 @@ describe('component.js', () => {
       });
     });
 
+    describe('.transition()', () => {
+      it('should return null', () => {       
+        assert.isNull(component.transition);
+      });
+
+      it('should return the right scope transition', () => {      
+        component.__scope.__transition = {};
+        assert.strictEqual(component.transition, component.__scope.__transition);
+        delete component.__scope.__transition;
+      });
+    });
+
     describe('.appendTo()', () => {
       it('should change parent element', () => {
         component.appendTo(elements.sectionEmpty);
@@ -699,59 +711,6 @@ describe('component.js', () => {
       });
     });
 
-    describe('call the evaluation error', () => {
-      it('should be an error', () => {
-        assert.throws(() => {
-          component.__scope.data = false;
-          Akili.compile(component.el, { recompile: true });
-        });
-      });
-    });
-
-    describe('.empty()', () => {
-      before(() => {
-        component.empty();
-      });
-
-      it('should clear html', () => {
-        assert.isNotOk(component.el.innerHTML);
-      });
-
-      it('should remove bindings', () => {
-        assert.isNotOk(Object.keys(component.__bindings).length);
-      });
-    });
-
-    describe('.remove()', () => {
-      let el;
-
-      before(() => {
-        el = component.el;
-        component.__storeByFunction('store', () => {});
-        component.remove();
-      });
-
-      it('should call removed function', () => {
-        assert.isOk(component.wasRemoved);
-      });
-
-      it('should be deleted from the parent element', () => {
-        assert.isNotOk(parentComponent.el.querySelector('home'));
-      });
-
-      it('should remove parent bindings', () => {
-        assert.isNotOk(Object.keys(parentComponent.__bindings).length);
-      });
-
-      it('should remove all store links', () => {
-        assert.doesNotHaveAllKeys(Akili.__storeLinks, ['store']);
-      });
-
-      it('should remove all children', () => {
-        assert.isEmpty(el.innerHTML);
-      });
-    });
-
     describe('attributes manipulation', () => {
       let all, attr, fn;
       class TestAttr extends Akili.Component {
@@ -822,7 +781,60 @@ describe('component.js', () => {
           assert.doesNotHaveAllKeys(attr.__attrLinks, ['test', '*']);
         });
       }); 
-    });  
+    });
+
+    describe('call the evaluation error', () => {
+      it('should be an error', () => {
+        assert.throws(() => {
+          component.__scope.data = false;
+          Akili.compile(component.el, { recompile: true });
+        });
+      });
+    });
+
+    describe('.empty()', () => {
+      before(() => {
+        component.empty();
+      });
+
+      it('should clear html', () => {
+        assert.isNotOk(component.el.innerHTML);
+      });
+
+      it('should remove bindings', () => {
+        assert.isNotOk(Object.keys(component.__bindings).length);
+      });
+    });
+
+    describe('.remove()', () => {
+      let el;
+
+      before(() => {
+        el = component.el;
+        component.__storeByFunction('store', () => {});
+        component.remove();
+      });
+
+      it('should call removed function', () => {
+        assert.isOk(component.wasRemoved);
+      });
+
+      it('should be deleted from the parent element', () => {
+        assert.isNotOk(parentComponent.el.querySelector('home'));
+      });
+
+      it('should remove parent bindings', () => {
+        assert.isNotOk(Object.keys(parentComponent.__bindings).length);
+      });
+
+      it('should remove all store links', () => {
+        assert.doesNotHaveAllKeys(Akili.__storeLinks, ['store']);
+      });
+
+      it('should remove all children', () => {
+        assert.isEmpty(el.innerHTML);
+      });
+    });
     
     describe('.cancel()', () => {
       it('should not be compiled', () => { 

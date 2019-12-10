@@ -330,7 +330,7 @@ Akili.unisolate = function (fn) {
  * @returns {Promise}
  */
 Akili.nextTick = function (fn) {
-  return new Promise((res) => setTimeout(() => Promise.resolve(fn()).then(res)));
+  return new Promise(res => setTimeout(() => Promise.resolve(fn()).then(res)));
 };
 
 /**
@@ -424,7 +424,7 @@ Akili.compile = function (root, options = { recompile: false }) {
     }
   }
 
-  const nestedInitializing = (el) => {
+  const nestedInitializing = el => {
     let component = this.initialize(el, options);
     let children = el.children;
     component && elements.push(component);
@@ -947,7 +947,7 @@ Akili.init = function (root) {
   }).then(() => {    
     window.AKILI_CLIENT && (window.AKILI_CLIENT.requestCache = this.prepareServerSideRequestCache());
     this.triggerInit(true);
-  }).catch((err) => {
+  }).catch(err => {
     this.triggerInit(false);
     throw err;
   });
