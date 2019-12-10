@@ -1,6 +1,6 @@
 {
   "name": "akili",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": "Akili - javascript framework",
   "main": "./src/akili.js",
   "author": {

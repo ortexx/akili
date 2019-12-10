@@ -62,6 +62,7 @@ export default class Component {
     this.__isMounted = false;
     this.__isCompiled = false;
     this.__isResolved = false;
+    this.__isRemoved = false;
     this.__cancelled = false;
     this.__prevent = false;
     this.__bindings = {};
@@ -1246,7 +1247,7 @@ export default class Component {
    * @protected
    */
   __createKeysHash(keys) {
-    return `${this.__scope.__name}.${Akili.joinBindingKeys(keys)}`;
+    return `${this.__scope.__name}.${Akili.joinBindingKeys(keys)}`;    
   }
 
   /**
@@ -1353,6 +1354,10 @@ export default class Component {
       for (let i = 0, l = links.length; i < l; i++) {
         const link = links[i];
         const component = link.component;
+
+        if (component.__isRemoved) {
+          continue;
+        }
 
         if (component === this) {
           continue;
@@ -1580,7 +1585,7 @@ export default class Component {
     return Akili.nextTick(() => {
       for (let i = 0, l = links.length; i < l; i++) {
         const link = links[i];
-
+        
         if (link.fn) {
           continue;
         }
@@ -2248,8 +2253,8 @@ export default class Component {
       for (let i = arr.length - 1; i >= 0; i--) {
         const link = arr[i];
   
-        if (link.component === this) {
-          arr.splice(i, 1);
+        if (link.component === this) {                 
+          arr.splice(i, 1);      
         }
       }
 
@@ -2280,7 +2285,7 @@ export default class Component {
     this.el.remove();
     delete this.el.__akili;
     delete this.el;    
-    delete this.__parent;    
+    delete this.__parent;
     delete this.__attributeOf;
     delete this.__evaluationComponent;
     delete this.__evaluationParent;   
@@ -2290,6 +2295,7 @@ export default class Component {
     delete this.__storeLinks;
     delete this.__attrs;
     delete this.attrs;
+    this.__isRemoved = true;
     return nodes;
   }
 
