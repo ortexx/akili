@@ -57,7 +57,7 @@ describe('router.js', () => {
           state: '3',
           pattern: '^/3',
           handler: transition => {
-            if(transition.path.query.type == 1) {
+            if(transition.path.query.type == 1) {              
               transition.redirect('4');
             }
             else if(transition.path.query.type == 2) {
@@ -187,8 +187,9 @@ describe('router.js', () => {
 
     describe('.state()', () => {
       it('should change the state', () => {
-        router.state('x', { id: 1 }, { z: 2 });
-        assert.equal(location.pathname + location.search, '/x/1?z=2');
+        return router.state('x', { id: 1 }, { z: 2 }).then(() => {
+          assert.equal(location.pathname + location.search, '/x/1?z=2');
+        });        
       });
 
       it('should not change the state with nonexistent state', () => {
@@ -242,8 +243,9 @@ describe('router.js', () => {
 
     describe('.location()', () => {
       it('should change the location', () => {
-        router.location('/x/1?z=1');
-        assert.equal(location.pathname + location.search, '/x/1?z=1');
+        return router.location('/x/1?z=1').then(() => {
+          assert.equal(location.pathname + location.search, '/x/1?z=1');
+        });        
       });
     });
 
@@ -266,7 +268,7 @@ describe('router.js', () => {
     });
 
     describe('Transition.prototype.reload()', () => {
-      it('should redirect', done => {
+      it('should reload', done => {
         onStateChange(() => {
           assert.equal(location.pathname + location.search, '/3?type=4');
           done();
@@ -277,8 +279,8 @@ describe('router.js', () => {
     });
 
     describe('.reload()', () => {
-      it('should redirect', done => {
-        onStateChange(() => {
+      it('should reload', done => {
+        onStateChange(() => {          
           assert.equal(location.pathname + location.search, '/3?type=4&z=1');
           done();
         }, 'state-changed');
@@ -312,15 +314,17 @@ describe('router.js', () => {
 
       describe('.state()', () => {
         it('should change the state', () => { 
-          router.state('4');
-          assert.equal(location.hash, '#/4');
+          return router.state('4').then(() => {
+            assert.equal(location.hash, '#/4');
+          });
         });
       });
 
       describe('.location()', () => {
         it('should change url', () => { 
-          router.state('3');
-          assert.equal(location.hash, '#/3');
+          return router.state('3').then(() => {
+            assert.equal(location.hash, '#/3');
+          });
         });
       });
     });

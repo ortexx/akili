@@ -1,6 +1,6 @@
 {
   "name": "akili",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "Akili - javascript framework",
   "main": "./src/akili.js",
   "author": {
@@ -45,7 +45,7 @@
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^3.0.5",
     "mocha": "^5.2.0",
-    "terser-webpack-plugin": "^1.4.2",
+    "terser-webpack-plugin": "^2.2.2",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10"
   },

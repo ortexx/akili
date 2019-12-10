@@ -141,7 +141,9 @@ export class Transition {
    */
   finish() {
     this.__finished = true;
-    delete this.previous;    
+    delete this.previous;
+    const index = router.__queue.indexOf(this);
+    index >= 0 && router.__queue.splice(index, 1);
   }
 }
 
@@ -155,6 +157,8 @@ const router = {};
 router.baseUrl = "/";
 router.states = [];
 router.hashMode = true;
+router.transition = null;
+router.__queue = [];
 router.__redirects = 0;
 router.__init = false;
 router.__paramRegex = /(\/?:([\w\d-]+))/g;
@@ -906,107 +910,122 @@ router.changeState = function (options = {}) {
   if(this.__isolated) {
     return Promise.resolve();
   }
-  
+
   let url = this.getUrl();
-  let params = {};
-  let query = this.getUrlQuery();  
-  let hash = this.hashMode? '': window.location.hash.replace('#', ''); 
-  let prevTransition = router.transition || null;
-  let transition = router.transition = new Transition(url, prevTransition);
-  let level = 0;
+  let transition = new Transition(url);
+  this.__queue.push(transition);
   
-  window.dispatchEvent(new CustomEvent('state-change', { detail: transition }));
-
-  const next = states => {    
-    if (!states.length) {
-      return Promise.resolve();
-    }
-
-    let content = this.getArrayPatternContent(states, url);
-
-    if (!content) {
-      return Promise.resolve();
-    }
-
-    let state = content.state; 
-    transition.setPath({ state, component: route });    
-    params = { ...params, ...content.params };
-    hash = hash || options.emptyHash;
-    ({ params, query, hash, options } = this.prepareStateArgs(state, params, query, hash, options));     
-    hash = hash || '';
-    let realUrl = this.createStateUrl(state, params, query, hash, options, false); 
-    this.isolate(() => this.replaceUrl(realUrl)); 
-    let route = state.abstract? null: this.getRoute(level);
-    
-    if (!route && !state.abstract) {      
-      throw new Error (`Not found route component for state "${state.name}"`);
-    }    
-
-    transition.path.params = params;
-    transition.path.query = query;
-    transition.path.hash = hash;
-    transition.path.url = realUrl;
-    transition.path.options = options;
-    !state.abstract && level++;
-    let isDifferent = true;
-
-    if(realUrl != url) {
-      isDifferent = transition.isRouteChanged(transition.path);
-    }
-       
-    let load = isDifferent && options.reload !== false;    
-
-    return Promise.resolve(load? state.handler(transition): transition.path.data).then(data => {        
-      transition.path.data = data;
-      state.title && (document.title = typeof state.title == 'function'? state.title(transition): state.title);
-
-      if (transition.__cancelled) {
-        return;
+  return new Promise((resolve) => {
+    const interval = setInterval(() => {
+      if(this.__queue[0] === transition) {       
+        clearInterval(interval);
+        resolve();
       }
-
-      if (state.abstract) {
-        return;
-      }
-
-      const prevRoute = transition.previous && transition.previous.getRoute(state);
-      (prevRoute && !prevRoute.loaded) && (load = true);
-      return route.setTransition(transition, load).then(() => transition.path.loaded = true);
-    }).then(() => {
-      return next(state.children);
     });
-  };
+  }).then(() => { 
+    transition.previous = router.transition || null;
+    router.transition = transition;
+    window.dispatchEvent(new CustomEvent('state-change', { detail: transition }));   
+    let params = {};
+    let query = this.getUrlQuery();
+    let hash = this.hashMode? '': window.location.hash.replace('#', ''); 
+    let level = 0;      
 
-  return next(this.getStatesByLevel(0)).then(() => {
-    if (!transition.routes.length) {
-      if (this.__redirects) {
-        throw new Error(`Wrong router default url "${this.defaultUrl}"`);
+    const next = states => {
+      if (!states.length) {
+        return Promise.resolve();
       }
 
-      if (this.defaultUrl) {
-        if (this.defaultUrl == this.getUrl()) {
-         throw new Error(`Not found any routes`);
+      let content = this.getArrayPatternContent(states, url);
+
+      if (!content) {
+        return Promise.resolve();
+      }
+
+      let state = content.state; 
+      transition.setPath({ state, component: route });    
+      params = { ...params, ...content.params };
+      hash = hash || options.emptyHash;
+      ({ params, query, hash, options } = this.prepareStateArgs(state, params, query, hash, options));     
+      hash = hash || '';
+      let realUrl = this.createStateUrl(state, params, query, hash, options, false); 
+      this.isolate(() => this.replaceUrl(realUrl)); 
+      let route = state.abstract? null: this.getRoute(level);
+      
+      if (!route && !state.abstract) {      
+        throw new Error (`Not found route component for state "${state.name}"`);
+      }    
+
+      transition.path.params = params;
+      transition.path.query = query;
+      transition.path.hash = hash;
+      transition.path.url = realUrl;
+      transition.path.options = options;
+      !state.abstract && level++;
+      let isDifferent = true;
+
+      if(realUrl != url) {
+        isDifferent = transition.isRouteChanged(transition.path);
+      }
+        
+      let load = isDifferent && options.reload !== false;    
+
+      return Promise.resolve(load? state.handler(transition): transition.path.data).then(data => {        
+        transition.path.data = data;
+        state.title && (document.title = typeof state.title == 'function'? state.title(transition): state.title);
+
+        if (transition.__cancelled) {
+          return;
         }
 
-        this.isolate(() => this.replaceUrl(this.defaultUrl));          
-        this.__redirects++;
-        return this.changeState();
+        if (state.abstract) {
+          return;
+        }
+
+        const prevRoute = transition.previous && transition.previous.getRoute(state);
+        (prevRoute && !prevRoute.loaded) && (load = true);
+        return route.setTransition(transition, load).then(() => transition.path.loaded = true);
+      }).then(() => {
+        return next(state.children);
+      });
+    };
+
+    return next(this.getStatesByLevel(0)).then(() => {
+      if (!transition.routes.length) {
+        if (this.__redirects) {
+          throw new Error(`Wrong router default url "${this.defaultUrl}"`);
+        }
+
+        if (this.defaultUrl) {
+          if (this.defaultUrl == this.getUrl()) {
+            throw new Error(`Not found any routes`);
+          }
+
+          this.isolate(() => this.replaceUrl(this.defaultUrl));          
+          this.__redirects++;
+          transition.finish();
+          return this.changeState(options);
+        }
+        
+        if (Akili.options.debug) {
+          // eslint-disable-next-line no-console
+          console.warn(`Not found a default route. You can pass it in "router.init(defaultUrl)" function`);
+        }
       }
       
-      if (Akili.options.debug) {
-        // eslint-disable-next-line no-console
-        console.warn(`Not found a default route. You can pass it in "router.init(defaultUrl)" function`);
+      if (!options.saveScrollPosition && (!transition.path || !transition.path.hash)) {
+        window.scrollTo(0, 0);
       }
-    }
-    
-    if (!options.saveScrollPosition && (!transition.path || !transition.path.hash)) {
-      window.scrollTo(0, 0);
-    }
 
-    this.__redirects = 0;
-    transition.finish();
-    window.dispatchEvent(new CustomEvent('state-changed', { detail: transition }));
-    return transition;
-  });
+      this.__redirects = 0;
+      transition.finish();
+      window.dispatchEvent(new CustomEvent('state-changed', { detail: transition }));
+      return transition;
+    });
+  }).catch(err => {
+    transition && transition.finish();
+    throw err;
+  })
 };
 
 /**
