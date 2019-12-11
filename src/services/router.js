@@ -26,7 +26,7 @@ export class Transition {
    * @see router.state
    */
   redirect(state, params = {}, query = {}, hash = undefined, options = {}) {
-    options = { ...router.transition.path.options, ...options };
+    options = { ...this.path.options, ...options };
     this.cancel();   
     return router.state.call(router, state, params, query, hash, options);
   }
@@ -37,7 +37,7 @@ export class Transition {
    * @see router.state
    */
   reload(params = {}, query = {}, hash = undefined, options = {}) {
-    options = { ...router.transition.path.options, ...options };
+    options = { ...this.path.options, ...options };
     params = { ...this.path.params, ...params };
     query = { ...this.path.query, ...query };
     hash = hash === undefined? this.path.hash: hash;
