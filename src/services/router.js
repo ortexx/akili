@@ -34,13 +34,14 @@ export class Transition {
   /**
    * Reload the current state
    * 
-   * @see Transition.prototype.redirect
+   * @see router.state
    */
   reload(params = {}, query = {}, hash = undefined, options = {}) {
+    options = { ...router.transition.path.options, ...options };
     params = { ...this.path.params, ...params };
     query = { ...this.path.query, ...query };
     hash = hash === undefined? this.path.hash: hash;
-    return this.redirect(this.path.state.name, params, query, hash, options);
+    return router.state.call(router, this.path.state.name, params, query, hash, options);
   }
 
   /**
@@ -132,8 +133,8 @@ export class Transition {
    * Cancel the current transition
    */
   cancel() {   
-    this.__cancelled = true;
-    this.finish();
+    this.__cancelled = true;  
+    this.finish();  
   }
 
   /**
@@ -912,7 +913,7 @@ router.changeState = function (options = {}) {
   }
 
   let url = this.getUrl();
-  let transition = new Transition(url);
+  let transition = new Transition(url);  
   this.__queue.push(transition);
   
   return new Promise((resolve) => {

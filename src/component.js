@@ -1583,6 +1583,10 @@ export default class Component {
     }
     
     return Akili.nextTick(() => {
+      if(this.__isRemoved) {
+        return;
+      }
+
       for (let i = 0, l = links.length; i < l; i++) {
         const link = links[i];
         

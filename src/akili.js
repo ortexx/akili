@@ -266,8 +266,13 @@ Akili.isolate = function (fn) {
 
   this.__isolation = null;
 
-  for (let i = 0, l = props.length; i < l; i++) {
+  for (let i = 0, l = props.length; i < l; i++) {    
     const prop = props[i];
+
+    if(prop.component.__isRemoved) {
+      continue;
+    }
+    
     const val = utils.getPropertyByKeys(prop.keys, prop.component.__scope);    
     prop.component.__isResolved && prop.component.__triggerStoreAndAttr(prop.keys);
     prop.component.__evaluateByKeys(prop.keys, val, prop.isDeleted);
