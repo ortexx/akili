@@ -3,13 +3,8 @@ const TerserPlugin = require('terser-webpack-plugin');
 const path = require('path');
 const pack = require('./package.json');
 
-let entry = {
-  'akili': "./src/akili.js"
-};
-
 let plugins = [];
-let minimize = process.env.MINIMIZE;
-let build = process.env.BUILD;
+let isProd = process.env.NODE_ENV == 'production';
 
 let banner = `Akili is a javascript framework\n
 const Akili = makeItEasy(js + html);\n
@@ -22,18 +17,15 @@ plugins.push(new webpack.BannerPlugin({
   banner: banner.trim()
 }));
 
-minimize && (entry['akili.min'] = entry.akili);
-
 let config = {
-  mode: build? 'production': 'development',
+  mode: isProd? 'production': 'development',
   performance: { hints: false },
-  watch: !build,  
-  bail: true,
-  devtool: "inline-source-map",
-  entry,
-    output: {
+  watch: !isProd,
+  devtool: isProd? false: "inline-source-map",
+  entry: "./src/akili.js",
+  output: {
     path: path.join(__dirname, "/dist"),
-    filename: "[name].js",
+    filename: "akili.js",
     library: 'Akili',
     libraryExport: "default",
     libraryTarget: 'umd'
@@ -41,7 +33,6 @@ let config = {
   optimization: {
     minimizer: [
       new TerserPlugin({
-        include: /\.min\.js$/,
         extractComments: false
       })
     ]

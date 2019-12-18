@@ -1,3 +1,19 @@
+# 1.1.x (December 18, 2019)
+
+* fixed __EventEmitter__ removal bug
+* added __For__ component elements sorting
+* added __no-ssr__ system attribute
+* fixed the radio group name bug
+* fixed the recreation boolean attributes bug
+* removed the events isolation for SSR mode
+* removed Akili.defaults
+* fixed the errors handling bug
+* fixed the router args inheritance bug
+* added the router transitions queue
+* added __Component.prototype.transition__ property
+* fixed __Transition.prototype.reload__ bug
+* improved the memory usage
+
 # 1.0.x (November 01, 2018)
 
 * made a lot of optimizations

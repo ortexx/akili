@@ -1,6 +1,6 @@
 {
   "name": "akili",
-  "version": "1.0.21",
+  "version": "1.1.0",
   "description": "Akili - javascript framework",
   "main": "./src/akili.js",
   "author": {
@@ -9,14 +9,15 @@
   },
   "homepage": "https://akilijs.com",
   "scripts": {
-    "start": "webpack",
-    "build": "BUILD=true MINIMIZE=true webpack",
+    "start": "npm run build",
+    "build": "webpack",
+    "build-prod": "NODE_ENV=production webpack",
     "test": "karma start",
     "eslint": "eslint src test"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run eslint && npm run test && npm run build"
+      "pre-commit": "npm run eslint && npm run test && npm run build-prod"
     }
   },
   "keywords": [
