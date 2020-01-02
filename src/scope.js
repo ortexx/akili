@@ -2,7 +2,7 @@ import Akili from './akili.js';
 import utils from './utils.js';
 
 /**
- * Scope class.
+ * Scope class
  * 
  * {@link https://akilijs.com/docs/scope}
  *
@@ -10,8 +10,6 @@ import utils from './utils.js';
  * You can use them for internal manipulations.
  */
 export default class Scope {
-  static nestedWatching;
-
   constructor(name, el, component) {
     this.__name = name;
     this.__el = el;
@@ -24,24 +22,29 @@ export default class Scope {
    * 
    * @param {string|string[]} keys
    * @param {*} value
-   * @param {boolean} [strict=false] - without object copying
+   * @param {object} [options] 
+   * @param {boolean} [options.saveProxy] 
+   * @param {boolean} [options.silent]
+   * @param {boolean} [options.target]
    * @protected
    */
-  __set(keys, value, strict = false, target = false) {
+  __set(keys, value, options = {}) {
     if (!Array.isArray(keys)) {
       keys = [keys];
     }
     
     Akili.unisolate(() => {
-      strict && (this.__component.__disableProxyRedefining = true);
-      utils.setPropertyByKeys(keys, target? this.__target: this, (last, val) => {
+      options.saveProxy && (this.__component.__disableProxyRedefining = true);
+      options.silent && this.__component.__disableKeys();
+      utils.setPropertyByKeys(keys, options.target? this.__target: this, (last, val) => {
         if (!last) {
           return val || {};
         }
 
         return value;
       });
-      strict && (this.__component.__disableProxyRedefining = false);
+      options.silent && this.__component.__enableKeys();
+      options.saveProxy && (this.__component.__disableProxyRedefining = false);
     });
   }
 

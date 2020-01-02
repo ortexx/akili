@@ -616,7 +616,7 @@ utils.getPropertyByKeys = function(keys, object) {
   keys.reduce((o, k) => {
     i++;
 
-    if (typeof o != 'object') {
+    if (!o || typeof o != 'object') {
       return o;
     }
 

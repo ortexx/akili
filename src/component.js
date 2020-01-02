@@ -613,7 +613,7 @@ export default class Component {
    */
   __evaluateNested(keys, withoutParents = false) {
     let scope = this.__scope;
-    let props = [];    
+    let props = [];  
     
     if (!withoutParents) {
       let lastProps = [];
@@ -662,7 +662,7 @@ export default class Component {
           if (component.__checkNodePropertyChange(bind.node, prop.keys, prop.value)) {  
             component.__disableKeys(prop.keys);     
             const checkProp = component.__getNodeProperty(bind.node, prop.keys);
-            checkProp && checkProp.evaluated && component.scope.__set(prop.keys, prop.value, false, true); 
+            checkProp && checkProp.evaluated && component.scope.__set(prop.keys, prop.value, { silent: true }); 
             component.__evaluateNode(bind.node, false);
             
             for (let _k in bind.node.__properties) {
@@ -694,56 +694,32 @@ export default class Component {
     evaluate(this.__children);
   }
 
-  /**
+   /**
    * Evaluate the value by the keys
    *
    * @param {string[]} keys
-   * @param {*} value
-   * @param {boolean} [isDeleted=false] - true if value is deleting
    * @protected
    */
-  __evaluateByKeys (keys, value, isDeleted = false) {     
-    let data = this.__getBind(keys);
+  __evaluateByKeys (keys) {  
+    const data = this.__getBind(keys);
 
-    const unbind = (obj, parents) => {
-      for (let k in obj) {
-        if (!obj.hasOwnProperty(k) || this.__isSystemBindingKey(k)) {
+    if(!data) {
+      return;
+    }
+    
+    const evaluate = (val, keys) => {   
+      this.__evaluateNested(keys, true);
+
+      for (let k in val) {
+        if(!val.hasOwnProperty(k) || this.__isSystemBindingKey(k)) {
           continue;
         }
 
-        let _keys = [].concat(parents, [k]);
-        let __keys = _keys.slice();
-        let _isDeleted = false;
-        let val = obj[k];
-        let hasKey;
-        
-        __keys.shift();
-        hasKey = utils.hasPropertyByKeys(__keys, value);
-
-        if (value && typeof value == 'object' && !hasKey) {
-          _isDeleted = true;
-        }
-
-        if (val && typeof val == 'object') {
-          unbind(val, _keys);
-        }
-
-        this.__evaluateNested(_keys, true);
-
-        if (value === null || typeof value != 'object' || !hasKey) {
-          this.__unbind(_keys);
-          _isDeleted && utils.deletePropertyByKeys(__keys, value);
-        }
-      }
-    };
-    
-    data && unbind(data, [].concat(keys));
-    this.__evaluateNested(keys, false);
-
-    if (isDeleted) {
-      this.__unbind(keys);
-      isDeleted && utils.deletePropertyByKeys(keys, this.__scope);
+        evaluate(val[k], keys.concat([k]));        
+      }      
     }
+
+    evaluate(data, keys);
   }
 
   /**
@@ -1169,7 +1145,7 @@ export default class Component {
         }
        
         if (Akili.__isolation) { 
-          this.__createIsolationObject(parents, key, false);
+          this.__createIsolationObject(parents, key);
           return true;
         }
 
@@ -1178,7 +1154,7 @@ export default class Component {
         }
         
         if (this.__isMounted) {                   
-          this.__evaluateByKeys(keys, value);
+          this.__evaluateByKeys(keys);
         }
 
         return true;
@@ -1203,7 +1179,7 @@ export default class Component {
         }
         
         if (Akili.__isolation) {
-          this.__createIsolationObject(parents, key, true);
+          this.__createIsolationObject(parents, key);
           return true;
         }
 
@@ -1211,7 +1187,7 @@ export default class Component {
           this.__triggerStoreAndAttr(keys);
         }
 
-        this.__evaluateByKeys(keys, undefined, true);
+        this.__evaluateByKeys(keys);
         return true;
       }
     });
@@ -1806,14 +1782,7 @@ export default class Component {
    * @protected
    */
   __isSystemKey (key) {
-    if (key == '__' || (key[0] == '_' && key[1] == '_')) {
-      return true;
-    }
-    else if (['constructor'].indexOf(key) != -1) {
-      return true;
-    }
-
-    return false;
+    return (key.match && key.match('^_|#')) || key == 'constructor';
   }
 
   /**
@@ -1879,17 +1848,12 @@ export default class Component {
    *
    * @param {string[]} parents
    * @param {string} key
-   * @param {boolean} [isDeleted=false]
    * @returns {*}
    * @protected
    */
-  __createIsolationObject (parents, key, isDeleted = false) {
+  __createIsolationObject (parents, key) {
     const keys = parents.length? [parents[0]]: [key];
     const isolationHash = this.__createKeysHash(keys);
-
-    if (parents.length) {
-      isDeleted = false;
-    }
 
     if (!Akili.__isolation[isolationHash]) {
       Akili.__isolation[isolationHash] = {
@@ -1899,7 +1863,6 @@ export default class Component {
       };
     }
 
-    (isDeleted !== undefined) && (Akili.__isolation[isolationHash].isDeleted = isDeleted);
     return Akili.__isolation[isolationHash];
   }
 
@@ -2152,34 +2115,6 @@ export default class Component {
 
       obj.__data.push(data);
       return obj;
-    });
-  }
-
-  /**
-   * Unbind the keys
-   *
-   * @param {string[]} keys
-   * @protected
-   */
-  __unbind(keys) {
-    let bind = utils.getPropertyByKeys(keys, this.__bindings);
-
-    if (!bind || !bind.__data) {
-      return;
-    }
-
-    for (let i = 0, l = bind.__data.length; i < l; i++) {
-      let node = bind.__data[i].node;
-      this.__deleteNodeProperty(node, keys);
-    }
-
-    utils.deletePropertyByKeys(keys, this.__bindings, value => {
-      if (Object.keys(value).length > 1) {
-        value.__data = [];
-        return false;
-      }
-
-      return true;
     });
   }
 
@@ -2732,6 +2667,6 @@ export default class Component {
   removed() {}
 
   get transition() {
-    return this.__scope.__transition || null;
+    return (this.__scope && this.__scope.__transition) || null;
   }
 }

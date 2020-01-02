@@ -1,6 +1,7 @@
 import Component from '../../src/component.js';
 
 export default class App extends Component {
+  
   constructor(el, scope) {
     super(el, scope);
     

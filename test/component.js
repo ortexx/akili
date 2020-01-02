@@ -226,10 +226,6 @@ describe('component.js', () => {
         assert.equal(elements.home.querySelector('z').innerHTML, 'undefined');
       });
 
-      it('should unbind data[2]', () => {
-        assert.isNotOk(component.__bindings.data[2]);
-      });
-
       it('should increment <f> element', () => {
         assert.equal(elements.home.querySelector('f').innerHTML, '2');
       });
@@ -366,26 +362,10 @@ describe('component.js', () => {
         Akili.__isolation = null;
       });
 
-      it('should return correct object', () => {
+      it('should return the correct object', () => {
         obj = component.__createIsolationObject(['data', '0'], 'title');
         assert.equal(obj.component, component, 'check component');
         assert.equal(obj.keys[0], 'data', 'check keys');
-        assert.isNotOk(obj.isDeleted, 'check deletion');
-      });
-
-      it('should return without deletion option', () => {
-        obj = component.__createIsolationObject(['data', '0'], 'title', true);
-        assert.isNotOk(obj.isDeleted);
-      });
-
-      it('should return also deletion option', () => {
-        obj = component.__createIsolationObject([], 'data', true);
-        assert.isOk(obj.isDeleted);
-      });
-
-      it('should rewrite deletion option', () => {
-        obj = component.__createIsolationObject([], 'data', false);
-        assert.isNotOk(obj.isDeleted);
       });
     });
 
@@ -504,18 +484,6 @@ describe('component.js', () => {
           property = node.__properties[_keys[_keys.length - 1]];
           assert.notStrictEqual(property, prevProperty);
           node.__properties[prevHash] = prevProperty;
-        });
-      });
-
-      describe('.__unbind()', () => {
-        it('should unbind keys', () => {
-          let _keys;
-          let prop;
-          component.__unbind(keys);
-          _keys = Object.keys(node.__properties);
-          prop = node.__properties[_keys[_keys.length - 1]];
-          assert.isNotOk(component.__bindings.new);
-          assert.notEqual(prop.keys.join('.'), keys.join('.'));
         });
       });
 

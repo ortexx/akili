@@ -257,17 +257,17 @@ export class Loop extends For {
 
   setIndex(target) {
     this.index = this.for.__index;
-    this.scope.__set('loopIndex', this.index, false, target);
+    this.scope.__set('loopIndex', this.index, { target });
   }
 
   setKey(target) {
     this.key = this.for.__key;
-    this.scope.__set('loopKey', this.key, false, target);
+    this.scope.__set('loopKey', this.key, { target });
   }
 
   setValue(target) {
     this.value = this.for.__value;
-    this.scope.__set('loopValue', this.value, true, target);
+    this.scope.__set('loopValue', this.value, { target, saveProxy: true });
     this.hash = this.for.__hash;
   }
 
