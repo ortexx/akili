@@ -702,13 +702,13 @@ export default class Component {
    */
   __evaluateByKeys (keys) {  
     const data = this.__getBind(keys);
-
-    if(!data) {
-      return;
-    }
     
     const evaluate = (val, keys) => {   
       this.__evaluateNested(keys, true);
+
+      if(!val) {
+        return;
+      }
 
       for (let k in val) {
         if(!val.hasOwnProperty(k) || this.__isSystemBindingKey(k)) {
@@ -718,7 +718,7 @@ export default class Component {
         evaluate(val[k], keys.concat([k]));        
       }      
     }
-
+    
     evaluate(data, keys);
   }
 
