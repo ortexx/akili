@@ -252,12 +252,22 @@ Akili.createScopeName = function () {
  * @returns {*}
  */
 Akili.isolate = function (fn) { 
-  if (this.__isolation) {
-    return fn();
-  }
+  let isolation = this.__isolation;
+  !isolation && (this.__isolation = {});
+  let res;
 
-  this.__isolation = {};
-  let res = fn();
+  try {
+    res = fn();
+
+    if(isolation) {
+      return res;
+    }
+  }
+  catch(err) {
+    this.__isolation = null;
+    throw err;
+  }
+  
   let props = [];
 
   for (let k in this.__isolation) {
@@ -287,11 +297,19 @@ Akili.isolate = function (fn) {
  * @returns {*}
  */
 Akili.unevaluate = function (fn) {
-  let evaluation = this.__evaluation;
-  let res;
+  let evaluation = this.__evaluation;  
   this.__evaluation = null;
-  res = fn();
-  this.__evaluation = evaluation;
+  let res;
+
+  try {
+    res = fn();
+  }
+  catch(err) {
+    this.__evaluation = evaluation;
+    throw err;
+  }
+
+  this.__evaluation = evaluation; 
   return res;
 };
 
@@ -302,13 +320,23 @@ Akili.unevaluate = function (fn) {
  * @returns {*}
  */
 Akili.wrapping = function (fn) {
-  if(this.__wrapping) {
-    return fn();
+  let wrapping = this.__wrapping;
+  !wrapping && (this.__wrapping = true);
+  let res;
+
+  try {
+    res = fn();
+
+    if(wrapping) {
+      return res;
+    }
   }
-  
-  this.__wrapping = true;
-  let res = fn();  
-  this.__wrapping = false;  
+  catch(err) {
+    this.__wrapping = false;
+    throw err;
+  }
+
+  this.__wrapping = false; 
   return res;   
 }
 
@@ -320,21 +348,19 @@ Akili.wrapping = function (fn) {
  */
 Akili.unisolate = function (fn) {
   let isolation = this.__isolation;
-  let res;
   this.__isolation = null;
-  res = fn();
+  let res;
+
+  try {
+    res = fn();
+  }
+  catch(err) {
+    this.__isolation = isolation;
+    throw err;
+  }
+
   this.__isolation = isolation;
   return res;
-};
-
-/**
- * Run the function on the next tick
- *
- * @param {function} fn
- * @returns {Promise}
- */
-Akili.nextTick = function (fn) {
-  return new Promise(res => setTimeout(() => Promise.resolve(fn()).then(res)));
 };
 
 /**

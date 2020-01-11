@@ -95,20 +95,21 @@ describe('components/', () => {
   });
 
   describe('Include', () => {
-    it('should load a template', done => {
+    it('should load a template', () => {
       let include = document.createElement('include');
-
+      let html;
       include.setAttribute('url', 'include.html');
       include.setAttribute('on-load', '${this.cIncludeOnLoad()}');
       include.innerHTML = '1';
       component.el.appendChild(include);
 
       component.scope.cIncludeOnLoad = () => {
-        assert.equal(include.innerHTML, '11');
-        done();
+        html = include.innerHTML;
       };
 
-      Akili.compile(component.el, {recompile: true});
+      return Akili.compile(component.el, { recompile: true }).then(() => {
+        assert.equal(html, '11');
+      });
     });
   });
 
@@ -337,7 +338,7 @@ describe('components/', () => {
       a.setAttribute('options', '${ ({}) }');
       component.el.appendChild(a);
       component.el.appendChild(route);
-      Akili.compile(component.el, { recompile: true });
+      return Akili.compile(component.el, { recompile: true });
     });
 
     describe('state manipulations', () => {
@@ -397,10 +398,11 @@ describe('components/', () => {
       let a = component.child('a[url]');
       assert.isTrue(a.scope.compiled, 'on-compiled');
       assert.isTrue(a.scope.resolved, 'on-resolved');
-      Akili.compile(a.el, { recompile: true });
-      assert.isTrue(a.scope.recompiled, 'on-recompiled'); 
-      a.remove();
-      assert.isTrue(a.checkRemovedEvent, 'on-removed');
+      return Akili.compile(a.el, { recompile: true }).then(() => {
+        assert.isTrue(a.scope.recompiled, 'on-recompiled'); 
+        a.remove();
+        assert.isTrue(a.checkRemovedEvent, 'on-removed');
+      });
     });
   });
 });

@@ -1018,9 +1018,9 @@ router.changeState = function (options = {}) {
         window.scrollTo(0, 0);
       }
 
-      this.__redirects = 0;
-      transition.finish();
+      this.__redirects = 0;      
       window.dispatchEvent(new CustomEvent('state-changed', { detail: transition }));
+      transition.finish();
       return transition;
     });
   }).catch(err => {

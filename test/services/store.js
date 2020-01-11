@@ -38,19 +38,13 @@ describe('store.js', () => {
     });
 
     it('should change the scope property for sectionTwo', () => {
-      elements.sectionOne.__akili.scope.test = 'link';   
-
-      return Akili.nextTick(() => {
-        assert.equal(elements.sectionTwo.__akili.scope.tasty, 'link');
-      });
+      elements.sectionOne.__akili.scope.test = 'link';  
+      assert.equal(elements.sectionTwo.__akili.scope.tasty, 'link');
     });
 
     it('should change the scope property for sectionOne', () => {
       elements.sectionTwo.__akili.scope.tasty = 'nolink'; 
-
-      return Akili.nextTick(() => {  
-        assert.equal(elements.sectionOne.__akili.scope.test, 'nolink');
-      });
+      assert.equal(elements.sectionOne.__akili.scope.test, 'nolink');
     });
 
     it('should create the link by a function', () => { 
@@ -63,39 +57,27 @@ describe('store.js', () => {
     it('should create the link with all store properties by a function', () => { 
       elements.sectionOne.__akili.store(handler);       
       assert.strictEqual(Akili.__storeLinks['*'][0].fn, handler, 'check Akili.__storeLinks');
-      store.test = '*'; 
-
-      return Akili.nextTick(() => {  
-        assert.equal(elements.sectionOne.__akili.scope.linkHandler, '*', 'check the value');
-      });     
+      store.test = '*';  
+      assert.equal(elements.sectionOne.__akili.scope.linkHandler, '*', 'check the value');    
     });  
   });  
 
   describe('store property changing', () => {
     it('should change sectionOne scope value by property ', () => {
       store.test = 'end'; 
-
-      return Akili.nextTick(() => {  
-        assert.equal(elements.sectionOne.__akili.scope.test, 'end');
-      });
+      assert.equal(elements.sectionOne.__akili.scope.test, 'end');
     });
 
     it('should change sectionOne scope value by handler', () => {
-      store.handler = 'end';  
-
-      return Akili.nextTick(() => {    
-        assert.equal(elements.sectionOne.__akili.scope.linkHandler, 'end');
-      });
+      store.handler = 'end'; 
+      assert.equal(elements.sectionOne.__akili.scope.linkHandler, 'end');
     });
   });
 
   describe('delete store property', () => {
     it('should set sectionOne scope value to undefined', () => {
       delete store.test;   
-
-      return Akili.nextTick(() => {  
-        assert.isUndefined(elements.sectionOne.__akili.scope.test);
-      });
+      assert.isUndefined(elements.sectionOne.__akili.scope.test);
     });
   });
 

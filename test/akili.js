@@ -116,18 +116,21 @@ describe('akili.js', () => {
     describe('.compile()', () => {
       it('should create component for the element', () => {
         Akili.component('for-compile', ForCompile);
-        Akili.compile(elements.forCompile);
-        assert.instanceOf(elements.forCompile.__akili, Akili.Component);
+        return Akili.compile(elements.forCompile).then(() => {
+          assert.instanceOf(elements.forCompile.__akili, Akili.Component);
+        });
       });
 
       it('should not recompile existing', () => {
-        Akili.compile(elements.app);
-        assert.isNotOk(elements.app.__akili.wasRecompiled);
+        return Akili.compile(elements.app).then(() => {
+          assert.isNotOk(elements.app.__akili.wasRecompiled);
+        });
       });
 
       it('should recompile existing', () => {
-        Akili.compile(elements.app, { recompile: true, checkChanges: false });
-        assert.equal(elements.sectionOneOne.innerHTML, '2', 'full recompiling');
+        return Akili.compile(elements.app, { recompile: true, checkChanges: false }).then(() => {
+          assert.equal(elements.sectionOneOne.innerHTML, '2', 'full recompiling');
+        });        
       });
     });
 
@@ -195,8 +198,9 @@ describe('akili.js', () => {
         Akili.component('test-tag', TestTag);
         const el = document.createElement('test-tag');
         Akili.root.el.appendChild(el);
-        Akili.compile(el);
-        component = Akili.root.child('test-tag');
+        return Akili.compile(el).then(() => {
+          component = Akili.root.child('test-tag');
+        });        
       });
 
       describe('check the current state', () => {

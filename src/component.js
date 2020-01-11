@@ -1326,14 +1326,10 @@ export default class Component {
 
     links = utils.sort(links, ['date'], true);
 
-    return Akili.nextTick(() => {
+    return Akili.isolate(() => {
       for (let i = 0, l = links.length; i < l; i++) {
         const link = links[i];
         const component = link.component;
-
-        if (component.__isRemoved) {
-          continue;
-        }
 
         if (component === this) {
           continue;
@@ -1558,11 +1554,7 @@ export default class Component {
       return;
     }
     
-    return Akili.nextTick(() => {
-      if(this.__isRemoved) {
-        return;
-      }
-
+    return Akili.isolate(() => {
       for (let i = 0, l = links.length; i < l; i++) {
         const link = links[i];
         

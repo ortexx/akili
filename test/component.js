@@ -330,7 +330,6 @@ describe('component.js', () => {
     describe('.__observe()', () => {
       it('should set proxy to the object', () => {
         let obj = {};
-
         obj = component.__observe(obj, []);
         assert.isOk(obj.__isProxy);
       });
@@ -558,7 +557,6 @@ describe('component.js', () => {
     describe('.parents()', () => {
       it('should return all parents list', () => {
         let parents = component.parents();
-
         assert.strictEqual(parents.length, 2, 'check count');
         assert.strictEqual(parents[0].el, elements.sectionEmpty, 'check nearest');
         assert.strictEqual(parents[1].el, Akili.__root, 'check root');
@@ -570,7 +568,6 @@ describe('component.js', () => {
 
       it('should return empty array', () => {
         let parents = component.parents('non-existent');
-
         assert.isOk(Array.isArray && !parents.length);
       });
     });
@@ -592,7 +589,6 @@ describe('component.js', () => {
     describe('.children()', () => {
       it('should return all children list', () => {
         let children = elements.app.__akili.children();
-
         assert.strictEqual(children.length, 4, 'check count');
         assert.strictEqual(children[0].el, elements.abstract, 'check first');
         assert.strictEqual(children[1].el, elements.sectionOne, 'check second');
@@ -606,7 +602,6 @@ describe('component.js', () => {
 
       it('should return empty array', () => {
         let children = component.children('non-existent');
-
         assert.isOk(Array.isArray && !children.length);
       });
     });
@@ -628,7 +623,6 @@ describe('component.js', () => {
     describe('.before()', () => {
       it('should return all element components list from the left', () => {
         let before = elements.sectionTwo.__akili.before();
-
         assert.strictEqual(before.length, 2, 'check count');
         assert.strictEqual(before[0].el, elements.sectionOne, 'check nearest');
         assert.strictEqual(before[1].el, elements.abstract, 'check the next');
@@ -640,7 +634,6 @@ describe('component.js', () => {
 
       it('should return empty array', () => {
         let before = component.before('non-existent');
-
         assert.isOk(Array.isArray && !before.length);
       });
     });
@@ -662,7 +655,6 @@ describe('component.js', () => {
     describe('.after()', () => {
       it('should return all element components list from the right', () => {
         let after = elements.abstract.__akili.after();
-
         assert.strictEqual(after.length, 2, 'check count');
         assert.strictEqual(after[0].el, elements.sectionOne, 'check nearest');
         assert.strictEqual(after[1].el, elements.sectionTwo, 'check the next');
@@ -728,10 +720,7 @@ describe('component.js', () => {
   
         it('should change the parent scope value', () => {  
           attr.scope.test = 'linked';  
-          
-          return Akili.nextTick(() => {
-            assert.equal(all.scope.cAttrEvent, 'linked');
-          });          
+          assert.equal(all.scope.cAttrEvent, 'linked');
         });
       });  
     

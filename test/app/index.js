@@ -62,7 +62,7 @@ describe('Application initialization', () => {
       elements.app.appendChild(elements.sectionOne);
       elements.app.appendChild(elements.sectionTwo);
       elements.sectionOne.appendChild(elements.sectionOneOne);      
-      Akili.compile(elements.root);
+      return Akili.compile(elements.root);
     });
   });  
 });

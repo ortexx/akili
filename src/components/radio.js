@@ -36,16 +36,14 @@ export default class Radio extends For {
 
   compiled() {
     this.el.addEventListener('change', () => {
-      Akili.nextTick(() => {
-        let value = this.getRadioValue();
+      let value = this.getRadioValue();
 
-        if (value === this.prevValue) {
-          return;
-        }
+      if (value === this.prevValue) {
+        return;
+      }
 
-        this.prevValue = value;
-        this.attrs.onRadio.trigger(value, { bubbles: true });
-      });
+      this.prevValue = value;
+      this.attrs.onRadio.trigger(value, { bubbles: true });
     });
 
     if(this.iterable) {
