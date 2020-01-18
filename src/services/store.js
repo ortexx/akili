@@ -14,11 +14,7 @@ const store = new Proxy({}, {
 
     return target[key];
   },
-  set: (target, key, value) => {
-    if(utils.compare(target[key], value)) {
-      return true;
-    }
-    
+  set: (target, key, value) => {    
     value = utils.copy(value, { plain: true });
     target[key] = value;
     Akili.root && Akili.root.__storeTriggerByName(key, value);    
