@@ -221,7 +221,7 @@ export default class Component {
    * @returns {Promise}
    */
   __resolve() {
-    if (this.__isResolved) {
+    if (this.__isResolved || this.__isRemoved) {
       return Promise.resolve();
     }
     
