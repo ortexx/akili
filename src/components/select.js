@@ -12,6 +12,7 @@ import Akili from '../akili.js';
  * @attr [in] @see For
  */
 export default class Select extends For {
+  static matches = '';
   static booleanAttributes = ['multiple'].concat(For.booleanAttributes);
   static events = ['change'].concat(For.events);
 
@@ -22,49 +23,65 @@ export default class Select extends For {
 
   constructor(...args) {
     super(...args);
-
     this.iteratorTagName = 'option';
-    this.isMultiple = false;
+    this.iterable = this.el.hasAttribute('in');
+  }
+
+  created() {
+    this.el.addEventListener('change', () => this.el.content = this.getContent());
+
+    if(this.iterable) {
+      return super.created.apply(this, arguments);
+    }
   }
 
   compiled() { 
-    this.el.addEventListener('change', () => this.el.content = this.getContent());
-    let res = super.compiled.apply(this, arguments);   
-    this.attr('multiple', this.setMultiple);
-    this.attr('content', this.setContent);
-    this.attr('in', this.drawSelect);
+    let res;    
+    this.iterable && (res = super.compiled.apply(this, arguments));
+    this.attr('multiple', this.setMultiple, { callOnStart: false });    
+    this.attr('value', this.setValue);
+    this.attr('in', this.redrawSelect);   
     return res;
   }
 
-  setMultiple(value) {
-    this.isMultiple = value;
+  redrawSelect() {
+    const vals = this.removeUnproperValues(this.el.content);
+    const content = vals.length? vals: null;
+    let selected = [];
+    
+    for (let i = 0, l = this.el.options.length; i < l; i++) {
+      let option = this.el.options[i];
+      let selection = !!option.getAttribute('selected');
+
+      if(content && !content.includes(option.value)) {
+        option.selected = false;
+        continue;
+      } 
+
+      if(content) {
+        option.selected = true;
+        selected.push(option.value);
+        continue;
+      }
+      
+      option.selected = selection;
+      selection && selected.push(option.value);
+    }
+    
+    this.changeValue(this.formatValue(selected));
+  }
+
+  setMultiple() {    
     this.changeValue(this.formatValue(utils.copy(this.el.content)));
   }
 
-  setContent(value) {
-    this.changeValue(this.formatValue(value));
-  }
-
-  drawSelect() {
-    let selected = [];
-
-    for (let i = 0, l = this.el.options.length; i < l; i++) {
-      let option = this.el.options[i].__akili;
-      let selection = option.attrs.selected;
-
-      if (selection) {
-        selected.push(option.el.value);
-      }
-
-      option.el.selected = selection;
+  setValue(value) {
+    if(value === undefined && !this.__isCompiled) {
+      return;
     }
 
-    if (!selected.length) {
-      this.redefine();
-    }
-    else {
-      this.changeValue(this.formatValue(selected));
-    }
+    const properValue = this.formatValue(value);
+    this.changeValue(properValue, !utils.compare(properValue, value));
   }
 
   createIteratorElement() {
@@ -77,8 +94,8 @@ export default class Select extends For {
     return el;
   }
 
-  getContent() {
-    if (!this.isMultiple) {
+  getContent() {    
+    if (!this.attrs.multiple) {
       return this.el.value;
     }
 
@@ -96,52 +113,73 @@ export default class Select extends For {
   }
 
   formatValue(value) {
-    if (this.isMultiple) {
-      if (!Array.isArray(value)) {
-        value = (value !== undefined && value !== null)? [value]: [];
-      }
+    if (this.attrs.multiple) {
+      !Array.isArray(value) && (value = [value]);
+      value = this.removeUnproperValues(value);
+      return value;
     }
-    else {
-      if (Array.isArray(value)) {
-        value = value.length? value[0]: '';
-      }
-      else if (typeof value == 'object' || typeof value == 'function') {
-        value = '';
+
+    Array.isArray(value) && (value = value[0]);  
+    return this.removeUnproperValues(value).length? value: this.getDefaultValue();
+  }
+
+  removeUnproperValues(values) {
+    !Array.isArray(values)? values = [values]: values.slice();
+    const hash = {};
+
+    for (let i = 0, l = this.el.options.length; i < l; i++) {
+      hash[this.el.options[i].value] = true;
+    }
+
+    for (let i = values.length - 1; i >= 0; i--) {
+      if(!hash[values[i]]) {
+        values.splice(i, 1);
       }
     }
 
-    return value;
+    return values;
   }
 
   redefine() {
+    if(!this.el.querySelector('[selected]')) {
+      this.el.value = this.getDefaultValue();
+    }
+
     this.changeValue(this.getContent());
   }
 
-  changeValue(value) {
-    if (utils.compare(this.el.content, value)) {
-      return;
-    }
+  getDefaultValue() {
+    const firstEl = this.el.options[0];
+    return this.attrs.multiple? []: (firstEl? firstEl.value: undefined);
+  }
 
-    if (Array.isArray(value)) {
-      this.el.value = value[value.length - 1];
-
-      for (let i = 0, l = this.el.options.length; i < l; i++) {
-        let option = this.el.options[i];
-
-        option.selected = value.indexOf(option.value) != -1;
+  changeValue(value, force = false) {
+    if (!utils.compare(this.el.content, value)) {
+      if (Array.isArray(value)) {
+        this.el.value = value[value.length - 1];
+  
+        for (let i = 0, l = this.el.options.length; i < l; i++) {
+          let option = this.el.options[i];  
+          option.selected = value.indexOf(option.value) != -1;
+        }
       }
+      else {
+        this.el.value = value;
+  
+        for (let i = 0, l = this.el.options.length; i < l; i++) {
+          let option = this.el.options[i];  
+          option.selected = option.value == value;
+        }
+      }
+  
+      this.el.content = value;      
     }
     else {
-      this.el.value = value;
-
-      for (let i = 0, l = this.el.options.length; i < l; i++) {
-        let option = this.el.options[i];
-
-        option.selected = option.value == value;
+      if(!force) {
+        return;
       }
     }
-
-    this.el.content = value;
+    
     this.attrs.onChange.dispatch(Event, { bubbles: true });
   }
 }
@@ -149,12 +187,25 @@ export default class Select extends For {
 export class Option extends Loop {
   static booleanAttributes = ['selected'];
 
+  constructor(...args) {
+    super(...args);
+    this.iterable = this.el.parentNode.__akili.iterable;    
+
+    if (!this.iterable) {
+      this.__cancelled = false;
+    }
+  }
+
   __getParsedExpression(expression) {
     return utils.decodeHtmlEntities(expression);
   }
 
-  changedSelected(value) {
-    this.setSelected(value);
+  compiled() { 
+    this.attr('selected', this.setSelected, { callOnStart: false });
+
+    if(this.iterable) {
+      super.compiled.apply(this, arguments);
+    }
   }
 
   setSelected(value) {

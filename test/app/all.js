@@ -80,7 +80,7 @@ export default class All extends Component {
     this.el.innerHTML += `
       <select
         multiple="\${this.cSelectMultiple}"
-        content="\${this.cSelectValue}"
+        value="\${this.cSelectValue}"
         in="\${this.cSelectData}"
         on-change="\${this.cSelectValue = event.target.content}"
       >

@@ -231,9 +231,8 @@ describe('components/', () => {
           assert.equal(select.el.value, '2', 'check value');
           assert.equal(select.el.content, '2', 'check content');            
           done();
-        };
-  
-        select.el.addEventListener('change', fn);  
+        };        
+        select.el.addEventListener('change', fn);
         component.scope.cSelectData = data; 
       });
       
@@ -246,7 +245,7 @@ describe('components/', () => {
         };
 
         select.el.addEventListener('change', fn);  
-        component.scope.cSelectData.splice(0, 1);
+        component.scope.cSelectData.splice(2, 1);
       });
 
       it('should change the value', () => {
@@ -262,10 +261,10 @@ describe('components/', () => {
       });
 
       it('should set multiple value', () => {
-        component.scope.cSelectValue = ['1', '2'];
+        component.scope.cSelectValue = ['1', '3'];
         assert.equal(select.el.value, '1', 'check value');
         assert.equal(select.el.content[0], '1', 'check the first content value');
-        assert.equal(select.el.content[1], '2', 'check the second content value');
+        assert.equal(select.el.content[1], '3', 'check the second content value');
       });
     });
   });

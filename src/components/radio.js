@@ -24,18 +24,15 @@ export default class Radio extends For {
 
   constructor(...args) {
     super(...args);
-
     this.iterable = this.el.hasAttribute('in');
   }
 
   created() {
-    if(this.iterable) {
-      return super.created.apply(this, arguments);
-    }
-  }
-
-  compiled() {
-    this.el.addEventListener('change', () => {
+    this.el.addEventListener('change', () => { 
+      if(this._disableInternalEvents) {
+        return;
+      }
+      
       let value = this.getRadioValue();
 
       if (value === this.prevValue) {
@@ -43,22 +40,75 @@ export default class Radio extends For {
       }
 
       this.prevValue = value;
-      this.attrs.onRadio.trigger(value, { bubbles: true });
+
+      if(this.attrs.value === undefined || this.__isResolved) {
+        this.attrs.onRadio.trigger(value, { bubbles: true });
+      }      
     });
 
+    if(this.iterable) {
+      return super.created.apply(this, arguments);
+    }
+  }
+
+  compiled() {
     if(this.iterable) {
       return super.compiled.apply(this, arguments);
     }
   }
 
   resolved() {
-    this.attr('in', () => this.setNames(), { callOnStart: false });
+    this.attr('in', this.redrawRadio, { callOnStart: false });
     this.attr('value', this.setValue);
     this.attr('name', this.setNames);
 
     if(this.iterable) {
       return super.resolved.apply(this, arguments);
     }
+  }
+
+  redrawRadio() {
+    this.setNames();    
+    const value = this.isProperValue(this.prevValue)? this.prevValue: null;
+    const children = this.children('input[type=radio]');
+    let checkedValue = value;
+
+    for (let i = 0, l = children.length; i < l; i++) {
+      let radioEl = children[i].el;      
+      let selection = !!radioEl.getAttribute('checked');
+      
+      if(value && radioEl.value !== value) {
+        radioEl.checked = false;
+        continue;
+      } 
+
+      if(value) {
+        radioEl.checked = true;
+        checkedValue = radioEl.value;
+        continue;
+      }      
+      
+      radioEl.checked = selection;
+      selection && (checkedValue = radioEl.value);
+    }
+
+    if(checkedValue === null && children.length) {
+      checkedValue = children[0].el.value;
+    }
+
+    this.setValue(checkedValue);
+  }
+
+  isProperValue(value) { 
+    const children = this.children('input[type=radio]');
+
+    for (let i = 0, l = children.length; i < l; i++) {
+      if(children[i].el.value === value) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   setNames(name) {
@@ -69,37 +119,22 @@ export default class Radio extends For {
     }
   }
 
-  setValue(value) {
+  setValue(value) {    
     if (value === this.prevValue) {
       return;
     }
-
-    let prev = this.prevValue;
-    let children = this.children('input[type=radio]');
-    let isTrue = false;
-    this.prevValue = value;
-
+    
+    let children = this.children('input[type=radio]');    
+    this._disableInternalEvents = true;
+    
     for (let i = 0, l = children.length; i < l; i++) {
       let radio = children[i];
-      let isSelected = radio.el.value === value;
-
-      isSelected && (isTrue = true);
-      radio.setChecked(isSelected);
+      radio.setChecked(radio.el.value === value);
     }
 
-    if (!isTrue) {
-      if (value === null) {
-        if (prev === undefined) {
-          return;
-        }
-      }
-      else {
-        this.prevValue = undefined;
-        value = null;
-      }
-    }
-
-    this.attrs.onRadio.trigger(value, { bubbles: true });
+    this._disableInternalEvents = false;
+    this.prevValue = value;
+    this.attrs.onRadio.trigger(value, { bubbles: true });    
   }
 
   getRadioValue() {
