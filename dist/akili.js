@@ -3,7 +3,7 @@
  * 
  * const Akili = makeItEasy(js + html);
  * 
- * @version 1.1.6
+ * @version 1.1.7
  * @author Alexandr Balasyan <mywebstreet@gmail.com>
  * {@link http://akilijs.com}
  * {@link https://github.com/ortexx/akili}

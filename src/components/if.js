@@ -71,11 +71,11 @@ export default class If extends Component {
     let res = Promise.resolve();
 
     if (this.state && !this.active) {
+      this.el.style.setProperty('display', this.display, 'important');
+
       if (this.recreate || !this.isCompiled) {
         res = this.compile();
       }
-
-      this.el.style.setProperty('display', this.display, 'important');
     }
     else {
       if (this.recreate) {
