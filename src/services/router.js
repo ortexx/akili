@@ -746,15 +746,12 @@ router.getPatternContent = function (state, url) {
   typeof state !== 'object' && (state = this.getState(state));
   let keys = [];
   let params = {};
-
   url = url.split('?')[0];
   url = url.split('#')[0];
-
   let urlPattern = state.fullPattern.replace(this.__paramRegex, (m, f, v) => {
     keys.push(v);
     return '/?([^/]*)';
   });
-
   urlPattern = urlPattern.replace(/([^^/]+)[/]+$/, '$1');
   let regex = new RegExp(urlPattern, 'g');
   let isIncluded = url.match(regex);

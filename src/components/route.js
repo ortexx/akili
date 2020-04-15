@@ -16,7 +16,6 @@ export default class Route extends Component {
 
   constructor(...args) {
     super(...args);
-
     this.el.innerHTML = '';
   }
 

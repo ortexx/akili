@@ -17,7 +17,6 @@ describe('router.js', () => {
         callback(e);
         window.removeEventListener(event, fn);
       };
-
       window.addEventListener(event, fn);
     }
 

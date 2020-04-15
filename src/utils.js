@@ -612,7 +612,6 @@ utils.getPropertyByKeys = function(keys, object) {
   let current;
   let length = keys.length;
   let i = 0;
-
   keys.reduce((o, k) => {
     i++;
 
@@ -627,7 +626,6 @@ utils.getPropertyByKeys = function(keys, object) {
     (i == length) && (current = o[k]);
     return o[k];
   }, object);
-
   return current;
 };
 
@@ -646,7 +644,6 @@ utils.hasPropertyByKeys = function(keys, object) {
   let has = false;
   let length = keys.length;
   let i = 0;
-
   keys.reduce((o, k) => {
     i++;
 
@@ -661,7 +658,6 @@ utils.hasPropertyByKeys = function(keys, object) {
     (i == length) && (has = o.hasOwnProperty(k));
     return o[k];
   }, object);
-
   return has;
 };
 
@@ -681,7 +677,6 @@ utils.setPropertyByKeys = function(keys, object, fn) {
   let current = undefined;
   let length = keys.length;
   let i = 0;
-
   keys.reduce((o, k) => {
     i++;
 
@@ -697,7 +692,6 @@ utils.setPropertyByKeys = function(keys, object, fn) {
     current = o;
     return o[k];
   }, object);
-
   return current;
 };
 
@@ -721,7 +715,6 @@ utils.deletePropertyByKeys = function(keys, object, fn) {
   let length = keys.length;
   let value;
   let i = 0;
-
   keys.reduce((o, k) => {
     i++;
 
@@ -741,7 +734,6 @@ utils.deletePropertyByKeys = function(keys, object, fn) {
 
     return o[k];
   }, object);
-
   return value;
 };
 

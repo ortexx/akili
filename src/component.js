@@ -2005,7 +2005,6 @@ export default class Component {
       keys,
       evaluated  
     };
-
     return true;
   }
 

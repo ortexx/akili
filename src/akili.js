@@ -1008,7 +1008,6 @@ Akili.deinit = function () {
 Akili.destroy = function () {
   this.deinit();  
   this.clearGlobals();
-
   let storeKeys = Object.keys(store.__target);
   
   for(let i = 0, l = storeKeys.length; i < l; i++) {
