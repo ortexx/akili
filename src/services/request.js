@@ -2,8 +2,7 @@ import utils from '../utils.js';
 import Akili from '../akili.js';
 
 /**
- * Request class.
- * The instance of this class allows you to make requests.
+ * Class to manage requests.
  * 
  * {@link https://akilijs.com/docs/requests}
  */
@@ -34,8 +33,7 @@ export class Request {
     return new Promise((resolve, reject) => {
       options = {...this.defaults, ...(options || {})}; 
       options.url = this.baseUrl? `${this.baseUrl}${options.url.replace(/^\//, '')}`: options.url;  
-      options.method = options.method || 'GET';
-      
+      options.method = options.method || 'GET';      
       let xhr = new XMLHttpRequest();      
       const before = this.transformBefore(xhr, options);
       xhr = before.xhr;
@@ -95,7 +93,7 @@ export class Request {
         xhr.withCredentials = options.withCredentials;
       }
 
-      let headerKeys = Object.keys(options.headers);
+      const headerKeys = Object.keys(options.headers);
 
       for (let i = 0, l = headerKeys.length; i < l; i++) {
         let k = headerKeys[i];
@@ -103,9 +101,7 @@ export class Request {
       }
 
       if (typeof options.onProgress == 'function') {
-        xhr.onprogress = () => {
-          return options.onProgress(xhr);
-        };
+        xhr.onprogress = event => options.onProgress(event, xhr);
       }
 
       xhr.onload = () => {
@@ -134,11 +130,7 @@ export class Request {
         (cache || window.AKILI_SSR) && hash && this.createCache(hash, result);
         resolve(response);
       };
-
-      xhr.ontimeout = () => {
-        reject(new Error(`Request to "${options.url}" timed out`));
-      };
-
+      xhr.ontimeout = () => reject(new Error(`Request to "${options.url}" timed out`));
       xhr.onerror = reject;
       xhr.send(options.body);
     });
@@ -150,9 +142,9 @@ export class Request {
    * @param {XMLHttpRequest}
    */
   getHeaders = function(xhr) {
-    let headers = {};
-    let str = xhr.getAllResponseHeaders();  
-    let arr = str.split('\u000d\u000a');
+    const headers = {};
+    const str = xhr.getAllResponseHeaders();  
+    const arr = str.split('\u000d\u000a');
 
     for (let i = 0, l = arr.length; i < l; i++) {
       let line = arr[i];
@@ -214,8 +206,8 @@ export class Request {
    * @returns {string}
    */
   paramsToQuery(obj) {
-    let sep = '&';
-    let eq = '=';
+    const sep = '&';
+    const eq = '=';
 
     if (!obj || typeof obj !== 'object') {
       return '';
@@ -246,13 +238,13 @@ export class Request {
    * @returns {object}
    */
   paramsFromQuery(str) {
-    let query = {};
-    let amps = str.split('&');
+    const query = {};
+    const amps = str.split('&');
 
     for (let i = 0, l = amps.length; i <l; i++) {
-      let eqs =  amps[i].split('=');
-      let key = decodeURIComponent(eqs[0]);
-      let val = decodeURIComponent(eqs[1]);
+      const eqs =  amps[i].split('=');
+      const key = decodeURIComponent(eqs[0]);
+      const val = decodeURIComponent(eqs[1]);
 
       if (!key) {
         continue;
@@ -281,11 +273,11 @@ export class Request {
    * @returns {FormData}
    */
   createFormData(obj, data = null, namespace = '') {
-    let fd = data || new FormData();
+    const fd = data || new FormData();
 
     for (let k in obj) {
       if (obj.hasOwnProperty(k) && obj[k]) {
-        let key = namespace? namespace + '[' + k + ']': k;
+        const key = namespace? namespace + '[' + k + ']': k;
 
         if (obj[k] instanceof Date) {
           fd.append(key, obj[k].toISOString());
@@ -406,7 +398,6 @@ export class Request {
 }
 
 const request = new Request();
-
 request.__instances = {};
 request.__cache = {};
 
