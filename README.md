@@ -56,12 +56,9 @@ or [download](https://akilijs.com/js/libs/akili.min.js) and include as a script
 ## Documentation
 Documentation is [here](https://akilijs.com/docs/getting-started).
 
-## Additional things
+## Plugins
 * [akili-localization](https://github.com/ortexx/akili-localization)
 * [akili-tabs](https://github.com/ortexx/akili-tabs) 
-
-## Changelog
-A new entry will be added to the changelog after the version first or second value changing.
 
 ## License
 Akili is [MIT licensed](/LICENSE).

@@ -25,7 +25,6 @@ export default class Include extends Component {
 
   constructor(...args) {
     super(...args);
-
     this.html = this.el.innerHTML;
     this.el.innerHTML = '';
     this.connection = null;

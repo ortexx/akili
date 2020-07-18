@@ -892,10 +892,19 @@ router.reload = function(...args) {
  * @param {function} fn
  * @returns {*}
  */
-router.isolate = function (fn) {
+router.isolate = function (fn) { 
   this.__isolated = true;
-  let res = fn();
-  this.__isolated = false;
+  let res;
+
+  try {
+    res = fn();
+  }
+  catch(err) {
+    this.__isolated = false;
+    throw err;
+  }
+
+  this.__isolated = false
   return res;
 }
 

@@ -1038,7 +1038,7 @@ Akili.initServerSideHtml = function (html) {
 
   let parser = new DOMParser();
   let doc = parser.parseFromString(html, "text/html");
-  let el = doc.querySelector(this.__root === document.body? 'body': 'body > *');    
+  let el = doc.querySelector(this.__root === document.body? 'body': 'body > *');
   this.__root.innerHTML = el.innerHTML;
 
   for (let i = el.attributes.length - 1; i >= 0; i--) {

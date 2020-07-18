@@ -1,6 +1,6 @@
 {
   "name": "akili",
-  "version": "1.1.11",
+  "version": "1.1.12",
   "description": "Akili - javascript framework",
   "main": "./src/akili.js",
   "author": {
@@ -32,23 +32,23 @@
     "babel-loader": "^7.1.4",
     "babel-preset-akili": "^1.0.0",
     "chai": "^4.2.0",
-    "coveralls": "^3.0.9",
+    "coveralls": "^3.1.0",
     "eslint": "^4.19.1",
     "eslint-loader": "^3.0.4",
     "husky": "^4.2.5",
     "istanbul-instrumenter-loader": "^3.0.1",
-    "karma": "^5.0.1",
+    "karma": "^5.1.0",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.2.0",
     "karma-coverage-istanbul-reporter": "^2.1.1",
-    "karma-mocha": "^2.0.0",
+    "karma-mocha": "^2.0.1",
     "karma-mocha-reporter": "^2.2.5",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^3.0.5",
-    "mocha": "^7.1.1",
-    "terser-webpack-plugin": "^2.2.2",
-    "webpack": "^4.42.1",
-    "webpack-cli": "^3.3.10"
+    "mocha": "^7.2.0",
+    "terser-webpack-plugin": "^2.3.7",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.12"
   },
   "repository": {
     "type": "git",

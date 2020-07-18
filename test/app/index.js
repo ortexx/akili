@@ -20,7 +20,6 @@ elements.sectionTwo = document.createElement('section-two');
 elements.sectionEmpty = document.createElement('section-empty');
 elements.all = document.createElement('all');
 elements.forCompile = document.createElement('for-compile');
-
 document.body.appendChild(elements.root);
 
 Akili.component('attr', Attribute);

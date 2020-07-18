@@ -77,7 +77,7 @@ utils.style = function(obj) {
  * @param {string[]} [exclude] 
  */
 utils.split = function(str, del = '', exclude = []) {
-	const exps = [];     
+  const exps = [];  
   let last = '';
 
   if(!del) {
@@ -91,7 +91,7 @@ utils.split = function(str, del = '', exclude = []) {
   }
   else {
     const arr = str.split('');
-    let open = ''; 
+    let open = '';
 
     for(let i = 0, l = arr.length; i < l; i++) {
       let val = arr[i];

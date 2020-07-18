@@ -21,7 +21,6 @@ export default class Input extends Text {
 
   constructor(...args) {
     super(...args);
-
     this.isCheckbox = this.el.type == 'checkbox';
     this.isRadio = this.el.type == 'radio';
   }

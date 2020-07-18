@@ -2292,7 +2292,7 @@ export default class Component {
         return;
       }      
       
-      this.__deinitializeNode(node, { saveBindings: true });  
+      this.__deinitializeNode(node, { saveBindings: true });
       nodes.push(node);
     }, { rootAttrs: false });
 
