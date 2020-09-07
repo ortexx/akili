@@ -2,6 +2,7 @@ import { assert } from 'chai';
 import elements from './app/elements.js';
 import utils from '../src/utils.js';
 import Akili from '../src/akili.js';
+import store from '../src/services/store.js';
 
 describe('utils.js', () => {
   describe('utils', () => {
@@ -17,6 +18,21 @@ describe('utils.js', () => {
         assert.isNotOk(utils.isScopeProxy(1), 'check number');
         assert.isNotOk(utils.isScopeProxy("1"), 'check string');
         assert.isNotOk(utils.isScopeProxy(true), 'check boolean');
+      });
+    });
+
+    describe('.isStoreProxy()', () => {
+      it('should return true', () => {
+        assert.isOk(utils.isStoreProxy(store));
+      });
+
+      it('should return false', () => {
+        assert.isNotOk(utils.isStoreProxy([]), 'check array');
+        assert.isNotOk(utils.isStoreProxy({}), 'check object');
+        assert.isNotOk(utils.isStoreProxy(() => {}), 'check function');
+        assert.isNotOk(utils.isStoreProxy(1), 'check number');
+        assert.isNotOk(utils.isStoreProxy("1"), 'check string');
+        assert.isNotOk(utils.isStoreProxy(true), 'check boolean');
       });
     });
 

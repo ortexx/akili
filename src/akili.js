@@ -57,7 +57,8 @@ Akili.__window = {};
 Akili.__tags = {};
 Akili.__isolation = null;
 Akili.__evaluation = null;
-Akili.__wrapping = false;  
+Akili.__wrapping = false;
+Akili.__disableStoreProxy = false;
 Akili.__rootOuterHTML = '';
 Akili.__onError = () => Akili.triggerInit(false);
 
@@ -278,6 +279,12 @@ Akili.isolate = function (fn) {
 
   for (let i = 0, l = props.length; i < l; i++) {    
     const prop = props[i];
+
+    if(!prop.component) {
+      const value = utils.copy(prop.value, { plain: true });
+      this.root && this.root.__storeTriggerByName(prop.key, value);
+      continue;
+    }
 
     if(prop.component.__isRemoved) {
       continue;

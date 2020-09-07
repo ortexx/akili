@@ -1043,20 +1043,16 @@ export default class Component {
         if (key == "__isProxy") {
           return true;
         }
-
-        if (key == "__target") {
+        else if (key == "__target") {
           return obj;
         }
-
-        if (key == "__component") {
+        else if (key == "__component") {
           return this;
         }
-
-        if (key == "__keys") {
+        else if (key == "__keys") {
           return parents;
         }
-        
-        if (this.__isSystemKey(key)) {
+        else if (this.__isSystemKey(key)) {
           return target[key];
         }
 
@@ -1114,7 +1110,7 @@ export default class Component {
           value = Akili.wrapFunction(value);
         }
 
-        let keys = [].concat(parents, [key]);
+        let keys = [...parents, key];
 
         if (this.__checkDisablement(keys)) {
           target[key] = value;
@@ -1223,7 +1219,7 @@ export default class Component {
    * @protected
    */
   __createKeysHash(keys) {
-    return `${this.__scope.__name}.${Akili.joinBindingKeys(keys)}`;    
+    return `scope.${this.__scope.__name}.${Akili.joinBindingKeys(keys)}`;    
   }
 
   /**
@@ -1316,8 +1312,10 @@ export default class Component {
    * @param {*} value 
    * @protected
    */
-  __storeTriggerByName(name, value) {  
-    store.__target[name] = value;
+  __storeTriggerByName(name, value) {
+    Akili.__disableStoreProxy = true;
+    store[name] = value;
+    Akili.__disableStoreProxy = false;
     let links = (Akili.__storeLinks[name] || []).concat(Akili.__storeLinks['*'] || []);
 
     if (!links || !links.length) {
@@ -1441,7 +1439,7 @@ export default class Component {
 
       for (let i = 0, l = storeKeys.length ; i < l; i++) {
         let key = storeKeys[i];
-        let val = store.__target[key];
+        let val = utils.copy(store.__target[key], { plain: true });
         p.push(Akili.unisolate(() => fn.call(this, val, key)));
       }
 
@@ -1820,9 +1818,8 @@ export default class Component {
 
       for (let i = 0, l = targetKeys.length; i < l; i++) {    
         const k = targetKeys[i];
-        const val = target[k];        
-        const keys = [].concat(parents, [k]);   
-        target[k] = observe(val, keys);
+        const val = target[k]; 
+        target[k] = observe(val, [...parents, k]);
       }
 
       if (!value.__isProxy) {
@@ -2028,7 +2025,7 @@ export default class Component {
    * @protected
    */
   __deleteNodeProperty(node, keys) {
-    const hash = `${this.__scope.__name}.${Akili.joinBindingKeys(keys)}`;
+    const hash = `scope.${this.__scope.__name}.${Akili.joinBindingKeys(keys)}`;
     delete node.__properties[hash];
   }
 

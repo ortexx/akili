@@ -363,6 +363,16 @@ utils.isScopeProxy = function(val) {
 };
 
 /**
+ * Check the value is the store proxy object
+ *
+ * @param {*} val
+ * @returns {boolean}
+ */
+utils.isStoreProxy = function(val) {
+  return !!(val && typeof val == 'object' && val.__isProxy && !val.__component);
+};
+
+/**
  * Check the value is a plain object
  *
  * @param {*} obj
@@ -387,13 +397,14 @@ utils.copy = function(value, options = {}) {
   options = { nested: true, enumerable: true, plain: false, ...options };
 
   const next = obj => {
+    obj = this.isScopeProxy(obj) || this.isStoreProxy(obj)? obj.__target: obj; 
+
     if(options.plain && !this.isPlainObject(obj)) {
       return obj;
     }
 
-    obj = this.isScopeProxy(obj)? obj.__target: obj;
     let keys = !options.enumerable? Object.getOwnPropertyNames(obj): Object.keys(obj);
-    let newObj = Array.isArray(obj)? []: {};
+    let newObj = Array.isArray(obj)? []: {}; 
     
     for (let i = 0, l = keys.length; i < l; i++) {
       let key = keys[i];
