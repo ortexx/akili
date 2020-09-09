@@ -222,7 +222,11 @@ describe('utils.js', () => {
             ]
           }
         };
-      });
+
+        Object.defineProperty(obj, 'e', {
+          enumerable: false
+        });
+      });      
 
       describe('.getPropertyByKeys()', () => {
         it('should return true value', () => {
@@ -238,13 +242,23 @@ describe('utils.js', () => {
 
       describe('.hasPropertyByKeys()', () => {
         it('should return true', () => {
-          assert.isOk(utils.getPropertyByKeys(['x', 'y'], obj), 'simple checking');
-          assert.isOk(utils.getPropertyByKeys(['x', 'z', '0', 'w'], obj), 'nested array checking');
+          assert.isOk(utils.hasPropertyByKeys(['x', 'y'], obj), 'simple checking');
+          assert.isOk(utils.hasPropertyByKeys(['x', 'z', '0', 'w'], obj), 'nested array checking');
         });
 
         it('should return false', () => {
-          assert.isNotOk(utils.getPropertyByKeys(['x', 'f'], obj), 'simple checking');
-          assert.isNotOk(utils.getPropertyByKeys(['x', 'y', 'z'], obj), 'check over primitive');
+          assert.isNotOk(utils.hasPropertyByKeys(['x', 'f'], obj), 'simple checking');
+          assert.isNotOk(utils.hasPropertyByKeys(['x', 'y', 'z'], obj), 'check over primitive');
+        });
+      });
+
+      describe('.hasEnumerablePropertyByKeys()', () => {
+        it('should return true', () => {
+          assert.isOk(utils.hasEnumerablePropertyByKeys(['x', 'y'], obj), 'simple checking');
+        });
+
+        it('should return false', () => {
+          assert.isNotOk(utils.hasEnumerablePropertyByKeys(['e'], obj), 'simple checking');
         });
       });
 
@@ -296,7 +310,9 @@ describe('utils.js', () => {
 
         parent = {
           y: 2,
-          z: 4
+          z: {
+            u: 1
+          }
         };
 
         Object.defineProperty(obj, 'z', {
@@ -314,26 +330,27 @@ describe('utils.js', () => {
 
       describe('.getEnumerablePropertyTarget()', () => {
         it('should return enumerable target object', () => {
-          assert.strictEqual(utils.getEnumerablePropertyTarget(obj, 'x'), obj, 'check current object');
-          assert.strictEqual(utils.getEnumerablePropertyTarget(obj, 'y'), parent, 'check parent object');
-          assert.strictEqual(utils.getEnumerablePropertyTarget(obj, 'z'), parent, 'check nested object');
+          assert.strictEqual(utils.getEnumerablePropertyTarget(obj, ['x']), obj, 'check current object');
+          assert.strictEqual(utils.getEnumerablePropertyTarget(obj, ['y']), parent, 'check parent object');
+          assert.strictEqual(utils.getEnumerablePropertyTarget(obj, ['z']), parent, 'check nested object');
         });
 
         it('should not return enumerable target object', () => {
-          assert.isNull(utils.getEnumerablePropertyTarget(obj, 'a'), 'check existent key');
-          assert.isNull(utils.getEnumerablePropertyTarget(obj, 'f'), 'check non-existent key');
+          assert.isNull(utils.getEnumerablePropertyTarget(obj, ['a']), 'check existent key');
+          assert.isNull(utils.getEnumerablePropertyTarget(obj, ['f']), 'check non-existent key');
         });
       });
 
       describe('.getOwnPropertyTarget()', () => {
         it('should return own target object', () => {
-          assert.strictEqual(utils.getOwnPropertyTarget(obj, 'x'), obj, 'check current object');
-          assert.strictEqual(utils.getOwnPropertyTarget(obj, 'y'), parent, 'check parent object');
-          assert.strictEqual(utils.getOwnPropertyTarget(obj, 'a'), parent, 'check enumerate property');
+          assert.strictEqual(utils.getOwnPropertyTarget(obj, ['x']), obj, 'check current object');
+          assert.strictEqual(utils.getOwnPropertyTarget(obj, ['y']), parent, 'check parent object');
+          assert.strictEqual(utils.getOwnPropertyTarget(obj, ['a']), parent, 'check enumerate property');
+          assert.strictEqual(utils.getOwnPropertyTarget(obj, ['z', 'u']), parent, 'check nested object');
         });
 
         it('should not return own target object', () => {
-          assert.isNull(utils.getOwnPropertyTarget(obj, 'f'), 'check non-existent key');
+          assert.isNull(utils.getOwnPropertyTarget(obj, ['f']), 'check non-existent key');
         });
       });
     });

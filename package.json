@@ -1,6 +1,6 @@
 {
   "name": "akili",
-  "version": "1.1.13",
+  "version": "1.1.14",
   "description": "Akili - javascript framework",
   "main": "./src/akili.js",
   "author": {
@@ -11,7 +11,7 @@
   "scripts": {
     "start": "npm run build",
     "build": "webpack",
-    "build-prod": "NODE_ENV=production webpack",
+    "build-prod": "cross-env NODE_ENV=production webpack",
     "test": "karma start",
     "eslint": "eslint src test"
   },
@@ -33,6 +33,7 @@
     "babel-preset-akili": "^1.0.0",
     "chai": "^4.2.0",
     "coveralls": "^3.1.0",
+    "cross-env": "^7.0.2",
     "eslint": "^4.19.1",
     "eslint-loader": "^3.0.4",
     "husky": "^4.2.5",

@@ -59,6 +59,7 @@ export default class Component {
       throw new Error(`You must pass an html element to the component constructor`);
     }
 
+    this.__isCreated = false;
     this.__isMounted = false;
     this.__isCompiled = false;
     this.__isResolved = false;
@@ -147,7 +148,8 @@ export default class Component {
     this.__setParents();
     this.__setBooleanAttributes();
     this.__defineAttributes(); 
-    Akili.isolate(() => this.created(this.attrs));  
+    Akili.isolate(() => this.created(this.attrs)); 
+    this.__isCreated = true;
   }
 
   /**
@@ -659,11 +661,15 @@ export default class Component {
             continue;
           }
           
-          if (component.__checkNodePropertyChange(bind.node, prop.keys, prop.value)) {  
-            component.__disableKeys(prop.keys);     
-            const checkProp = component.__getNodeProperty(bind.node, prop.keys);
-            checkProp && checkProp.evaluated && component.scope.__set(prop.keys, prop.value, { silent: true }); 
-            component.__evaluateNode(bind.node, false);
+          if (component.__checkNodePropertyChange(bind.node, prop.keys, prop.value)) { 
+            component.__disableKeys(prop.keys);
+            const checkProp = component.__getNodeProperty(bind.node, prop.keys);            
+
+            if(checkProp && checkProp.evaluated) {                
+              component.scope.__set(prop.keys, prop.value, { silent: true }); 
+            }   
+
+            component.__evaluateNode(bind.node, false);         
             
             for (let _k in bind.node.__properties) {
               if (!bind.node.__properties.hasOwnProperty(_k)) {
@@ -796,7 +802,7 @@ export default class Component {
           component.__disableAttributeSetter = false;
   
           if (component.__isMounted) {
-            component.__attrTriggerByName(camelAttribute, value);
+            component.__attrTriggerByName(camelAttribute, utils.copy(value, { plain: true }));
           }
         }
         else if (isBooleanAttribute) {
@@ -1056,15 +1062,15 @@ export default class Component {
           return target[key];
         }
 
-        if (Akili.__evaluation) {  
+        if (Akili.__evaluation) { 
           let keys = [].concat(parents, [key]);
           let notBinding = false;
-          let evaluated = !utils.hasPropertyByKeys(keys, this.__scope); 
+          let evaluated = !utils.getOwnPropertyTarget(this.__scope, keys);
           let component = this;
           let excArr = keys.slice();
 
           if (target instanceof Scope) {
-            let realTarget = utils.getOwnPropertyTarget(target, key);
+            let realTarget = utils.getOwnPropertyTarget(target, [key]);
             realTarget && (realTarget instanceof Scope) && (component =  realTarget.__component);
           } 
 
@@ -1090,7 +1096,7 @@ export default class Component {
           if (!(key in target)) {
             target[key] = undefined;
           }          
-          else if (!utils.getEnumerablePropertyTarget(target, key)) {
+          else if (!utils.getEnumerablePropertyTarget(target, [key])) {
             notBinding = true;
           }
 
@@ -1100,14 +1106,10 @@ export default class Component {
 
         return target[key];
       },
-      set: (target, key, value) => { 
+      set: (target, key, value) => {
         if (this.__isSystemKey(key)) {
           target[key] = value;
           return true;
-        }
-
-        if (typeof target[key] === 'function') {
-          value = Akili.wrapFunction(value);
         }
 
         let keys = [...parents, key];
@@ -1115,6 +1117,16 @@ export default class Component {
         if (this.__checkDisablement(keys)) {
           target[key] = value;
           return true;
+        }
+
+        if(this.__isCreated && !target.hasOwnProperty(key) && key in target) {
+          const tScope = utils.getEnumerablePropertyTarget(target, [key]);
+          tScope.__component.scope[key] = value;
+          return false;
+        }
+
+        if (typeof target[key] === 'function') {
+          value = Akili.wrapFunction(value);
         }
 
         CHECK_EXISTENCE: if (parents.length > 0) {
@@ -1447,7 +1459,7 @@ export default class Component {
     }
 
     if (call) {
-      return Akili.unisolate(() => fn.call(this, store[name]));
+      return Akili.unisolate(() => fn.call(this, utils.copy(store[name], { plain: true })));
     }
   }
 

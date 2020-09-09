@@ -12,7 +12,7 @@ function createProxy (obj, parents) {
   return new Proxy(obj, {
     get: (target, key) => {
       if (key == '__target') {
-        return target;
+        return obj;
       }
       else if (key == "__keys") {
         return parents;

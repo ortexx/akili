@@ -41,7 +41,7 @@ export class Transition {
     params = { ...this.path.params, ...params };
     query = { ...this.path.query, ...query };
     hash = hash === undefined? this.path.hash: hash;
-    return router.state.call(router, this.path.state.name, params, query, hash, options);
+    return this.redirect(this.path.state.name, params, query, hash, options);
   }
 
   /**

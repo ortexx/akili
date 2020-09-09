@@ -673,6 +673,38 @@ utils.hasPropertyByKeys = function(keys, object) {
 };
 
 /**
+ * Check the object nested enumerable property existence
+ *
+ * @example
+ * // returns true
+ * utils.hasEnumerablePropertyByKeys(['x', 'y'], {x: {y: 5}});
+ *
+ * @param {string[]} keys
+ * @param {object} object
+ * @returns {boolean}
+ */
+utils.hasEnumerablePropertyByKeys = function(keys, object) {
+  let has = false;
+  let length = keys.length;
+  let i = 0;
+  keys.reduce((o, k) => {
+    i++;
+
+    if (!o || typeof o != 'object') {
+      return !!o;
+    }
+
+    if (!o.propertyIsEnumerable(k)) {
+      return {};
+    }
+
+    (i == length) && (has = o.propertyIsEnumerable(k));
+    return o[k];
+  }, object);
+  return has;
+};
+
+/**
  * Set the object nested property value
  *
  * @example
@@ -753,13 +785,13 @@ utils.deletePropertyByKeys = function(keys, object, fn) {
  * Get the enumerable property target object
  *
  * @param {object} target
- * @param {string} key
+ * @param {string[]} keys
  * @returns {object}
  */
 
-utils.getEnumerablePropertyTarget = function(target, key) {
+utils.getEnumerablePropertyTarget = function(target, keys) {
   const check = obj => {
-    if (obj.propertyIsEnumerable(key)) {
+    if (this.hasEnumerablePropertyByKeys(keys, obj)) {
       return obj;
     }
 
@@ -779,12 +811,12 @@ utils.getEnumerablePropertyTarget = function(target, key) {
  * Get the own property target object
  *
  * @param {object} target
- * @param {string} key
+ * @param {string[]} keys
  * @returns {object}
  */
-utils.getOwnPropertyTarget = function(target, key) {
+utils.getOwnPropertyTarget = function(target, keys) {
   const check = obj => {
-    if (obj.hasOwnProperty(key)) {
+    if (this.hasPropertyByKeys(keys, obj)) {
       return obj;
     }
 
