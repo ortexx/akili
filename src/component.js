@@ -665,11 +665,11 @@ export default class Component {
             component.__disableKeys(prop.keys);
             const checkProp = component.__getNodeProperty(bind.node, prop.keys);            
 
-            if(checkProp && checkProp.evaluated) {                
+            if(checkProp && checkProp.evaluated) {       
               component.scope.__set(prop.keys, prop.value, { silent: true }); 
             }   
 
-            component.__evaluateNode(bind.node, false);         
+            component.__evaluateNode(bind.node, false);
             
             for (let _k in bind.node.__properties) {
               if (!bind.node.__properties.hasOwnProperty(_k)) {
@@ -802,7 +802,7 @@ export default class Component {
           component.__disableAttributeSetter = false;
   
           if (component.__isMounted) {
-            component.__attrTriggerByName(camelAttribute, utils.copy(value, { plain: true }));
+            component.__attrTriggerByName(camelAttribute, value);
           }
         }
         else if (isBooleanAttribute) {
@@ -1119,7 +1119,7 @@ export default class Component {
           return true;
         }
 
-        if(this.__isCreated && !target.hasOwnProperty(key) && key in target) {
+        if(this.__isCreated && value !== undefined && !target.hasOwnProperty(key) && key in target) {          
           const tScope = utils.getEnumerablePropertyTarget(target, [key]);
           tScope.__component.scope[key] = value;
           return false;

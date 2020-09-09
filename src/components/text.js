@@ -44,11 +44,30 @@ export default class Text extends Component {
   }
 
   setElementFocus() {
-    this.el.focus();
+    const pos = this.el.hasAttribute('contenteditable')? this.el.innerHTML.length: this.el.value.length;
+    return this.setElementFocusOn(pos);
+  }
+
+  setElementFocusOn(pos) {
+    if(document.activeElement !== this.el) {
+      this.el.focus();
+    }
+    
+    if(this.el.hasAttribute('contenteditable')) {
+      const text = this.el.firstChild;
+      const range = document.createRange();
+      const sel = window.getSelection();      
+      range.setStart(text, pos);
+      range.setEnd(text, pos);    
+      sel.removeAllRanges();
+      sel.addRange(range);
+      return;
+    }    
+
+    this.el.selectionStart = this.el.selectionEnd = pos;  
   }
 
   setElementBlur() {
     this.el.blur();
   }
 }
-
