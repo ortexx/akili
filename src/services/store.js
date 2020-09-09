@@ -103,6 +103,8 @@ function wrap (value, keys) {
   if (!value.__isProxy) {
     return createProxy(value, keys);
   }
+
+  return value;
 }
 
 export default store;
