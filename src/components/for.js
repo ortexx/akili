@@ -28,8 +28,7 @@ export default class For extends Component {
   }
 
   constructor(...args) {
-    super(...args);
-    
+    super(...args);    
     this.iterators = [];
     this.iteratorEl = null;
     this.reset();
@@ -53,25 +52,38 @@ export default class For extends Component {
     return super.__compareNodePropertyValue.apply(this, arguments);
   }
 
-  created() {    
-    this.createIterator();    
+  __stepIterationChunk(index) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        this.drawChunk(index)
+          .then(resolve)
+          .catch(reject)
+      });
+    });
   }
 
-  compiled() {
-    this.attr('in', this.draw);
+  __removeExcessIterators() {
+    const length = Object.keys(this.data).length;
+
+    for (let i = length, l = this.iterators.length; i < l; i++) {
+      let iterator = this.iterators[i];
+      iterator.__remove();
+      this.iterators.splice(i, 1);
+      l--;
+      i--;
+    }
   }
 
-  removed() {
-    super.removed.apply(this, arguments);
-    this.iteratorEl && this.iteratorEl.remove();
-    delete this.html;
-    delete this.iterators;
-    delete this.iteratorEl; 
-    delete this.__iterator;
-    delete this.__value;
+  __completeDrawing() {
+    if(this.__isRemoved) {
+      return;
+    }
+    
+    this.reset();
+    this.attrs.onOut.trigger(this.data, { bubbles: true });
   }
 
-  createIterator() {
+  __createIterator() {
     let el;
 
     for (let i = 0, l = this.el.children.length; i < l; i++) {
@@ -108,17 +120,36 @@ export default class For extends Component {
     }
 
     this.html = el.innerHTML;
-    this.iteratorEl = this.createIteratorElement(el.outerHTML);
+    this.iteratorEl = this.__createIteratorElement(el.outerHTML);
     el.remove();
   }
 
-  createIteratorElement(html) {
+  __createIteratorElement(html) {
     let el = document.createElement('template');
     el.innerHTML = html;
     return el.content.firstChild;
   }
 
+  created() {    
+    this.__createIterator();
+  }
+
+  compiled() {
+    return this.attr('in', this.draw);
+  }
+
+  removed() {
+    super.removed.apply(this, arguments);
+    this.iteratorEl && this.iteratorEl.remove();
+    delete this.html;
+    delete this.iterators;
+    delete this.iteratorEl; 
+    delete this.__iterator;
+    delete this.__value;
+  }  
+
   loop(key, value, index) {
+    let promise;
     this.__index = index;
     this.__key = key;
     this.__value = value;    
@@ -129,20 +160,54 @@ export default class For extends Component {
       iterator.setIndex(this.__index === iterator.index);     
       iterator.setKey(this.__key === iterator.key);
       iterator.setValue(utils.compare(this.__hash, iterator.hash));
-      this.__promises.push(Akili.compile(iterator.el, { 
+      promise = Akili.compile(iterator.el, { 
         recompile: { 
           checkChanges: true
         } 
-      }));
-      return iterator;
+      });
+      return { promise, iterator };
     }
     
     let el = this.iteratorEl.cloneNode();
     el.innerHTML = this.html;
     this.el.appendChild(el);
-    this.__promises.push(Akili.compile(el));
+    promise = Akili.compile(el); 
     this.iterators.push(el.__akili);
-    return el.__akili;
+    return { promise, iterator: el.__akili};
+  }
+
+  drawChunk(index) {
+    const keys = Object.keys(this.data);
+    const length = keys.length;
+
+    if(index == length) {
+      return Promise.resolve(this.__completeDrawing());
+    }
+
+    const promises = [];    
+    let chunks = +(this.attrs.chunks || length);
+    let size = index + chunks;      
+    size > length && (size = length);  
+    let finisher = this.__stepIterationChunk.bind(this);   
+
+    for (let i = index; i < size; i++) {
+      const key = keys[i];
+      const n = i + 1;
+      const res = this.loop(key, this.data[key], i);
+      res.iterator.iterate(i);
+      promises.push(res.promise);      
+
+      if(n != size) {
+        continue;
+      }
+
+      if(n == length) {
+        this.__removeExcessIterators();
+        finisher = this.__completeDrawing.bind(this);
+      }
+
+      return Promise.all(promises).then(() => finisher(n));
+    }
   }
 
   draw(data) {
@@ -156,50 +221,18 @@ export default class For extends Component {
     }
 
     this.data = data;
-    let index = 0;
     const children = [].slice.call(this.el.children); 
     this.iterators.sort((a, b) => children.indexOf(a.el) - children.indexOf(b.el));
-    this.__children.sort((a, b) => children.indexOf(a) - children.indexOf(b));
-    const loop = (key, value, index) => this.loop(key, value, index).iterate(index);
-
-    if(Array.isArray(data)) {
-      for (let l = data.length; index < l; index++) {
-        loop(index, data[index], index);
-      }
-    }
-    else {
-      const keys = Object.keys(data);
-
-      for (let l = keys.length; index < l; index++) {
-        let key = keys[index];
-        loop(key, data[key], index);
-      }
-    }
-    
-    for (let i = index, l = this.iterators.length; i < l; i++) {
-      let iterator = this.iterators[i];
-      iterator.__remove();
-      this.iterators.splice(i, 1);
-      l--;
-      i--;
-    }
-
-    return Promise.all(this.__promises).then(() => {
-      this.reset();
-      this.attrs.onOut.trigger(data, { bubbles: true });
-    });    
+    this.__children.sort((a, b) => children.indexOf(a) - children.indexOf(b));    
+    return this.drawChunk(0);
   }
 
-  /**
-   * Reset the initial state
-   */
   reset() {
     this.__iterator = null;
     this.__index = 0;
     this.__key = '';
     this.__value = null;
     this.__hash = '';
-    this.__promises = [];
   }  
 }
 

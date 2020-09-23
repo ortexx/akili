@@ -701,15 +701,17 @@ export default class Component {
   }
 
    /**
-   * Evaluate the value by the keys
+   * Evaluate a value by the keys
    *
    * @param {string[]} keys
    * @protected
    */
-  __evaluateByKeys (keys) {  
-    const data = this.__getBind(keys);
+  __evaluateByKeys (keys) {
+    const closestKeys = [];
+    const data = this.__getBind(keys, { closest: closestKeys });
+    data && (keys = closestKeys);
     
-    const evaluate = (val, keys) => {   
+    const evaluate = (val, keys) => {
       this.__evaluateNested(keys, true);
 
       if(!val) {
@@ -1400,9 +1402,7 @@ export default class Component {
       let res = arr[i];
 
       if (res.component === this && res.name == name && res.keyString == keyString) {
-        res.set = options.set;
-        res.get = options.get;
-        res.date = Date.now();
+        arr[i] = { ...res, ...options, date: Date.now() };
         return;
       }
     }
@@ -1411,7 +1411,13 @@ export default class Component {
       Akili.__storeLinks[name] = [];
     }
 
-    info = { component: this, name, keys, keyString, date: Date.now(), set: options.set, get: options.get };
+    info = { 
+      ...options,
+      component: this, 
+      name, keys, 
+      keyString, 
+      date: Date.now()
+    };
     this.__storeLinks[keyString].push(info);
     Akili.__storeLinks[name].push(info);
   }
@@ -1438,12 +1444,18 @@ export default class Component {
       let res = links[i];
 
       if (res.component === this && res.name == name && res.fn === fn) {
-        res.date = Date.now();
+        links[i] = { ...res, ...options, date: Date.now() };
         return;
       }
     }
 
-    Akili.__storeLinks[name].push({ component: this, name, fn, date: Date.now() });
+    Akili.__storeLinks[name].push({ 
+      ...options,
+      component: this, 
+      name, 
+      fn,
+      date: Date.now() 
+    });
 
     if (name == '*' && options.callOnStart !== false) {
       let storeKeys = Object.keys(store.__target);
@@ -1459,7 +1471,7 @@ export default class Component {
     }
 
     if (call) {
-      return Akili.unisolate(() => fn.call(this, utils.copy(store[name], { plain: true })));
+      return Akili.unisolate(() => fn.call(this, utils.copy(store.__target[name], { plain: true })));
     }
   }
 
@@ -1652,14 +1664,19 @@ export default class Component {
       let res = arr[i];
 
       if (res.name == name && res.keyString == keyString) {
-        res.get = options.get;
-        res.set = options.set;
-        res.date = Date.now();
+        arr[i] = { ...res, ...options, date: Date.now() };
         return;
       }
     }
 
-    this.__attrLinks[keyString].push({ name, keys, keyString, date: Date.now(), set: options.set, get: options.get });
+    this.__attrLinks[keyString].push({
+      ...options, 
+      name, 
+      keys,
+      keyString, 
+      date: Date.now(),
+      component: this 
+    });
   }
 
   /**
@@ -1685,12 +1702,18 @@ export default class Component {
       let res = links[i];
 
       if (res.name == name && res.fn === fn) {
-        res.date = Date.now();
+        links[i] = { ...res, ...options, date: Date.now() };
         return;
       }
     }
     
-    this.__attrLinks[name].push({ name, fn, date: Date.now() });
+    this.__attrLinks[name].push({ 
+      ...options,
+      name, 
+      fn,
+      date: Date.now(), 
+      component: this 
+    });
 
     if (name == '*' && options.callOnStart !== false) {
       let attrsKeys = Object.keys(this.__attrs).filter(k => !(this.__attrs[k] instanceof Akili.EventEmitter));
@@ -1922,17 +1945,19 @@ export default class Component {
    * Get a binding by the keys
    *
    * @param {string[]} keys
+   * @param {object} [options]
    * @returns {object|null}
    * @protected
    */
-  __getBind(keys) {
-    return utils.getPropertyByKeys(keys, this.__bindings) || null;
+  __getBind(keys, options = {}) {
+    return utils.getPropertyByKeys(keys, this.__bindings, options) || null;
   }
 
   /**
    * Get all nested bindings by the keys
    * 
    * @param {string[]} keys 
+   * @returns {array}
    */
   __getAllBinds(keys) {
     const root = this.__getBind(keys);
@@ -2289,8 +2314,7 @@ export default class Component {
    * @protected
    */
   __empty(options = {}) {    
-    const nodes = this.__removeChildren({ saveBindings: true });
-    
+    const nodes = this.__removeChildren({ saveBindings: true });    
     this.__mapNodes(node => {      
       if(node.nodeType == 1) {
         node.remove();
@@ -2306,7 +2330,6 @@ export default class Component {
     }, { rootAttrs: false });
 
     this.__unbindByNodes(nodes);
-
     !options.saveBindings && this.__unbindParentsByNodes(nodes);
     this.el.innerHTML = '';
     return nodes;

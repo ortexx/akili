@@ -617,18 +617,36 @@ utils.toDashCase = function(str) {
  *
  * @param {string[]} keys
  * @param {object} object
+ * @param {object} [options]
+ * @param {boolean|array} [options.closest]
  * @returns {*}
  */
-utils.getPropertyByKeys = function(keys, object) {
+utils.getPropertyByKeys = function(keys, object, options = {}) {
+  const breakCode = 'ERR_ARRAY_REDUCE_BREAK';
   let current;
   let length = keys.length;
   let i = 0;
-  keys.reduce((o, k) => {
+  let endKeys = Array.isArray(options.closest)? options.closest: [];
+
+  const breakReducer = () => {
+    const err = new Error('Break the reducer');
+    err.code = breakCode;
+    throw err;
+  }
+
+  const fn = (o, k) => {
     i++;
 
     if (!o || typeof o != 'object') {
-      return o;
+      breakReducer();
     }
+
+    if (o[k] === undefined && options.closest) {
+      current = endKeys.length? o: undefined;
+      breakReducer();
+    }
+
+    endKeys.push(k);
 
     if (o[k] === undefined) {
       return {};
@@ -636,7 +654,17 @@ utils.getPropertyByKeys = function(keys, object) {
 
     (i == length) && (current = o[k]);
     return o[k];
-  }, object);
+  }
+
+  try {
+    keys.reduce(fn, object);
+  }
+  catch(err) {
+    if(err.code != breakCode) {
+      throw err;
+    }
+  }
+  
   return current;
 };
 

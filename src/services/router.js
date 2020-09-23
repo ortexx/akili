@@ -935,7 +935,7 @@ router.changeState = function (options = {}) {
     window.dispatchEvent(new CustomEvent('state-change', { detail: transition }));   
     let params = {};
     let query = this.getUrlQuery();
-    let hash = this.hashMode? '': window.location.hash.replace('#', ''); 
+    let hash = this.hashMode? '': window.location.hash.replace('#', '');
     let level = 0;      
 
     const next = states => {

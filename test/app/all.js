@@ -82,6 +82,7 @@ export default class All extends Component {
         multiple="\${this.cSelectMultiple}"
         value="\${this.cSelectValue}"
         in="\${this.cSelectData}"
+        chunks="2"
         on-change="\${this.cSelectValue = event.target.content}"
       >
        <option selected="\${this.loopKey == 2}">\${this.loopValue}</option>
@@ -100,6 +101,7 @@ export default class All extends Component {
       <radio
         name="radio2"
         in="\${this.cForData}"
+        chunks="2"
       >
         <radio-button value="\${ this.loopValue }"></radio-button>
       </radio>

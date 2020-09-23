@@ -1,3 +1,5 @@
+import utils from './utils';
+
 /**
  * Class to work with events.
  * 
@@ -25,6 +27,7 @@ export default class EventEmitter {
     }
 
     if (force || !this.inEvaluating()) {
+      data = utils.copy(data, { plain: true });
       this.el.dispatchEvent(new CustomEvent(this.name, this.prepareOptions({ detail: data,  ...options })));
     }   
   }

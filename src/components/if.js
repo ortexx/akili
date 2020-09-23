@@ -24,7 +24,6 @@ export default class If extends Component {
 
   constructor(...args) {
     super(...args);
-
     this.html = this.el.innerHTML;
     this.el.innerHTML = '';
     this.state = false;

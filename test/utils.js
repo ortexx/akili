@@ -229,9 +229,13 @@ describe('utils.js', () => {
       });      
 
       describe('.getPropertyByKeys()', () => {
-        it('should return true value', () => {
+        it('should return the right value', () => {
+          const closest = [];
           assert.equal(utils.getPropertyByKeys(['x', 'y'], obj), 5, 'simple checking');
           assert.equal(utils.getPropertyByKeys(['x', 'z', '0', 'w'], obj), 1, 'nested array checking');
+          const val = utils.getPropertyByKeys(['x', '6'], obj, { closest });
+          assert.strictEqual(val, obj.x, 'closest value checking');
+          assert.isOk(closest[0] == 'x' && closest.length == 1, 'closest keys checking');
         });
 
         it('should return undefined if value does not exist', () => {

@@ -53,18 +53,20 @@ export default class Radio extends For {
 
   compiled() {
     if(this.iterable) {
-      return super.compiled.apply(this, arguments);
+      const res = super.compiled.apply(this, arguments);
+      this.unattr('in', this.draw);
+      return res;
     }
   }
 
   resolved() {
-    this.attr('in', this.redrawRadio, { callOnStart: false });
     this.attr('value', this.setValue);
     this.attr('name', this.setNames);
+    return this.attr('in', this.setIn, { callOnStart: false });
+  }
 
-    if(this.iterable) {
-      return super.resolved.apply(this, arguments);
-    }
+  setIn(data) {
+    return this.draw(data).then(this.redrawRadio.bind(this));
   }
 
   redrawRadio() {

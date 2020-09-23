@@ -35,13 +35,16 @@ export default class Select extends For {
     }
   }
 
-  compiled() { 
-    let res;    
-    this.iterable && (res = super.compiled.apply(this, arguments));
-    this.attr('multiple', this.setMultiple, { callOnStart: false });    
+  compiled() {    
+    this.iterable && (super.compiled.apply(this, arguments));
+    this.attr('multiple', this.setMultiple, { callOnStart: false });
     this.attr('value', this.setValue);
-    this.attr('in', this.redrawSelect);   
-    return res;
+    this.unattr('in', this.draw);
+    return this.attr('in', this.setIn);
+  }
+
+  setIn(data) {
+    return this.draw(data).then(this.redrawSelect.bind(this));
   }
 
   redrawSelect() {
@@ -49,7 +52,7 @@ export default class Select extends For {
     const content = vals.length? vals: null;
     let selected = [];
     
-    for (let i = 0, l = this.el.options.length; i < l; i++) {
+    for (let i = this.el.options.length - 1; i >= 0; i--) {
       let option = this.el.options[i];
       let selection = !!option.getAttribute('selected');
 
@@ -63,11 +66,11 @@ export default class Select extends For {
         selected.push(option.value);
         continue;
       }
-      
+
       option.selected = selection;
       selection && selected.push(option.value);
     }
-    
+
     this.changeValue(this.formatValue(selected));
   }
 
