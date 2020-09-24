@@ -28,6 +28,8 @@ import Objects from './components/object.js';
 import Route from './components/route.js';
 import Url from './components/url.js';
 import A from './components/a.js';
+import Script from './components/script.js';
+import Style from './components/style.js';
 import Scope from './scope.js';
 import EventEmitter from './event-emitter.js';
 import request from './services/request.js';
@@ -61,11 +63,7 @@ Akili.__wrapping = false;
 Akili.__disableStoreProxy = false;
 Akili.__rootOuterHTML = '';
 Akili.__onError = () => Akili.triggerInit(false);
-
-Akili.htmlBooleanAttributes = [
-  'disabled', 'contenteditable', 'hidden'
-];
-
+Akili.htmlBooleanAttributes = [ 'disabled', 'contenteditable', 'hidden' ];
 Akili.components = {};
 Akili.services = {};
 Akili.Component = Component;
@@ -93,6 +91,8 @@ Akili.components.Textarea = Textarea;
 Akili.components.Track = Track;
 Akili.components.Url = Url;
 Akili.components.Video = Video;
+Akili.components.Script = Script;
+Akili.components.Style = Style;
 Akili.services.request = request;
 Akili.services.router = router;
 Akili.services.store = store;
@@ -120,6 +120,8 @@ Akili.define = function () {
   Textarea.define();
   Track.define();
   Video.define();
+  Script.define();
+  Style.define();
 };
 
 /**

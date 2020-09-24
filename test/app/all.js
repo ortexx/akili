@@ -5,6 +5,15 @@ export default class All extends Component {
     super(...args);
 
     this.el.innerHTML += `
+      <script>\${ this.undefinedValue.x }</script>
+      <style>\${ this.undefinedValue.x }</style>
+      <prevent>
+        <if is="true"></if>
+        <input/>        
+      </prevent>
+    `;
+
+    this.el.innerHTML += `
       <cancel></cancel>
       <prevent>
         <if is="true"></if>
