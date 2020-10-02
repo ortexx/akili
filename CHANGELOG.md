@@ -1,3 +1,20 @@
+# 1.2.x (October 02, 2020)
+
+* added component __ssr__ option
+* removed old useless conditions
+* added __for__ component __chunks__ attribute
+* added __script__ and __style__ components
+* fixed the nested node evaluation bug
+* fixed the store wrapper bug
+* improved __Text__ component focus
+* added the store nested triggering
+* fixed __if__ component order bug
+* fixed __component.__resolve()__ bug
+* changed components: __select__, __radio__, __input__
+* changed __the store__ triggering logic
+* removed __Akili.nextTick()__
+* fixed a lot of core bugs
+
 # 1.1.x (December 18, 2019)
 
 * fixed __EventEmitter__ removal bug

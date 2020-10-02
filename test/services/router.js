@@ -50,6 +50,7 @@ describe('router.js', () => {
           hash: 's',
           state: '2',
           pattern: '^/2',
+          options: { x: 2 },
           component: RouterComponent
         },
         {
@@ -181,6 +182,16 @@ describe('router.js', () => {
         let url = '/1/1-2';
         let content = router.getArrayPatternContent(router.getStatesByLevel(1), url);
         assert.strictEqual(content.state, router.getState('1.2'));
+      });
+    });
+
+    describe('.prepareStateArgs()', () => {
+      it('should return the right args', () => {
+        const result = router.prepareStateArgs('2', { o: 2 }, {}, null, { x: 3 });
+        assert.equal(result.params.o, 1, 'check params');
+        assert.equal(result.query.m, 1, 'check query');
+        assert.equal(result.hash, null, 'check hash');
+        assert.equal(result.options.x, 3, 'check options');
       });
     });
 

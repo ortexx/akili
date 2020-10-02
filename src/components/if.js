@@ -29,7 +29,7 @@ export default class If extends Component {
     this.state = false;
     this.active = false;
     this.recreate = false;
-    this.isCompiled = false;
+    this.rendered = false;
     this.display = getComputedStyle(this.el).display;
   }
 
@@ -52,7 +52,7 @@ export default class If extends Component {
   }
 
   setState() {
-    let res = this.compilation();
+    let res = this.rendering();
     let next = this.el.nextElementSibling;
     let result;
 
@@ -63,25 +63,25 @@ export default class If extends Component {
     next.__akili.setActivity(this.active || this.state);
     next.__akili.setRecreation(this.recreate);
     result = next.__akili.setState();    
-    return Promise.resolve(res).then(() =>  result);
+    return Promise.resolve(res).then(() => result);
   }
 
-  compilation() {
+  rendering() {
     let res = Promise.resolve();
 
     if (this.state && !this.active) {
       this.el.style.setProperty('display', this.display, 'important');
 
-      if (this.recreate || !this.isCompiled) {
-        res = this.compile();
+      if (this.recreate || !this.rendered) {
+        res = this.render();
       }
     }
     else {
       if (this.recreate) {
         this.empty();
       }
-      else if (!this.isCompiled) {
-        res = this.compile();
+      else if (!this.rendered) {
+        res = this.render();
       }
 
       this.el.style.setProperty('display', 'none', 'important');
@@ -90,12 +90,12 @@ export default class If extends Component {
     return res;
   }
 
-  compile() {
+  render() {
     let res;
     this.empty();
     this.el.innerHTML = this.html;   
     res = Akili.compile(this.el, { recompile: true });
-    this.isCompiled = true;
+    this.rendered = true;
     return res;
   }
 }

@@ -181,6 +181,7 @@ export default class For extends Component {
     const length = keys.length;
 
     if(index == length) {
+      this.__removeExcessIterators();
       return Promise.resolve(this.__completeDrawing());
     }
 

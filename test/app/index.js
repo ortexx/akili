@@ -6,6 +6,7 @@ import { FirstStore, SecondStore } from './store';
 import Abstract from './abstract';
 import Attribute from './attribute';
 import Prevent from './prevent';
+import Ssr from './ssr';
 import Cancel from './cancel';
 import All from './all';
 import elements from './elements';
@@ -27,6 +28,7 @@ Akili.component('first-store', FirstStore);
 Akili.component('second-store', SecondStore);
 Akili.component('cancel', Cancel);
 Akili.component('prevent', Prevent);
+Akili.component('ssr', Ssr);
 Akili.component('app', App);
 Akili.component('abstract', Abstract);
 Akili.component('section-one', SectionOne);
@@ -51,7 +53,9 @@ describe('Application initialization', () => {
           undefined: { result: {}, date: Date.now() }
         }
       }, 
-    };   
+    };  
+    
+    window.AKILI_SSR = true;
 
     return Akili.init(elements.root).then(() => {
       elements.root.appendChild(elements.app);

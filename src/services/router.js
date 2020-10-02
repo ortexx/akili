@@ -159,6 +159,7 @@ router.baseUrl = "/";
 router.states = [];
 router.hashMode = true;
 router.transition = null;
+router.__info = {};
 router.__queue = [];
 router.__redirects = 0;
 router.__init = false;
@@ -194,6 +195,7 @@ router.add = function (name, pattern, options = {}) {
     params: {},
     query: {},
     handler: () => {},
+    options: {}
   };
 
   if(Akili.options.debug && options.component && (options.template || options.templateUrl)) {
@@ -580,19 +582,20 @@ router.createStateUrl = function (state, params = {}, query = {}, hash = undefin
 router.prepareStateArgs = function (state, params = {}, query = {}, hash = undefined, options = {}) {
   let args = { params, query, hash, options };
 
-  for(let i = 0; i < 27; i++) {
+  for(let i = 0; i < 4^4; i++) {
     const paramsTemp = this.prepareStateParams(state, params, args);
     const queryTemp = this.prepareStateQuery(state, query, args);
     const hashTemp = this.prepareStateHash(state, hash, args);
-    
+    const optionsTemp = this.prepareStateOptions(state, options, args);
+
     if(hashTemp === null) {
-      options.emptyHash = null;
+      optionsTemp.emptyHash = null;
     }
     else if(hashTemp === '') {
-      options.emptyHash = '';
+      optionsTemp.emptyHash = '';
     }
 
-    const newArgs = { params: paramsTemp, query: queryTemp, hash: hashTemp, options };
+    const newArgs = { params: paramsTemp, query: queryTemp, hash: hashTemp, options: optionsTemp };
 
     if(utils.compare(newArgs, args)) {
       break;
@@ -645,13 +648,33 @@ router.prepareStateQuery = function(state, query, args) {
 }
 
 /**
+ * Prepare the state options
+ * 
+ * @param {string|Object} state
+ * @param {object} options
+ * @param {object} [args]
+ */
+router.prepareStateOptions = function(state, options, args) {  
+  typeof state !== 'object' && (state = this.getState(state));
+  const states = state.name.split('.');
+  options = Object.assign({}, options);
+
+  for(let i = states.length - 1; i >= 0; i--) {
+    const current = states.slice(0, states.length - i).join('.');
+    options = this.createStateObjectArgs(options, this.getState(current).options, args);
+  }
+
+  return options;
+}
+
+/**
  * Create the state arguments
  * 
  * @param {object} current
  * @param {object} defaults
  * @param {object} [args]
  */
-router.createStateObjectArgs = function (current, defaults, args = { params: {}, query: {} }) {
+router.createStateObjectArgs = function (current, defaults, args = { params: {}, query: {}, options: {} }) {
   const all = Object.assign({}, current);
 
   for(let key in defaults) {
@@ -842,7 +865,7 @@ router.getArrayPatternContent = function (arr, url) {
       continue;
     }
 
-    return { state: state, ...content };
+    return { state, ...content };
   }
 
   return null;
@@ -929,14 +952,25 @@ router.changeState = function (options = {}) {
         resolve();
       }
     });
-  }).then(() => { 
+  }).then(() => {   
     transition.previous = router.transition || null;
     router.transition = transition;
     window.dispatchEvent(new CustomEvent('state-change', { detail: transition }));   
+    const emptyHash = options.emptyHash;
+    
+    if(!this.__redirects) {
+      const docStyle = getComputedStyle(document.documentElement);
+      this.__info.scrollPos = { left: window.scrollX, top: window.scrollY };      
+      this.__info.docMinHeight = docStyle.minHeight;
+      this.__info.docMinWidth = docStyle.minWidth;    
+      document.documentElement.style.minHeight = document.documentElement.offsetHeight + 'px';
+      document.documentElement.style.minWidth = document.documentElement.offsetWidth + 'px';
+    }
+   
     let params = {};
     let query = this.getUrlQuery();
     let hash = this.hashMode? '': window.location.hash.replace('#', '');
-    let level = 0;      
+    let level = 0;
 
     const next = states => {
       if (!states.length) {
@@ -949,11 +983,12 @@ router.changeState = function (options = {}) {
         return Promise.resolve();
       }
 
-      let state = content.state; 
-      transition.setPath({ state, component: route });    
+      let state = content.state;
+      transition.setPath({ state, component: route });
       params = { ...params, ...content.params };
-      hash = hash || options.emptyHash;
-      ({ params, query, hash, options } = this.prepareStateArgs(state, params, query, hash, options));     
+      hash = hash || emptyHash;
+      ({ params, query, hash, options } = this.prepareStateArgs(state, params, query, hash, options));  
+      options.init = Akili.__init === null;
       hash = hash || '';
       let realUrl = this.createStateUrl(state, params, query, hash, options, false); 
       this.isolate(() => this.replaceUrl(realUrl)); 
@@ -975,9 +1010,10 @@ router.changeState = function (options = {}) {
         isDifferent = transition.isRouteChanged(transition.path);
       }
         
-      let load = isDifferent && options.reload !== false;    
+      let load = isDifferent && options.reload !== false;
+      const prevData = transition.previous && transition.previous.path? transition.previous.path.data: undefined;
 
-      return Promise.resolve(load? state.handler(transition): transition.path.data).then(data => {        
+      return Promise.resolve(load? state.handler(transition): prevData).then(data => {
         transition.path.data = data;
         state.title && (document.title = typeof state.title == 'function'? state.title(transition): state.title);
 
@@ -1019,13 +1055,16 @@ router.changeState = function (options = {}) {
           console.warn(`Not found a default route. You can pass it in "router.init(defaultUrl)" function`);
         }
       }
-      
-      if (!options.saveScrollPosition && (!transition.path || !transition.path.hash)) {
-        window.scrollTo(0, 0);
+
+      if(this.hashMode || !transition.path || !transition.path.hash) {
+        window.scrollTo({ ...options.saveScrollPosition? this.__info.scrollPos: { top: 0, left: 0 } });
       }
 
-      this.__redirects = 0;      
-      window.dispatchEvent(new CustomEvent('state-changed', { detail: transition }));
+      document.documentElement.style.minHeight = this.__info.docMinHeight;
+      document.documentElement.style.minWidth = this.__info.docMinWidth;
+      this.__redirects = 0;
+      this.__info = {};
+      window.dispatchEvent(new CustomEvent('state-changed', { detail: transition }));      
       transition.finish();
       return transition;
     });

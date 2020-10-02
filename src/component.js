@@ -21,6 +21,7 @@ export default class Component {
   static template = '';
   static templateUrl = '';
   static scope = null;  
+  static ssr = true;
 
   /**
    * Define the component
@@ -84,6 +85,7 @@ export default class Component {
     this.__evaluationComponent = this;
     this.scope = scope;
     this.el = el;
+    !this.constructor.ssr && window.AKILI_SSR && this.cancel();
   }
 
   /**
@@ -162,7 +164,7 @@ export default class Component {
     let control = this.__controlAttributes || !this.__evaluationParent;
     let p = Promise.resolve();
     this.__attributeOf = control? this: this.__evaluationParent.__akili;
-    
+
     if (!this.__recompiling || this.__compiling.newParent || this.__controlAttributes) {
       this.__interpolateAttributes(this.el, this.__attributeOf);
     }
@@ -507,11 +509,9 @@ export default class Component {
     let res = node.__expression.replace(evaluationRegexGlobal, (m, d) => {     
       counter++;
       let evaluate;
-      let evaluation = [];
-      let existingBindings = {};
-      let parentBindings = {};
       let parseValue = node.__component.__getParsedExpression(d);
-      Akili.__evaluation = { node: node, list: [], component: node.__component };
+      this.__finishEvaluationCycle();
+      Akili.__evaluation = { node, list: [], component: evalComponent };
       
       try {        
         evaluate = this.constructor.parse(evalComponent.__evaluationComponent.scope, parseValue, { ...globals });
@@ -520,51 +520,7 @@ export default class Component {
         throw this.__createExceptionMessage(node, err);
       }
 
-      if(Akili.__evaluation) {
-        evaluation = Akili.__evaluation.list;
-        Akili.__evaluation.list = null;
-        Akili.__evaluation = null;
-      }
-      
-      for (let i = evaluation.length - 1; i >= 0; i--) {
-        let data = evaluation[i];
-        let hash = data.component.__createKeysHash(data.keys);
-        let parentsHash = data.component.__createKeysHash(data.parents);
-       
-        if (data.notBinding) {
-          continue;
-        }
-
-        if (existingBindings[hash]) {
-          continue;
-        }
-
-        let parentValue = utils.getPropertyByKeys(data.parents, data.component.__scope);        
-
-        if (parentValue && typeof parentValue == 'object') {
-          if (Akili.options.debug && parentBindings[parentsHash] == 50) {
-            // eslint-disable-next-line no-console
-            console.warn([
-              `For higher performance, don't loop Proxy arrays/objects inside expression functions, or use Akili.unevaluate() to wrap you code.`,
-              `${ node.__expression.trim() }`,
-              `scope property "${ data.parents.join('.') }"`
-            ].join('\n\tat '));
-          }
-          
-          !parentBindings[parentsHash]? parentBindings[parentsHash] = 1: parentBindings[parentsHash]++;
-        }
-                
-        if (
-          utils.isScopeProxy(parentValue) && 
-          data.component !== evalComponent.__evaluationComponent && 
-          data.component === data.realComponent
-        ) {
-          continue;
-        }  
-
-        data.component.__bindAndSetProperty(node, data.keys, data.evaluated);
-        existingBindings[hash] = true;
-      }
+      this.__finishEvaluationCycle();
 
       if (node instanceof window.Attr) {
         expression = m;
@@ -585,6 +541,72 @@ export default class Component {
     });
 
     return { res, counter, expression, attributeValue };
+  }
+
+  /**
+   * Finish the evaluation cycle
+   *
+   * @protected
+   */
+  __finishEvaluationCycle() {
+    let evaluation = [];
+    let existingBindings = {};
+    let parentBindings = {};
+    let node;
+    let component;
+    
+    if(Akili.__evaluation) {
+      node = Akili.__evaluation.node;
+      component = Akili.__evaluation.component;
+      evaluation = Akili.__evaluation.list;
+      Akili.__evaluation.list = null;
+      Akili.__evaluation = null;
+    }
+
+    for (let i = evaluation.length - 1; i >= 0; i--) {
+      let data = evaluation[i];
+
+      if(data.component.__isRemoved) {
+        continue;
+      }
+
+      let hash = data.component.__createKeysHash(data.keys);
+      let parentsHash = data.component.__createKeysHash(data.parents);
+
+      if (data.notBinding) {
+        continue;
+      }
+
+      if (existingBindings[hash]) {
+        continue;
+      }
+
+      let parentValue = utils.getPropertyByKeys(data.parents, data.component.__scope);        
+
+      if (parentValue && typeof parentValue == 'object') {
+        if (Akili.options.debug && parentBindings[parentsHash] == 50) {
+          // eslint-disable-next-line no-console
+          console.warn([
+            `For higher performance, don't loop Proxy arrays/objects inside expression functions, or use Akili.unevaluate() to wrap you code.`,
+            `${ node.__expression.trim() }`,
+            `scope property "${ data.parents.join('.') }"`
+          ].join('\n\tat '));
+        }
+        
+        !parentBindings[parentsHash]? parentBindings[parentsHash] = 1: parentBindings[parentsHash]++;
+      }
+              
+      if (
+        utils.isScopeProxy(parentValue) && 
+        data.component !== component.__evaluationComponent && 
+        data.component === data.realComponent
+      ) {
+        continue;
+      }  
+
+      data.component.__bindAndSetProperty(node, data.keys, data.evaluated);
+      existingBindings[hash] = true;
+    }
   }
 
   /**
@@ -1069,7 +1091,6 @@ export default class Component {
           let notBinding = false;
           let evaluated = !utils.getOwnPropertyTarget(this.__scope, keys);
           let component = this;
-          let excArr = keys.slice();
 
           if (target instanceof Scope) {
             let realTarget = utils.getOwnPropertyTarget(target, [key]);
@@ -1078,22 +1099,7 @@ export default class Component {
 
           if (Akili.__wrapping && keys.length > 1) {
             return target[key];
-          }
-
-          const forParents = Akili.__evaluation.component.parents(c => c instanceof Akili.components.For);
-
-          for (let i = 0, l = forParents.length; i < l; i++) {
-            for (let k = 0, c = keys.length; k < c; k++) { 
-              const forData = forParents[i].data;
-              const data = utils.getPropertyByKeys(excArr, component.__scope);
-
-              if (data && typeof data == 'object' && forData === data) {
-                return target[key];
-              }
-  
-              excArr.pop();
-            }
-          }               
+          }            
 
           if (!(key in target)) {
             target[key] = undefined;
@@ -1129,23 +1135,6 @@ export default class Component {
 
         if (typeof target[key] === 'function') {
           value = Akili.wrapFunction(value);
-        }
-
-        CHECK_EXISTENCE: if (parents.length > 0) {
-          let targetParentValue = parents.length > 1? utils.getPropertyByKeys(parents.slice(0, -1), this.__scope): this.__scope;
-          
-          for (let k in targetParentValue) {
-            if (!targetParentValue.hasOwnProperty(k)) {
-              continue;
-            }
-
-            if (targetParentValue[k] && targetParentValue[k].__target === target) {
-              break CHECK_EXISTENCE;
-            }
-          }
-
-          target[key] = value;
-          return true;
         }
 
         target[key] = this.__nestedObserve(value, keys);
@@ -1911,7 +1900,7 @@ export default class Component {
 
       if (data.realComponent === this && data.keysString == parentKeysString) {
         component = data.component;
-      }      
+      }
       
       if (data.keysString == parentKeysString && data.component === component) {
         bind.splice(l, 1);
@@ -2691,5 +2680,17 @@ export default class Component {
 
   get transition() {
     return (this.__scope && this.__scope.__transition) || null;
+  }
+
+  get isCreated() {
+    return this.__isCreated;
+  }
+
+  get isCompiled() {
+    return this.__isCompiled;
+  }
+
+  get isResolved() {
+    return this.__isResolved;
   }
 }

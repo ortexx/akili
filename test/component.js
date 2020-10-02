@@ -32,6 +32,10 @@ describe('component.js', () => {
         assert.isOk(component.wasCreated);
       });
 
+      it('should return true', () => {
+        assert.isTrue(component.isCreated);
+      });
+
       describe('.__initialize()', () => {
         it('should has proxy scope', () => {
           assert.isOk(component.scope.__isProxy);
@@ -89,6 +93,10 @@ describe('component.js', () => {
 
       it('should call compiled function', () => {
         assert.isOk(component.wasCompiled);
+      });
+
+      it('should return true', () => {
+        assert.isTrue(component.isCompiled);
       });
 
       it('should create scope html binding', () => {
@@ -153,6 +161,20 @@ describe('component.js', () => {
 
       it('should set <p> element', () => {
         assert.equal(elements.home.querySelector('p').innerHTML, parentComponent.scope.homeAttrTwo);
+      });
+    });
+
+    describe('.__resolve()', () => {
+      before(() => {
+        return component.__resolve();
+      });
+
+      it('should call created function', () => {
+        assert.isOk(component.wasResolved);
+      });
+
+      it('should return true', () => {
+        assert.isTrue(component.isResolved);
       });
     });
 
@@ -793,9 +815,14 @@ describe('component.js', () => {
       });
     });
     
+    
     describe('.cancel()', () => {
       it('should not be compiled', () => { 
         assert.isNull(Akili.root.child('cancel'));
+      });
+
+      it('should not be compiled because of the ssr options', () => { 
+        assert.isNull(Akili.root.child('ssr'));
       });
     });  
 

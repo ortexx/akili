@@ -48,6 +48,10 @@ export default class Home extends Component {
     this.scope.parentTwo = this.attrs.parentTwo;
   }
 
+  resolved() {
+    this.wasResolved = true;
+  }
+
   removed() {
     this.wasRemoved = true;
   }

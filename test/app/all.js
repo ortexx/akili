@@ -5,6 +5,10 @@ export default class All extends Component {
     super(...args);
 
     this.el.innerHTML += `
+      <ssr>\${ this.x }</ssr>
+    `;
+
+    this.el.innerHTML += `
       <script>\${ this.undefinedValue.x }</script>
       <style>\${ this.undefinedValue.x }</style>
       <prevent>
