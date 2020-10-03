@@ -60,9 +60,9 @@ module.exports = function(config) {
       level: ""
     },
     customLaunchers: {
-      ChromeHeadless: {
-        base: 'ChromeHeadless',
-        flags: ['--no-sandbox', '--disable-gpu']
+      ChromeActions: {
+        base: 'Chrome',
+        flags: ['--no-sandbox']
       }
     },
     coverageIstanbulReporter: {
@@ -75,7 +75,7 @@ module.exports = function(config) {
   };
 
   if(process.env.GITHUB_ACTIONS){
-    conf.browsers = ['ChromeHeadless'];
+    conf.browsers = ['ChromeActions'];
   }
 
   config.set(conf);
