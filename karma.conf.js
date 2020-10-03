@@ -22,10 +22,11 @@ module.exports = function(config) {
     webpack: {
       watch: false,
       mode: 'none',
+      devtool: 'inline-source-map',
       module: {
         rules: [
           {
-            enforce: "pre",
+            enforce: 'pre',
             test: /\.js$/,
             exclude: /node_modules/,
             loader: 'eslint-loader',
@@ -59,13 +60,13 @@ module.exports = function(config) {
       level: ""
     },
     customLaunchers: {
-      Chrome_travis_ci: {
-        base: 'Chrome',
-        flags: ['--no-sandbox']
+      ChromeHeadless: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox', '--disable-gpu']
       }
     },
     coverageIstanbulReporter: {
-      reports: [process.env.TRAVIS? 'lcov': 'html'],
+      reports: [process.env.GITHUB_ACTIONS? 'lcov': 'html'],
       dir : 'coverage/'
     },
     singleRun: true,
@@ -73,8 +74,8 @@ module.exports = function(config) {
     port: 9999
   };
 
-  if(process.env.TRAVIS){
-    conf.browsers = ['Chrome_travis_ci'];
+  if(process.env.GITHUB_ACTIONS){
+    conf.browsers = ['ChromeHeadless'];
   }
 
   config.set(conf);

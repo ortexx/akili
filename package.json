@@ -12,12 +12,13 @@
     "start": "npm run build",
     "build": "webpack",
     "build-prod": "cross-env NODE_ENV=production webpack",
+    "build-ci": "npm run eslint && npm run test && npm run build-prod",
     "test": "karma start",
     "eslint": "eslint src test"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run eslint && npm run test && npm run build-prod && git add ./dist/*"
+      "pre-commit": "npm run build-ci && git add ./dist/*"
     }
   },
   "keywords": [
@@ -41,7 +42,7 @@
     "karma": "^5.2.3",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.2.0",
-    "karma-coverage-istanbul-reporter": "^2.1.1",
+    "karma-coverage-istanbul-reporter": "^3.0.3",
     "karma-mocha": "^2.0.1",
     "karma-mocha-reporter": "^2.2.5",
     "karma-sourcemap-loader": "^0.3.8",
