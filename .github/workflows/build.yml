@@ -16,16 +16,9 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: export CHROME_BIN=/usr/bin/google-chrome
-    - run: export DISPLAY=:99.0
-    - run: sh -e /etc/init.d/xvfb start
-    - run: sudo apt-get update
-    - run: sudo apt-get install -y dpkg
-    - run: sudo apt-get install -y libappindicator1 fonts-liberation
-    - run: wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-    - run: sudo dpkg -i google-chrome*.deb
     - run: npm ci
-    - run: npm run build-ci
+    - run: sudo apt-get install xvfb
+    - run: xvfb-run --auto-servernum npm run build-ci
     - name: Coveralls
       uses: coverallsapp/github-action@master
       with:
