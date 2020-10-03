@@ -1,4 +1,4 @@
-name: Publish
+name: publish
 on:
   release:
     types: [created]
@@ -11,7 +11,8 @@ jobs:
         with:
           node-version: 12
       - run: npm ci
-      - run: npm run build-ci
+      - run: sudo apt-get install xvfb
+      - run: xvfb-run --auto-servernum npm run build-ci
   publish-npm:
     needs: build
     runs-on: ubuntu-latest

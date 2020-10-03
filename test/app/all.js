@@ -86,7 +86,7 @@ export default class All extends Component {
         focus="true"
         value="\${this.cContentValue}" 
         on-input="\${this.cContentValue = event.target.innerHTML}"></content>
-      <div contenteditable></div>
+      <div contenteditable>text</div>
       <input type="checkbox" checked="\${this.cCheckboxChecker}"/>
     `;
 

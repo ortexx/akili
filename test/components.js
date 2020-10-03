@@ -118,10 +118,10 @@ describe('components/', () => {
       let input;
 
       before(() => {
-        input = component.children('input')[0];
+        input = component.child('input');
       });
 
-      it('should change input value', () => {
+      it('should change the input value', () => {
         component.scope.cInputValue = '1';
         assert.equal(input.el.value, '1');
       });
@@ -141,11 +141,11 @@ describe('components/', () => {
         input.el.addEventListener('debounce', fn);        
       });
 
-      it('should not be focused', () => {
+      it('should not be focused on the input', () => {
         assert.notStrictEqual(input.el, document.activeElement);
       });
 
-      it('should be focused', () => {
+      it('should be focused on the input', () => {
         component.scope.cInputFocus = true;
         assert.strictEqual(input.el, document.activeElement);
       });
@@ -176,9 +176,11 @@ describe('components/', () => {
 
     describe('content manipulations', () => {
       let content;
+      let div;
 
       before(() => {
-        content = component.child('content');
+        content = component.child('content');        
+        div = component.child('[contenteditable]');
       });
 
       it('should change content value', () => {
@@ -190,6 +192,11 @@ describe('components/', () => {
         content.el.innerHTML = '2';
         content.el.dispatchEvent(new Event('input'));
         assert.equal(component.scope.cContentValue, '2');
+      });
+
+      it('should set focus on the div', () => {
+        div.setElementFocus();
+        assert.strictEqual(div.el, document.activeElement, 'check the activity');
       });
     });
 

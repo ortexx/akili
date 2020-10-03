@@ -60,10 +60,46 @@ describe('store.js', () => {
       store.test = '*';  
       assert.equal(elements.sectionOne.__akili.scope.linkHandler, '*', 'check the value');    
     });  
-  });  
+  });   
 
   describe('store property changing', () => {
-    it('should change sectionOne scope value by property ', () => {
+    it('should not delete because of disablement', () => {
+      Akili.__disableStoreProxy = true;
+      store.test = 'start'; 
+      assert.notEqual(elements.sectionOne.__akili.scope.test, 'start');
+    });
+
+    it('should set sectionOne scope value to undefined', () => {
+      Akili.__disableStoreProxy = false;
+      store.test = 'start';  
+      assert.equal(elements.sectionOne.__akili.scope.test, 'start');
+    });
+
+    it('should not change the value if isolation is', () => {
+      Akili.isolate(() => {
+        store.test = 'change'; 
+        assert.notEqual(elements.sectionOne.__akili.scope.test, 'change');
+      });     
+    });
+
+    it('should change the value after the isolation', () => {
+      assert.equal(elements.sectionOne.__akili.scope.test, 'change');
+    });
+
+    it('should change the nested property', () => {
+      Akili.__disableStoreProxy = true;
+      store.test = {};
+      Akili.__disableStoreProxy = false;
+      store.test.nested = true;
+      assert.isTrue(elements.sectionOne.__akili.scope.test.nested);
+    });
+
+    it('should change the existed nested property', () => {
+      store.test = { nested: { nested: true } };
+      assert.isTrue(elements.sectionOne.__akili.scope.test.nested.nested);
+    });
+
+    it('should change the compound value with the simple one', () => {
       store.test = 'end'; 
       assert.equal(elements.sectionOne.__akili.scope.test, 'end');
     });
@@ -72,11 +108,30 @@ describe('store.js', () => {
       store.handler = 'end'; 
       assert.equal(elements.sectionOne.__akili.scope.linkHandler, 'end');
     });
-  });
+  }); 
 
   describe('delete store property', () => {
+    it('should not delete because of disablement', () => {
+      Akili.__disableStoreProxy = true;
+      delete store.test; 
+      assert.equal(elements.sectionOne.__akili.scope.test, 'end');
+    });
+
     it('should set sectionOne scope value to undefined', () => {
+      Akili.__disableStoreProxy = false;
       delete store.test;   
+      assert.isUndefined(elements.sectionOne.__akili.scope.test);
+    });
+
+    it('should not change the value if isolation is', () => {
+      store.test = 'end';
+      Akili.isolate(() => {
+        delete store.test;
+        assert.equal(elements.sectionOne.__akili.scope.test, 'end');
+      });     
+    });
+
+    it('should change the value after the isolation', () => {
       assert.isUndefined(elements.sectionOne.__akili.scope.test);
     });
   });

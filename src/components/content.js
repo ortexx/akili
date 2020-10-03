@@ -32,14 +32,51 @@ export default class Content extends Text {
     this.valueKey = 'innerHTML';
   }
 
-  setElementFocus() {
-    let range = document.createRange();
-    let selection = window.getSelection();
+  walkTextNodes(el, fn){
+    const nodes = el.childNodes;
 
-    range.selectNodeContents(this.el);
-    range.collapse(false);
-    selection.removeAllRanges();
-    selection.addRange(range);
+    for (let i = 0, l = nodes.length; i < l; i++) {
+      let node = nodes[i];
+      node.nodeType == 3? fn(node): this.walkTextNodes(node, fn);
+    }
+  }
+
+  getElementTextLength() {
+    let length = 0;
+    this.walkTextNodes(this.el, node => length += node.nodeValue.length);
+    return length;
+  }
+
+  setElementFocusOn(pos) {
+    const nodes = [];
+    let node;
+    const max = this.getElementTextLength();
+    pos > max && (pos = max); 
+    
+    if(pos <= 0) {
+      return this.el.focus();
+    }
+    
+    this.walkTextNodes(this.el, node => nodes.push(node));    
+
+    for(let i = 0; i < nodes.length; i++) {
+      node = nodes[i];
+      
+      if (pos > nodes[i].nodeValue.length && nodes[i + 1]) {
+        pos -= nodes[i].nodeValue.length;
+        continue;
+      }
+        
+      node = nodes[i];
+      break;
+    }
+
+    const range = document.createRange();
+    const sel = window.getSelection();
+    range.setStart(node, pos);
+    range.setEnd(node, pos);
+    sel.removeAllRanges();
+    sel.addRange(range);
     this.el.focus();
   }
 }
