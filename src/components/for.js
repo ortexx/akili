@@ -149,7 +149,7 @@ export default class For extends Component {
   }  
 
   loop(key, value, index) {
-    let promise;
+    let promise = Promise.resolve();
     this.__index = index;
     this.__key = key;
     this.__value = value;    
@@ -160,11 +160,6 @@ export default class For extends Component {
       iterator.setIndex(this.__index === iterator.index);     
       iterator.setKey(this.__key === iterator.key);
       iterator.setValue(utils.compare(this.__hash, iterator.hash));
-      promise = Akili.compile(iterator.el, { 
-        recompile: { 
-          checkChanges: true
-        } 
-      });
       return { promise, iterator };
     }
     

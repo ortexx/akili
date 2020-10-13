@@ -551,7 +551,6 @@ export default class Component {
   __finishEvaluationCycle() {
     let evaluation = [];
     let existingBindings = {};
-    let parentBindings = {};
     let node;
     let component;
     
@@ -564,14 +563,13 @@ export default class Component {
     }
 
     for (let i = evaluation.length - 1; i >= 0; i--) {
-      let data = evaluation[i];
+      const data = evaluation[i];
 
       if(data.component.__isRemoved) {
         continue;
       }
 
-      let hash = data.component.__createKeysHash(data.keys);
-      let parentsHash = data.component.__createKeysHash(data.parents);
+      const hash = data.component.__createKeysHash(data.keys);
 
       if (data.notBinding) {
         continue;
@@ -581,30 +579,17 @@ export default class Component {
         continue;
       }
 
-      let parentValue = utils.getPropertyByKeys(data.parents, data.component.__scope);        
-
-      if (parentValue && typeof parentValue == 'object') {
-        if (Akili.options.debug && parentBindings[parentsHash] == 50) {
-          // eslint-disable-next-line no-console
-          console.warn([
-            `For higher performance, don't loop Proxy arrays/objects inside expression functions, or use Akili.unevaluate() to wrap you code.`,
-            `${ node.__expression.trim() }`,
-            `scope property "${ data.parents.join('.') }"`
-          ].join('\n\tat '));
-        }
-        
-        !parentBindings[parentsHash]? parentBindings[parentsHash] = 1: parentBindings[parentsHash]++;
-      }
+      const parentValue = utils.getPropertyByKeys(data.parents, data.component.__scope);
               
       if (
         utils.isScopeProxy(parentValue) && 
         data.component !== component.__evaluationComponent && 
-        data.component === data.realComponent
+        data.component === data.bindComponent
       ) {
         continue;
-      }  
+      }
 
-      data.component.__bindAndSetProperty(node, data.keys, data.evaluated);
+      data.bindComponent.__bindAndSetProperty(node, data.keys, data.evaluated);
       existingBindings[hash] = true;
     }
   }
@@ -629,127 +614,84 @@ export default class Component {
   }
 
   /**
-   * Nested evaluation by the keys
+   * Get the keys evaluation components
    *
    * @param {string[]} keys
-   * @param {boolean} [withoutParents=false] - if true evaluation will be only for the current keys
+   * @returns {Component[]}
    * @protected
    */
-  __evaluateNested(keys, withoutParents = false) {
-    let scope = this.__scope;
-    let props = [];  
-    
-    if (!withoutParents) {
-      let lastProps = [];
+  __getEvaluationComponents(keys) {
+    let results = [];
 
-      for (let i = 0, l = keys.length; i < l; i++) {
-        let key = keys[i];
-        let value;
-
-        lastProps = [...lastProps, key];
-        value = utils.getPropertyByKeys(lastProps, scope);
-        props.push({ keys: lastProps, value: value});
+    const loop = component => {
+      if(component.__getBind(keys)) {
+        results.push(component);
+      }
+      
+      for(let i = 0; i < component.__children.length; i++) {       
+        loop(component.__children[i].__akili);
       }
     }
-    else {
-      props.push({ keys: keys, value: utils.getPropertyByKeys(keys, scope)});
-    }
 
-    let propsLength = props.length;
-
-    const elEvaluate = element => {
-      const component = element.__akili;     
-
-      for (let m = 0; m < propsLength; m++) {
-        let prop = props[m];
-        let data;
-        
-        if (component === this) {
-          let bind = component.__getBind(prop.keys);
-          data = bind? (bind.__data || []): [];
-        }
-        else {
-          data = component.__getAllBinds(prop.keys);
-        }
-        
-        if (!data || !data.length) {
-          continue;
-        }
-         
-        for (let k = 0, c = data.length; k < c; k++) {
-          const bind = data[k];   
-
-          if(!bind || !bind.node || !bind.node.__initialized) {
-            continue;
-          }
-          
-          if (component.__checkNodePropertyChange(bind.node, prop.keys, prop.value)) { 
-            component.__disableKeys(prop.keys);
-            const checkProp = component.__getNodeProperty(bind.node, prop.keys);            
-
-            if(checkProp && checkProp.evaluated) {       
-              component.scope.__set(prop.keys, prop.value, { silent: true }); 
-            }   
-
-            component.__evaluateNode(bind.node, false);
-            
-            for (let _k in bind.node.__properties) {
-              if (!bind.node.__properties.hasOwnProperty(_k)) {
-                continue;
-              }
-              
-              let _prop = bind.node.__properties[_k];
-              let value = utils.getPropertyByKeys(_prop.keys, _prop.component.__scope);
-              _prop.component.__setNodeProperty(bind.node, _prop.keys, value);
-            }
-            
-            component.__enableKeys(prop.keys);
-          }
-        }
-      }
-
-      return component;
-    };
-
-    const evaluate = elements => {
-      for (let i = 0, l = elements.length; i < l; i++) {
-        let component = elEvaluate(elements[i]);
-        evaluate(component.__children);
-      }
-    };
-
-    elEvaluate(this.el);
-    evaluate(this.__children);
+    loop(this);
+    return results.length? results: [this];
   }
 
-   /**
-   * Evaluate a value by the keys
+  /**
+   * Evaluate the component own keys
+   *
+   * @param {string[]} keys
+   * @protected
+   */
+  __evaluateOwnKeys(keys) {
+    const data = this.__getAllBinds(keys);
+    const value = utils.getPropertyByKeys(keys, this.__scope);
+    
+    for(let i = 0; i < data.length; i++) {         
+      const node = data[i].node;
+
+      if(!node || !node.__initialized) {
+        continue;
+      }
+
+      if(!this.__checkNodePropertyChange(node, keys, value)) {
+        continue;
+      }
+      
+      this.__disableKeys(keys);        
+      this.__evaluateNode(node);
+
+      for (let key in node.__properties) {
+        const prop = node.__properties[key];
+        prop.component.__setNodeProperty(node, keys, value);
+      }
+
+      this.__enableKeys(keys);        
+    }
+  }
+  
+  /**
+   * Evaluate all the tree
    *
    * @param {string[]} keys
    * @protected
    */
   __evaluateByKeys (keys) {
-    const closestKeys = [];
-    const data = this.__getBind(keys, { closest: closestKeys });
-    data && (keys = closestKeys);
+    keys = [...keys];
     
-    const evaluate = (val, keys) => {
-      this.__evaluateNested(keys, true);
+    const evaluate = () => {    
+      const components = this.__getEvaluationComponents(keys);
 
-      if(!val) {
-        return;
+      for(let i = 0; i < components.length; i++) {
+        const component = components[i];
+        component.__evaluateOwnKeys(keys);
       }
-
-      for (let k in val) {
-        if(!val.hasOwnProperty(k) || this.__isSystemBindingKey(k)) {
-          continue;
-        }
-
-        evaluate(val[k], keys.concat([k]));        
-      }      
+      
+      keys.pop();
+      keys.length && evaluate();  
     }
     
-    evaluate(data, keys);
+    evaluate();
   }
 
   /**
@@ -1094,17 +1036,14 @@ export default class Component {
 
           if (target instanceof Scope) {
             let realTarget = utils.getOwnPropertyTarget(target, [key]);
-            realTarget && (realTarget instanceof Scope) && (component =  realTarget.__component);
+            realTarget && (realTarget instanceof Scope) && (component = realTarget.__component);
           } 
 
           if (Akili.__wrapping && keys.length > 1) {
             return target[key];
           }            
 
-          if (!(key in target)) {
-            target[key] = undefined;
-          }          
-          else if (!utils.getEnumerablePropertyTarget(target, [key])) {
+          if (key in target && !utils.getEnumerablePropertyTarget(target, [key])) {
             notBinding = true;
           }
 
@@ -1114,18 +1053,20 @@ export default class Component {
 
         return target[key];
       },
-      set: (target, key, value) => {
+      set: (target, key, value) => {           
+        let keys = [...parents, key];
+
         if (this.__isSystemKey(key)) {
           target[key] = value;
+          this.__setScopeObjectHash(target, keys);
           return true;
         }
-
-        let keys = [...parents, key];
 
         if (this.__checkDisablement(keys)) {
           target[key] = value;
+          this.__setScopeObjectHash(target, keys);
           return true;
-        }
+        } 
 
         if(this.__isCreated && value !== undefined && !target.hasOwnProperty(key) && key in target) {          
           const tScope = utils.getEnumerablePropertyTarget(target, [key]);
@@ -1133,20 +1074,22 @@ export default class Component {
           return false;
         }
 
-        if (typeof target[key] === 'function') {
+        if (typeof value === 'function') {
           value = Akili.wrapFunction(value);
         }
 
         target[key] = this.__nestedObserve(value, keys);
-
+        
         if(!this.__isResolved) {
           this.__triggerStoreAndAttr(keys);
         }
        
         if (Akili.__isolation) { 
-          this.__createIsolationObject(parents, key);
+          this.__createIsolationObject(parents, key);          
           return true;
         }
+
+        this.__setScopeObjectHash(target, keys);
 
         if(this.__isResolved) {
           this.__triggerStoreAndAttr(keys);
@@ -1163,11 +1106,13 @@ export default class Component {
 
         if (this.__checkDisablement(keys)) {
           delete target[key];
+          this.__setScopeObjectHash(target, keys);
           return true;
         }
 
         if (this.__isSystemKey(key)) {
           delete target[key];
+          this.__setScopeObjectHash(target, keys);
           return true;
         }
 
@@ -1186,6 +1131,7 @@ export default class Component {
           this.__triggerStoreAndAttr(keys);
         }
 
+        this.__setScopeObjectHash(target, keys);
         this.__evaluateByKeys(keys);
         return true;
       }
@@ -1337,7 +1283,7 @@ export default class Component {
         }
         
         if (link.fn) {
-          Akili.unisolate(() => link.fn.call(component, value, name));
+          Akili.isolate(() => link.fn.call(component, value, name));
           continue;
         }
         if (!link.get) {
@@ -1453,14 +1399,14 @@ export default class Component {
       for (let i = 0, l = storeKeys.length ; i < l; i++) {
         let key = storeKeys[i];
         let val = utils.copy(store.__target[key], { plain: true });
-        p.push(Akili.unisolate(() => fn.call(this, val, key)));
+        p.push(fn.call(this, val, key));
       }
 
       return Promise.all(p);
     }
 
     if (call) {
-      return Akili.unisolate(() => fn.call(this, utils.copy(store.__target[name], { plain: true })));
+      return fn.call(this, utils.copy(store.__target[name], { plain: true }));
     }
   }
 
@@ -1603,7 +1549,7 @@ export default class Component {
       const link = links[i];    
 
       if (link.fn) {
-        Akili.unisolate(() => link.fn.call(this, value, utils.toDashCase(name)));
+        Akili.isolate(() => link.fn.call(this, value, utils.toDashCase(name)));
         continue;
       }
       
@@ -1711,14 +1657,14 @@ export default class Component {
       for (let i = 0, l = attrsKeys.length; i < l; i++) {
         let key = attrsKeys[i];
         let val = this.__attrs[key];
-        p.push(Akili.unisolate(() => fn.call(this, val, utils.toDashCase(key))));
+        p.push(fn.call(this, val, utils.toDashCase(key)));
       }
 
       return Promise.all(p);
     }
     
     if (call) {
-      return Akili.unisolate(() => fn.call(this, this.attrs[name]));
+      return fn.call(this, this.attrs[name]);
     }
   }
 
@@ -1800,6 +1746,32 @@ export default class Component {
   }
 
   /**
+   * Set the object hash
+   *
+   * @param {*} obj
+   * @param {string[]} [keys]
+   * @protected
+   */
+  __setScopeObjectHash (obj, keys) {
+    if(!obj || typeof obj != 'object' || obj instanceof Scope) {
+      return;
+    }
+
+    Object.defineProperty(obj, '__hash', {
+      configurable: true,
+      enumerable: false,
+      value: utils.createHash(obj, { ignoreScopeHash: true })
+    });
+  
+    if(!keys) {
+      return;
+    }
+
+    keys = keys.slice(0, -1);
+    this.__setScopeObjectHash(utils.getPropertyByKeys(keys, this.__scope), keys);
+  }
+
+  /**
    * Nested observing of the value
    *
    * @param {*} value
@@ -1846,6 +1818,8 @@ export default class Component {
         target[k] = observe(val, [...parents, k]);
       }
 
+      this.__setScopeObjectHash(target);
+
       if (!value.__isProxy) {
         return this.__observe(value, parents);
       }
@@ -1856,7 +1830,7 @@ export default class Component {
     return observe(value, startKeys || []);
   }
 
-   /**
+  /**
    * Create an isolation object
    *
    * @param {string[]} parents
@@ -1865,13 +1839,17 @@ export default class Component {
    * @protected
    */
   __createIsolationObject (parents, key) {
-    const keys = parents.length? [parents[0]]: [key];
-    const isolationHash = this.__createKeysHash(keys);
+    const rootKeys = parents.length? [parents[0]]: [key];
+    const rootKey = rootKeys[0];
+    const keys = [...parents, key];
+    const isolationHash = this.__createKeysHash(rootKeys);
 
     if (!Akili.__isolation[isolationHash]) {
       Akili.__isolation[isolationHash] = {
         updatedAt: new Date().getTime(),
         component: this,
+        rootKeys,
+        rootKey,
         keys
       };
     }
@@ -1883,6 +1861,7 @@ export default class Component {
    * Prepare the node to the binding
    *
    * @param {object} bind - by default is component.__evaluation.list
+   * @param {Component} bindComponent
    * @param {string[]} keys
    * @param {string[]} parents
    * @param {*} value
@@ -1890,7 +1869,7 @@ export default class Component {
    * @param {boolean} [evaluated=false]
    * @protected
    */
-  __bindNode(bind, realComponent, keys, parents, value, notBinding = false, evaluated = false) {
+  __bindNode(bind, bindComponent, keys, parents, value, notBinding = false, evaluated = false) {
     const parentKeysString = Akili.joinBindingKeys(parents);
     let component = this;
 
@@ -1898,7 +1877,7 @@ export default class Component {
       let l = bind.length - 1;
       let data = bind[l];
 
-      if (data.realComponent === this && data.keysString == parentKeysString) {
+      if (data.bindComponent === this && data.keysString == parentKeysString) {
         component = data.component;
       }
       
@@ -1909,7 +1888,7 @@ export default class Component {
     
     bind.push({
       component,
-      realComponent: realComponent,
+      bindComponent,
       keysString: Akili.joinBindingKeys(keys),
       parents,
       keys,
@@ -1934,12 +1913,11 @@ export default class Component {
    * Get a binding by the keys
    *
    * @param {string[]} keys
-   * @param {object} [options]
    * @returns {object|null}
    * @protected
    */
-  __getBind(keys, options = {}) {
-    return utils.getPropertyByKeys(keys, this.__bindings, options) || null;
+  __getBind(keys) {
+    return utils.getPropertyByKeys(keys, this.__bindings) || null;
   }
 
   /**
@@ -2028,6 +2006,7 @@ export default class Component {
       keys,
       evaluated  
     };
+
     return true;
   }
 

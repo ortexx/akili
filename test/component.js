@@ -263,51 +263,7 @@ describe('component.js', () => {
       it('should not change <y> element', () => {
         assert.equal(elements.home.querySelector('y').innerHTML, JSON.stringify(component.__scope.data[1]));
       });
-    });
-
-    describe('.__evaluateNested()', () => {
-      describe('evaluation with parents', () => {
-        before(() => {
-          component.__disableKeys();
-          component.scope.data[0].title = 'New value 1';
-          component.__enableKeys();
-          component.__evaluateNested(['data', '0', 'title']);
-        });
-
-        it('should change <x> element to new value', () => {
-          assert.equal(elements.home.querySelector('x').innerHTML, 'New value 1');
-        });
-
-        it('should increment <f> element', () => {
-          assert.equal(elements.home.querySelector('f').innerHTML, '4');
-        });
-
-        it('should increment <s> element', () => {
-          assert.equal(elements.home.querySelector('s').innerHTML, '2');
-        });
-      });
-
-      describe('evaluation without parents', () => {
-        before(() => {
-          component.__disableKeys();
-          component.scope.data[0].title = 'Very new value 1';
-          component.__enableKeys();
-          component.__evaluateNested(['data', '0', 'title'], true);
-        });
-
-        it('should change <x> element to new value', () => {
-          assert.equal(elements.home.querySelector('x').innerHTML, 'Very new value 1');
-        });
-
-        it('should not increment <f> element', () => {
-          assert.equal(elements.home.querySelector('f').innerHTML, '4');
-        });
-
-        it('should not increment <s> element', () => {
-          assert.equal(elements.home.querySelector('s').innerHTML, '2');
-        });
-      });
-    });
+    });    
 
     describe('.__evaluateEvent()', () => {
       let el;

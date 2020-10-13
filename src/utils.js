@@ -519,14 +519,44 @@ utils.compare = function (a, b, options = {}) {
 };
 
 /**
- * Create a hash from the string
+ * Create a variable hash
  * 
  * @param {*} source
+ * @param {object} [options]
+ * @param {boolean} [options.ignoreScopeHash]
  * @returns {string}
  */
-utils.createHash = function(source) {
-  typeof source == 'object' && (source = JSON.stringify(source));
-  typeof source != 'string' && (source = '⠀' + String(source));
+utils.createHash = function(source, options = {}) {
+  if(!options.ignoreScopeHash && this.isScopeProxy(source) && source.__hash) {
+    return source.__hash;
+  }
+
+  const loop = obj => {
+    if(!obj || typeof obj != 'object') {
+      return String(obj);
+    }    
+
+    if(this.isScopeProxy(obj)) {
+      if(obj !== source && obj.__hash) {
+        return obj.__hash;
+      }
+
+      obj = obj.__target;
+    }
+
+    const keys = Object.keys(obj);
+    const length = keys.length;
+    let str = '';
+
+    for(let i = 0; i < length; i++) {
+      const key = keys[i];
+      str += `"${key}"::"${loop(obj[key])}";;`;
+    }
+
+    return str;
+  }
+
+  source = loop(source);
   let hash = 0;
 
   for (let i = 0; i < source.length; i++) {

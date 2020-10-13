@@ -291,9 +291,8 @@ Akili.isolate = function (fn) {
     if(prop.component.__isRemoved) {
       continue;
     }
-     
-    prop.component.__isResolved && prop.component.__triggerStoreAndAttr(prop.keys);
-    prop.component.__evaluateByKeys(prop.keys);
+    
+    prop.component.scope[prop.rootKey] = utils.getPropertyByKeys(prop.rootKeys, prop.component.__scope);
   }
 
   return res;
@@ -334,7 +333,7 @@ Akili.wrapping = function (fn) {
   let res;
 
   try {
-    res = fn();
+    res = this.isolate(fn);
 
     if(wrapping) {
       return res;
@@ -835,7 +834,7 @@ Akili.addTag = function (tag, node) {
   }
 
   this.__tags[node.__name][tag].push({ node });
-}
+};
 
 /**
  * Check the tag exists
@@ -866,7 +865,7 @@ Akili.hasTag = function(tag, node) {
   } 
 
   return true;
-}
+};
 
 /**
  * Remove the tag
@@ -910,7 +909,7 @@ Akili.removeTag = function (tag, node) {
   if(!Object.keys(this.__tags[node.__name]).length) {
     delete this.__tags[node.__name];
   }
-}
+};
 
 /**
  * Evaluate the tag expressions
@@ -930,7 +929,7 @@ Akili.triggerTag = function (tag) {
       }
     }
   }
-}
+};
 
 /**
  * Handle the errors
