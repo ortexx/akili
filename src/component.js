@@ -726,7 +726,7 @@ export default class Component {
       throw this.__createExceptionMessage(node, err);
     }
     
-    this.__evaluatingEvent = null;
+    this.__evaluatingEvent = null;    
     return evaluate;
   }
 
@@ -1273,29 +1273,27 @@ export default class Component {
 
     links = utils.sort(links, ['date'], true);
 
-    return Akili.isolate(() => {
-      for (let i = 0, l = links.length; i < l; i++) {
-        const link = links[i];
-        const component = link.component;
+    for (let i = 0, l = links.length; i < l; i++) {
+      const link = links[i];
+      const component = link.component;
 
-        if (component === this) {
-          continue;
-        }
-        
-        if (link.fn) {
-          Akili.isolate(() => link.fn.call(component, value, name));
-          continue;
-        }
-        if (!link.get) {
-          continue;
-        }
+      if (component === this) {
+        continue;
+      }
+      
+      if (link.fn) {
+        Akili.isolate(() => link.fn.call(component, value, name));
+        continue;
+      }
+      if (!link.get) {
+        continue;
+      }
 
-        component.__disableKeys(link.keys, 'store');
-        let current = utils.getPropertyByKeys(link.keys, component.__scope);
-        !utils.compare(current, value) && component.scope.__set(link.keys, value);   
-        component.__enableKeys(link.keys, 'store');
-      }  
-    });   
+      component.__disableKeys(link.keys, 'store');
+      let current = utils.getPropertyByKeys(link.keys, component.__scope);
+      !utils.compare(current, value) && component.scope.__set(link.keys, value);   
+      component.__enableKeys(link.keys, 'store');
+    }   
   }
 
   /**
@@ -2671,5 +2669,9 @@ export default class Component {
 
   get isResolved() {
     return this.__isResolved;
+  }
+
+  get isRemoved() {
+    return this.__isRemoved;
   }
 }

@@ -160,7 +160,7 @@ utils.filter = function (arr, handler, keys = null) {
 
   if(typeof handler != 'function') {
     const str = handler? (handler + '').toLowerCase(): '';
-    handler = val => (val? (val + '').toLowerCase(): '').match(str);
+    handler = val => (val? (val + '').toLowerCase(): '').match(this.escapeForRegExp(str));
   }
 
   for (let i = 0, l = arr.length; i < l; i++) {
@@ -517,6 +517,16 @@ utils.compare = function (a, b, options = {}) {
 
   return a === b;
 };
+
+/**
+ * Escape the string to pass in RegExp
+ * 
+ * @param {string} str
+ * @returns {string}
+ */
+utils.escapeForRegExp = function (str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 /**
  * Create a variable hash

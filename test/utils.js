@@ -166,6 +166,14 @@ describe('utils.js', () => {
       });
     });
 
+    describe('.escapeForRegExp()', () => {
+      it('should change the string right way', () => {
+        const str = 'hello \\ ^ $ * + ? . ( ) | { } [ ]';
+        const escaped = 'hello \\\\ \\^ \\$ \\* \\+ \\? \\. \\( \\) \\| \\{ \\} \\[ \\]';
+        assert.equal(utils.escapeForRegExp(str), escaped);
+      });
+    });
+
     describe('.createHash()', () => {
       it('should be equal', () => {
         assert.equal(utils.createHash({ x: 1, z: { y: 1 } }), utils.createHash({ x: 1, z: { y: 1 } }));
@@ -401,6 +409,17 @@ describe('utils.js', () => {
 
         let res = utils.filter(arr, '1');
         assert.equal(JSON.stringify(['1']), JSON.stringify(res));
+      });
+
+      it('should filter array of RegExp dangerous primitive', () => {
+        let arr = [
+          '1',
+          '2(^',
+          '3'
+        ];
+
+        let res = utils.filter(arr, '2(');
+        assert.equal(JSON.stringify([arr[1]]), JSON.stringify(res));
       });
 
       it('should filter array of objects', () => {

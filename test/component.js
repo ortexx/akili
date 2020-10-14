@@ -754,6 +754,10 @@ describe('component.js', () => {
         assert.isOk(component.wasRemoved);
       });
 
+      it('should return true', () => {
+        assert.isTrue(component.isRemoved);
+      });
+
       it('should be deleted from the parent element', () => {
         assert.isNotOk(parentComponent.el.querySelector('home'));
       });
