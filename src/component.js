@@ -1844,7 +1844,7 @@ export default class Component {
 
     if (!Akili.__isolation[isolationHash]) {
       Akili.__isolation[isolationHash] = {
-        updatedAt: new Date().getTime(),
+        updatedAt: Date.now(),
         component: this,
         rootKeys,
         rootKey,

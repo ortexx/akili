@@ -283,8 +283,8 @@ Akili.isolate = function (fn) {
     const prop = props[i];
 
     if(!prop.component) {
-      const value = utils.copy(prop.value, { plain: true });
-      this.root && this.root.__storeTriggerByName(prop.key, value);
+      const value = utils.copy(utils.getPropertyByKeys(prop.rootKeys, store.__target), { plain: true });
+      this.root && this.root.__storeTriggerByName(prop.rootKey, value);
       continue;
     }
 

@@ -33,7 +33,7 @@ function createProxy (obj, parents) {
       }       
 
       if (Akili.__isolation) { 
-        createIsolationObject(rootKey, store[rootKey]);
+        createIsolationObject(parents, key);
         return true;
       }
 
@@ -51,8 +51,8 @@ function createProxy (obj, parents) {
       const rootKey = keys[0];
       const value = rootKey === key? undefined: store[rootKey];
 
-      if (Akili.__isolation) { 
-        createIsolationObject(rootKey, value);
+      if (Akili.__isolation) {
+        createIsolationObject(parents, key);
         delete target[key];
         return true;
       }
@@ -65,8 +65,12 @@ function createProxy (obj, parents) {
   });
 }
 
-function createIsolationObject(key, value) {
-  Akili.__isolation[`store.${ key }`] = { key, value };
+function createIsolationObject (parents, key) {
+  const rootKeys = parents.length? [parents[0]]: [key];
+  const rootKey = rootKeys[0];
+  const keys = [...parents, key];
+  const isolationHash = `store.${ rootKey }`;
+  Akili.__isolation[isolationHash] = { updatedAt: Date.now(), rootKey, rootKeys, keys };
 }
 
 function wrap (value, keys) {
