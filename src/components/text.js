@@ -21,11 +21,15 @@ export default class Text extends Component {
     this.debounceInterval = 500;
   }
 
-  compiled() {
+  created() {
     if(this.el.hasAttribute('on-debounce')) {
-      this.el.addEventListener('input', utils.debounce(() => this.attrs.onDebounce.trigger(undefined, { bubbles: true }), this.debounceInterval));
+      this.el.addEventListener('input', utils.debounce(() => {
+        this.attrs.onDebounce.trigger(undefined, { bubbles: true });
+      }, this.debounceInterval));
     }
+  }
 
+  compiled() {
     this.attr('focus', this.setFocus);
     this.attr('value', this.setValue);
     this.attr('debounce', this.setDebounce);

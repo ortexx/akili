@@ -607,7 +607,7 @@ export default class Component {
     let value = utils.getPropertyByKeys(keys, this.__scope);
 
     if (!bind) {
-      this.__bind(keys, { node });
+      this.__bind(keys, { node, keys });
     }   
 
     this.__setNodeProperty(node, keys, value, evaluated);
@@ -645,25 +645,32 @@ export default class Component {
    */
   __evaluateOwnKeys(keys) {
     const data = this.__getAllBinds(keys);
-    const value = utils.getPropertyByKeys(keys, this.__scope);
-    
+   
     for(let i = 0; i < data.length; i++) {         
-      const node = data[i].node;
+      const res = data[i];
 
-      if(!node || !node.__initialized) {
+      if(!res) {
         continue;
       }
 
-      if(!this.__checkNodePropertyChange(node, keys, value)) {
+      const node = res.node;
+
+      if(!res.node || !node.__initialized) {
         continue;
       }
-      
+
+      const value = utils.getPropertyByKeys(res.keys, this.__scope);
+
+      if(!this.__checkNodePropertyChange(node, res.keys, value)) {
+        continue;
+      }
+
       this.__disableKeys(keys);        
       this.__evaluateNode(node);
 
       for (let key in node.__properties) {
         const prop = node.__properties[key];
-        prop.component.__setNodeProperty(node, keys, value);
+        prop.component.__setNodeProperty(node, res.keys, value);
       }
 
       this.__enableKeys(keys);        
