@@ -52,7 +52,7 @@ export default class Component {
   }
 
   /** 
-   * @param {Element} el 
+   * @param {Element} el
    * @param {object} [scope] 
    */
   constructor(el, scope = {}) {
@@ -1035,7 +1035,7 @@ export default class Component {
           return target[key];
         }
 
-        if (Akili.__evaluation) { 
+        if (Akili.__evaluation && !this.__isRemoved) { 
           let keys = [].concat(parents, [key]);
           let notBinding = false;
           let evaluated = !utils.getOwnPropertyTarget(this.__scope, keys);
@@ -1063,17 +1063,11 @@ export default class Component {
       set: (target, key, value) => {           
         let keys = [...parents, key];
 
-        if (this.__isSystemKey(key)) {
+        if (this.__isRemoved || this.__isSystemKey(key) || this.__checkDisablement(keys)) {
           target[key] = value;
           this.__setScopeObjectHash(target, keys);
           return true;
         }
-
-        if (this.__checkDisablement(keys)) {
-          target[key] = value;
-          this.__setScopeObjectHash(target, keys);
-          return true;
-        } 
 
         if(this.__isCreated && value !== undefined && !target.hasOwnProperty(key) && key in target) {          
           const tScope = utils.getEnumerablePropertyTarget(target, [key]);
@@ -1111,13 +1105,7 @@ export default class Component {
       deleteProperty: (target, key) => {
         const keys = [].concat(parents, [key]);
 
-        if (this.__checkDisablement(keys)) {
-          delete target[key];
-          this.__setScopeObjectHash(target, keys);
-          return true;
-        }
-
-        if (this.__isSystemKey(key)) {
+        if (this.__isRemoved || this.__isSystemKey(key) || this.__checkDisablement(keys)) {
           delete target[key];
           this.__setScopeObjectHash(target, keys);
           return true;

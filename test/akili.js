@@ -191,6 +191,7 @@ describe('akili.js', () => {
         created() {
           this.globalCounter = 0;
           globals.globalFn = () => this.globalCounter++;
+          globals.globalVar = 1;
         }
       }
 
@@ -210,17 +211,27 @@ describe('akili.js', () => {
       });
 
       describe('.hasTag()', () => {
-        it('should returns true', () => {          
+        it('should return true', () => {          
           assert.ok(Akili.hasTag('globalFn'));
         });
 
-        it('should returns false', () => {          
+        it('should return false', () => {          
           assert.notOk(Akili.hasTag('nonexistent'));
         });
       });
 
+      describe('.getTag()', () => {
+        it('should return an array', () => {    
+          assert.isArray(Akili.getTag('globalFn'));
+        });
+
+        it('should return a null', () => {          
+          assert.isNull(Akili.getTag('nonexistent'));
+        });
+      });
+
       describe('.triggerTag()', () => {
-        it('should trigger the tag expressions evaluation', () => {
+        it('should trigger the funcion', () => {
           Akili.triggerTag('globalFn');
           assert.equal(component.globalCounter, 2);
         });
@@ -228,16 +239,15 @@ describe('akili.js', () => {
 
       describe('.removeTag()', () => {
         it('should remove the tag by node', () => {
-          const key = Object.keys(Akili.__tags)[0];
-          const obj  = Akili.__tags[key]['globalFn'][0];
+          const obj = Akili.getTag('globalFn')[0];
           Akili.removeTag('globalFn', obj.node);
-          assert.notOk(Akili.hasTag('globalFn'));
-          Akili.__tags[key] = { globalFn: [obj] };
+          assert.isFalse(Akili.hasTag('globalFn')); 
+          Akili.__tags[obj.node.__name] = { globalFn: [obj] };
         });        
 
         it('should remove the tag', () => {
           delete globals.globalFn;
-          assert.notOk(Akili.hasTag('globalFn'));
+          assert.isFalse(Akili.hasTag('globalFn'));
         });
       });
     });

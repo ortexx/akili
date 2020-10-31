@@ -837,6 +837,33 @@ Akili.addTag = function (tag, node) {
 };
 
 /**
+ * Get the tag
+ * 
+ * @param {string} tag
+ * @param {Node} [node]
+ * @returns {array|null}
+ */
+Akili.getTag = function(tag, node) {
+  if(!node){
+    for(let key in this.__tags) {
+      for(let k in this.__tags[key]) {
+        if(k == tag) {         
+          return this.__tags[key][k];
+        }
+      }
+    }
+
+    return null;
+  }
+
+  if(this.__tags[node.__name] && this.__tags[node.__name][tag]) {
+    return this.__tags[node.__name][tag];    
+  }
+
+  return null;
+};
+
+/**
  * Check the tag exists
  * 
  * @param {string} tag
@@ -844,27 +871,7 @@ Akili.addTag = function (tag, node) {
  * @returns {boolean}
  */
 Akili.hasTag = function(tag, node) {
-  if(!node){
-    for(let key in this.__tags) {
-      for(let k in this.__tags[key]) {
-        if(k == tag) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
-  if(!this.__tags[node.__name]) {
-    return false;    
-  }
-
-  if(!this.__tags[node.__name][tag]) {
-    return false;    
-  } 
-
-  return true;
+  return !!this.getTag(tag, node);
 };
 
 /**

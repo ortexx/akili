@@ -10,16 +10,16 @@ const obj = {};
 const globals = new Proxy(obj, {
   get: (target, key) => {
     if(key == '__target') {
-      return obj
-    }   
+      return obj;
+    }
     
     return target[key];
   },
   set: (target, key, value) => {
-    target[key] = Akili.wrap(value, { tag: key });    
+    target[key] = Akili.wrap(value, { tag: key });
     return true;
   },
-  deleteProperty: (target, key) => {   
+  deleteProperty: (target, key) => {
     Akili.removeTag(key);
     delete target[key];
     return true;
