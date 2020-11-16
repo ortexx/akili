@@ -310,7 +310,7 @@ describe('components/', () => {
 
     before(() => {
       object = component.child('object');
-      img = component.child('img');
+      img = component.child('img');      
       component.scope.cObjectValue = '/fake';    
       component.scope.imageLoading = "viewport";
       imgOne = `base/test/img/logo.svg`;
@@ -322,6 +322,8 @@ describe('components/', () => {
     });
   
     it('should set image src', done => {
+      img.observer.disconnect();
+
       const fn = () => {
         img.el.removeEventListener('load', fn);
         assert.equal(getComputedStyle(img.el).opacity, '1');
@@ -329,7 +331,7 @@ describe('components/', () => {
       }
 
       img.el.addEventListener('load', fn);  
-      img.isIntersecting = true;   
+      img.isIntersecting = true;
       component.scope.imageUrl = imgOne;
     });
 
