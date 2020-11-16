@@ -99,7 +99,7 @@ describe('components/', () => {
       let include = document.createElement('include');
       let html;
       include.setAttribute('url', 'include.html');
-      include.setAttribute('on-load', '${this.cIncludeOnLoad()}');
+      include.setAttribute('on-load', '${ this.cIncludeOnLoad() }');
       include.innerHTML = '1';
       component.el.appendChild(include);
 
@@ -302,16 +302,64 @@ describe('components/', () => {
     });
   });
 
-  describe('Url', 'Object', () => {
+  describe('Url, Object, Image', () => {
     let object;
+    let img;
 
     before(() => {
       object = component.child('object');
-      component.scope.cObjectValue = '/fake';
+      img = component.child('img');
+      component.scope.cObjectValue = '/fake';    
+      component.scope.imageLoading = "viewport";
     });
 
     it('should set attrbure data to object', () => {
-      assert.isEqual(object.el.getAttribute('src'), '/fake');
+      assert.isOk(object.el.data.includes('/fake'));
+    });
+  
+    it('should set image src', done => {
+      const fn = () => {
+        img.el.removeEventListener('load', fn);
+        assert.equal(getComputedStyle(img.el).opacity, '1');
+        done();
+      }
+
+      img.el.addEventListener('load', fn);     
+      component.scope.imageUrl = "base/test/img/logo.svg";
+    });
+
+    it('should handle the wrong url', done => {
+      const fn = () => {
+        img.el.removeEventListener('error', fn);
+        assert.equal(getComputedStyle(img.el).opacity, '0');
+        done();
+      }
+
+      img.el.addEventListener('error', fn);     
+      component.scope.imageUrl = "unexistent";
+    });
+
+    it('should cancel the useless request', done => {
+      const fn = () => {
+        img.el.removeEventListener('error', fn);
+        done();
+      }
+
+      img.el.addEventListener('error', fn);     
+      component.scope.imageUrl = "base/test/img/logo.png";
+      img.el.style.display = 'none';
+    });
+
+    it('should not cancel without the viewport', done => {
+      const fn = () => {
+        img.el.removeEventListener('load', fn);
+        done();
+      }
+
+      img.el.addEventListener('load', fn);
+      component.scope.imageLoading = '';
+      component.scope.imageUrl = "base/test/img/logo.svg";
+      img.el.style.display = 'none';
     });
   });
 

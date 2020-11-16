@@ -5,7 +5,8 @@ module.exports = function(config) {
     basePath: "",
     frameworks: ['mocha', 'chai'],
     files: [
-      'test/main.js'
+      'test/main.js',
+      { pattern: 'test/img/*', included: false, served: true }
     ],
     plugins : [
       'karma-mocha',

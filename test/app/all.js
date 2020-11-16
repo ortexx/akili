@@ -26,6 +26,14 @@ export default class All extends Component {
     `;
 
     this.el.innerHTML += `
+      <img 
+        url="\${ this.imageUrl }"
+        loading="\${ this.imageLoading }"
+        hidden-error="true"
+      />
+    `;
+
+    this.el.innerHTML += `
       <a 
         url="/"
         on-compiled="\${ this.compiled = true }"

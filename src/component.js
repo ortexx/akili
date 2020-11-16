@@ -991,8 +991,8 @@ export default class Component {
         let attrKey = utils.toDashCase(key);
 
         if (this.booleanAttributes.indexOf(attrKey) != -1) {
+          value? this.el.setAttribute(attrKey, value): this.el.removeAttribute(attrKey);
           attrKey = `boolean-${attrKey}`;
-          value? this.el.setAttribute(key, value): this.el.removeAttribute(key);
         }
         
         target[key] = value;
