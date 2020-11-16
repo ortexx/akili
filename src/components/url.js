@@ -78,7 +78,8 @@ export default class Url extends Component {
     this.viewport = value == 'viewport';
 
     if(!this.viewport) {
-      this.observer && this.observer.disconnect(); 
+      this.observer && this.observer.disconnect();
+      delete this.isIntersecting;
       return;
     }
 

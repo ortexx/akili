@@ -313,8 +313,8 @@ describe('components/', () => {
       img = component.child('img');
       component.scope.cObjectValue = '/fake';    
       component.scope.imageLoading = "viewport";
-      imgOne = `${ location.origin }/img/logo.svg`;
-      imgTwo = `${ location.origin }/img/logo.png`;
+      imgOne = `base/test/img/logo.svg`;
+      imgTwo = `base/test/img/logo.png`;
     });
 
     it('should set attrbure data to object', () => {
@@ -322,6 +322,8 @@ describe('components/', () => {
     });
   
     it('should set image src', done => {
+      img.intersectionHandler([{ isIntersecting: true }]);
+
       const fn = () => {
         img.el.removeEventListener('load', fn);
         assert.equal(getComputedStyle(img.el).opacity, '1');
@@ -351,7 +353,7 @@ describe('components/', () => {
 
       img.el.addEventListener('error', fn);     
       component.scope.imageUrl = imgTwo;
-      img.el.style.display = 'none';
+      img.intersectionHandler([{ isIntersecting: false }]);
     });
 
     it('should not cancel without the viewport', done => {
@@ -363,7 +365,6 @@ describe('components/', () => {
       img.el.addEventListener('load', fn);
       component.scope.imageLoading = '';
       component.scope.imageUrl = imgOne;
-      img.el.style.display = 'none';
     });
   });
 
