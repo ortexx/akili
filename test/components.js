@@ -322,15 +322,14 @@ describe('components/', () => {
     });
   
     it('should set image src', done => {
-      img.intersectionHandler([{ isIntersecting: true }]);
-
       const fn = () => {
         img.el.removeEventListener('load', fn);
         assert.equal(getComputedStyle(img.el).opacity, '1');
         done();
       }
 
-      img.el.addEventListener('load', fn);     
+      img.el.addEventListener('load', fn);  
+      img.isIntersecting = true;   
       component.scope.imageUrl = imgOne;
     });
 
@@ -341,8 +340,9 @@ describe('components/', () => {
         done();
       }
 
-      img.el.addEventListener('error', fn);     
-      component.scope.imageUrl = "unexistent";
+      img.el.addEventListener('error', fn);
+      img.isIntersecting = true;
+      component.scope.imageUrl = "unexistent.jpg";
     });
 
     it('should cancel the useless request', done => {
@@ -351,7 +351,8 @@ describe('components/', () => {
         done();
       }
 
-      img.el.addEventListener('error', fn);     
+      img.el.addEventListener('error', fn); 
+      img.isIntersecting = true;    
       component.scope.imageUrl = imgTwo;
       img.intersectionHandler([{ isIntersecting: false }]);
     });
