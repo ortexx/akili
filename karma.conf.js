@@ -20,6 +20,9 @@ module.exports = function(config) {
     preprocessors: {
       'test/main.js': ['webpack', 'sourcemap']
     },
+    proxies: {
+      '/img/': path.join(__dirname, '/test/img/')
+    },
     webpack: {
       watch: false,
       mode: 'none',

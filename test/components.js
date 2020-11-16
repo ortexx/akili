@@ -305,12 +305,16 @@ describe('components/', () => {
   describe('Url, Object, Image', () => {
     let object;
     let img;
+    let imgOne;
+    let imgTwo;
 
     before(() => {
       object = component.child('object');
       img = component.child('img');
       component.scope.cObjectValue = '/fake';    
       component.scope.imageLoading = "viewport";
+      imgOne = `${ location.origin }/img/logo.svg`;
+      imgTwo = `${ location.origin }/img/logo.png`;
     });
 
     it('should set attrbure data to object', () => {
@@ -325,7 +329,7 @@ describe('components/', () => {
       }
 
       img.el.addEventListener('load', fn);     
-      component.scope.imageUrl = "base/test/img/logo.svg";
+      component.scope.imageUrl = imgOne;
     });
 
     it('should handle the wrong url', done => {
@@ -346,7 +350,7 @@ describe('components/', () => {
       }
 
       img.el.addEventListener('error', fn);     
-      component.scope.imageUrl = "base/test/img/logo.png";
+      component.scope.imageUrl = imgTwo;
       img.el.style.display = 'none';
     });
 
@@ -358,7 +362,7 @@ describe('components/', () => {
 
       img.el.addEventListener('load', fn);
       component.scope.imageLoading = '';
-      component.scope.imageUrl = "base/test/img/logo.svg";
+      component.scope.imageUrl = imgOne;
       img.el.style.display = 'none';
     });
   });
