@@ -41,6 +41,10 @@ export default class Url extends Component {
     this.attr(this.handlerAttribute, this.setUrl);
   }
 
+  removed() {
+    this.observer && this.observer.disconnect();
+  }
+
   createUrlAttribute() {
     if(this.handlerAttribute == 'urlset') {
       this.urlAttribute + 'set';
@@ -48,12 +52,20 @@ export default class Url extends Component {
   }
 
   onLoad() {
+    if(this.isRemoved) {
+      return;
+    }
+
     this.attrs.hiddenError && (this.el.style.opacity = this.elOpacity);
     this.finished = true;
     this.cancelling = false;
   }
 
   onError() {
+    if(this.isRemoved) {
+      return;
+    }
+    
     this.attrs.hiddenError && (this.el.style.opacity = 0);
     !this.cancelling && (this.finished = true);
   }

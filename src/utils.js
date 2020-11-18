@@ -935,15 +935,21 @@ utils.createRandomString = function(length = 16, fn = null) {
  * @param {number} delay
  * @returns {fn}
  */
-utils.debounce = function(fn, delay = 0) {  
-  return () => {
+utils.debounce = function(fn, delay = 0) { 
+  const wrapper = () => {
     clearTimeout(fn.__debounceTimeout);
     fn.__debounceTimeout = setTimeout(() => {
       fn();
-      clearTimeout(fn.__debounceTimeout);
-      delete fn.__debounceTimeout;
+      wrapper.removeDebounce();
     }, delay);
   };
+
+  wrapper.removeDebounce = () => {
+    clearTimeout(fn.__debounceTimeout);
+    delete fn.__debounceTimeout;
+  }
+
+  return wrapper;
 }
 
 export default utils;

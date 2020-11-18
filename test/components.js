@@ -330,7 +330,7 @@ describe('components/', () => {
         done();
       }
 
-      img.el.addEventListener('load', fn);  
+      img.el.addEventListener('load', fn);
       img.isIntersecting = true;
       component.scope.imageUrl = imgOne;
     });
