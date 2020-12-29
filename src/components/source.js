@@ -7,7 +7,7 @@ import Akili from '../akili.js';
  * {@link https://akilijs.com/docs/components#docs_image,_iframe,_embed,_audio,_video,_track,_source,_object}
  * 
  * @tag source
- * @attr {string} [url]
+ * @see Url
  */
 export default class Source extends Url {  
   static define() {

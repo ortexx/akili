@@ -1,6 +1,6 @@
 {
   "name": "akili",
-  "version": "1.2.8",
+  "version": "1.2.9",
   "description": "Akili - javascript framework",
   "main": "./src/akili.js",
   "author": {
@@ -34,10 +34,10 @@
     "babel-preset-akili": "^1.0.0",
     "chai": "^4.2.0",
     "coveralls": "^3.1.0",
-    "cross-env": "^7.0.2",
+    "cross-env": "^7.0.3",
     "eslint": "^4.19.1",
     "eslint-loader": "^3.0.4",
-    "husky": "^4.3.0",
+    "husky": "^4.3.6",
     "istanbul-instrumenter-loader": "^3.0.1",
     "karma": "^5.2.3",
     "karma-chai": "^0.1.0",

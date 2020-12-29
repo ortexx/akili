@@ -52,7 +52,6 @@ export default class Include extends Component {
       this.empty();
       this.el.innerHTML = this.html;
       Akili.setTemplate(this.el, res.data);
-
       return Akili.compile(this.el, { recompile: true }).then(() => {
         this.attrs.onLoad.trigger(undefined, { bubbles: false });
       });
