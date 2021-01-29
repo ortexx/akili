@@ -70,6 +70,11 @@ module.exports = function(config) {
       reports: [process.env.GITHUB_ACTIONS? 'lcov': 'html'],
       dir : 'coverage/'
     },
+    client: {
+      mocha: {
+        timeout: 10000
+      }
+    },
     singleRun: true,
     colors: true,
     port: 9999
