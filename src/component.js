@@ -420,7 +420,7 @@ export default class Component {
     }
 
     for (let k in node.__properties) {
-      if (!node.__properties.hasOwnProperty(k)) {
+      if (!Object.prototype.hasOwnProperty.call(node.__properties, k)) {
         continue;
       }
 
@@ -1069,7 +1069,7 @@ export default class Component {
           return true;
         }
 
-        if(this.__isCreated && value !== undefined && !target.hasOwnProperty(key) && key in target) {          
+        if(this.__isCreated && value !== undefined && !Object.prototype.hasOwnProperty.call(target, key) && key in target) {          
           const tScope = utils.getEnumerablePropertyTarget(target, [key]);
           tScope.__component.scope[key] = value;
           return false;
@@ -1315,7 +1315,7 @@ export default class Component {
     }
     
     this.__disableKeys(keys, 'store');
-    (store.hasOwnProperty(name) || !utils.hasPropertyByKeys(keys, this.__scope)) && this.scope.__set(keys, store[name]);
+    (Object.prototype.hasOwnProperty.call(store, name) || !utils.hasPropertyByKeys(keys, this.__scope)) && this.scope.__set(keys, store[name]);
     this.__enableKeys(keys, 'store');
     let keyString = Akili.joinBindingKeys(keys);
     let info;
@@ -1360,7 +1360,7 @@ export default class Component {
    * @returns {*}
    */
   __storeByFunction(name, fn, options = {}) { 
-    let call = options.callOnStart === undefined? store.__target.hasOwnProperty(name): options.callOnStart;
+    let call = options.callOnStart === undefined? Object.prototype.hasOwnProperty.call(store.__target, name): options.callOnStart;
 
     if (!Akili.__storeLinks[name]) {
       Akili.__storeLinks[name] = [];
@@ -1578,7 +1578,7 @@ export default class Component {
     }
     
     this.__disableKeys(keys, 'attr');
-    (this.attrs.hasOwnProperty(name) || !utils.hasPropertyByKeys(keys, this.__scope)) && this.scope.__set(keys, this.attrs[name]); 
+    (Object.prototype.hasOwnProperty.call(this.attrs, name) || !utils.hasPropertyByKeys(keys, this.__scope)) && this.scope.__set(keys, this.attrs[name]); 
     this.__enableKeys(keys, 'attr');
     let keyString = Akili.joinBindingKeys(keys);
     
@@ -1618,7 +1618,7 @@ export default class Component {
    */
   __attrByFunction(name, fn, options = {}) {    
     name = utils.toCamelCase(name);
-    let call = options.callOnStart === undefined? this.attrs.hasOwnProperty(name): options.callOnStart;    
+    let call = options.callOnStart === undefined? Object.prototype.hasOwnProperty.call(this.attrs, name): options.callOnStart;    
 
     if (!this.__attrLinks[name]) {
       this.__attrLinks[name] = [];
@@ -1932,7 +1932,7 @@ export default class Component {
       data = data.concat(obj.__data || []);
 
       for (let key in obj) {
-        if (!obj.hasOwnProperty(key) || key == '__data') {
+        if (!Object.prototype.hasOwnProperty.call(obj, key) || key == '__data') {
           continue;
         }
 

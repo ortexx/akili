@@ -57,7 +57,7 @@ export default class Scope {
     Akili.removeScope(this.__name);
 
     for(let key in this) {
-      if(!this.hasOwnProperty(key)) {
+      if(!Object.prototype.hasOwnProperty.call(this, key)) {
         continue;
       }
 

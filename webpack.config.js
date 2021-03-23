@@ -49,13 +49,13 @@ let config = {
         test: /\.js$/,
         loader: 'babel-loader',
         exclude: /node_modules/,
-        query: {
+        options: {
           presets: ['akili']
         }
       }
     ]
   },
-  plugins  
+  plugins
 };
 
 module.exports = config;

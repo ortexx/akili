@@ -411,7 +411,7 @@ utils.copy = function(value, options = {}) {
       let val = obj[key];
       val = val && typeof val == 'object' && options.nested? next(val): val;      
       
-      if(!obj.propertyIsEnumerable(key)) {
+      if(!Object.prototype.propertyIsEnumerable.call(obj, key)) {
         Object.defineProperty(newObj, key, {
           ...Object.getOwnPropertyDescriptor(obj, key),
           value: val
@@ -730,11 +730,11 @@ utils.hasPropertyByKeys = function(keys, object) {
       return !!o;
     }
 
-    if (!o.hasOwnProperty(k)) {
+    if (!Object.prototype.hasOwnProperty.call(o, k)) {
       return {};
     }
 
-    (i == length) && (has = o.hasOwnProperty(k));
+    (i == length) && (has = Object.prototype.hasOwnProperty.call(o, k));
     return o[k];
   }, object);
   return has;
@@ -762,11 +762,11 @@ utils.hasEnumerablePropertyByKeys = function(keys, object) {
       return !!o;
     }
 
-    if (!o.propertyIsEnumerable(k)) {
+    if (!Object.prototype.propertyIsEnumerable.call(o, k)) {
       return {};
     }
 
-    (i == length) && (has = o.propertyIsEnumerable(k));
+    (i == length) && (has = Object.prototype.hasOwnProperty.call(o, k));
     return o[k];
   }, object);
   return has;
@@ -795,7 +795,7 @@ utils.setPropertyByKeys = function(keys, object, fn) {
       return;
     }
 
-    if (!o.hasOwnProperty(k)) {
+    if (!Object.prototype.hasOwnProperty.call(o, k)) {
       o[k] = undefined;
     }
 
@@ -833,7 +833,7 @@ utils.deletePropertyByKeys = function(keys, object, fn) {
       return;
     }
 
-    if (!o.hasOwnProperty(k)) {
+    if (!Object.prototype.hasOwnProperty.call(o, k)) {
       return {};
     }
 

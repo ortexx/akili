@@ -81,7 +81,7 @@ export class Request {
 
       xhr.open(options.method, options.url, true, options.user, options.password);
 
-      if (options.hasOwnProperty('timeout')) {
+      if (Object.prototype.hasOwnProperty.call(options, 'timeout')) {
         xhr.timeout = options.timeout;
       }
 
@@ -276,7 +276,7 @@ export class Request {
     const fd = data || new FormData();
 
     for (let k in obj) {
-      if (obj.hasOwnProperty(k) && obj[k]) {
+      if (Object.prototype.hasOwnProperty.call(obj, k) && obj[k]) {
         const key = namespace? namespace + '[' + k + ']': k;
 
         if (obj[k] instanceof Date) {
