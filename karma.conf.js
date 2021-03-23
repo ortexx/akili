@@ -1,4 +1,5 @@
 const path = require('path');
+const ESLintPlugin = require('eslint-webpack-plugin');
 
 module.exports = function(config) {
   let conf = {
@@ -24,17 +25,9 @@ module.exports = function(config) {
       watch: false,
       mode: 'none',
       devtool: 'inline-source-map',
+      plugins: [new ESLintPlugin({ failOnError: true })],
       module: {
         rules: [
-          {
-            enforce: 'pre',
-            test: /\.js$/,
-            exclude: /node_modules/,
-            loader: 'eslint-loader',
-            options: { 
-              failOnError: true 
-            }
-          },
           {
             test: /\.js$/,
             include: [
