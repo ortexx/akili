@@ -47,10 +47,10 @@ You can install it via npm
 npm install akili --save
 ```
 
-or [download](https://akilijs.com/js/libs/akili.min.js) and include as a script
+or [download](https://akilijs.com/js/libs/akili.js) and include as a script
  
 ```
-<script src="/akili.min.js"></script>
+<script src="/akili.js"></script>
 ```
 
 ## Documentation
