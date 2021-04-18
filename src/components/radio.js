@@ -10,12 +10,14 @@ import Akili from '../akili.js';
  * @selector radio[name]
  * @attr {string} name - name of the group
  * @attr {string|null} value - selected value
+ * @attr {boolean} defaultRequired - default value is required or not
  * @attr [in] @see For
  * @message {string} radio - sent on value change
  */
 export default class Radio extends For {
   static matches = '[name]';
   static events = ['radio'].concat(For.events);
+  static booleanAttributes = ['default-required'].concat(For.booleanAttributes);
 
   static define() {
     Akili.component('radio', this);
@@ -62,11 +64,16 @@ export default class Radio extends For {
   resolved() {
     this.attr('value', this.setValue);
     this.attr('name', this.setNames);
+    this.attr('defaultRequired', this.setDefaultRequired, { callOnStart: false });
     return this.attr('in', this.setIn, { callOnStart: false });
   }
 
   setIn(data) {
     return this.draw(data).then(this.redrawRadio.bind(this));
+  }
+
+  setDefaultRequired() {
+    return this.setValue(this.prevValue);
   }
 
   redrawRadio() {
@@ -93,11 +100,7 @@ export default class Radio extends For {
       radioEl.checked = selection;
       selection && (checkedValue = radioEl.value);
     }
-
-    if(checkedValue === null && children.length) {
-      checkedValue = children[0].el.value;
-    }
-
+    
     this.setValue(checkedValue);
   }
 
@@ -121,14 +124,23 @@ export default class Radio extends For {
     }
   }
 
-  setValue(value) {    
+  setValue(value) { 
+    if(!this.attrs.defaultRequired && value === this.prevValue) {
+      return;
+    }
+
+    let children = this.children('input[type=radio]'); 
+
+    if(this.attrs.defaultRequired && value === null && children.length) {
+      value = children[0].el.value;
+    }
+
     if (value === this.prevValue) {
       return;
     }
     
-    let children = this.children('input[type=radio]');    
     this._disableInternalEvents = true;
-    
+
     for (let i = 0, l = children.length; i < l; i++) {
       let radio = children[i];
       radio.setChecked(radio.el.value === value);

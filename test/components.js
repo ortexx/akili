@@ -284,20 +284,33 @@ describe('components/', () => {
       component.scope.cRadioValue = 'radio-2';
     });
 
-    it('should set default value to "radio-2"', () => {
+    it('should set the value to "radio-2"', () => {
       assert.isNotOk(radio.el.querySelector("input[value='radio-1']").checked, 'check radio-1');
       assert.isOk(radio.el.querySelector("input[value='radio-2']").checked, 'check radio-2');
     });
 
-    it('should set default value to "radio-1"', () => {
+    it('should set the value to "radio-1"', () => {
       component.scope.cRadioValue = 'radio-1';
       assert.isOk(radio.el.querySelector("input[value='radio-1']").checked, 'check radio-1');
       assert.isNotOk(radio.el.querySelector("input[value='radio-2']").checked, 'check radio-2');
     });
 
-    it('should set default value to null', () => {
+    it('should set the value to null', () => {
       component.scope.cRadioValue = null;
       assert.isNotOk(radio.el.querySelector("input[value='radio-1']").checked, 'check radio-1');
+      assert.isNotOk(radio.el.querySelector("input[value='radio-2']").checked, 'check radio-2');
+    });
+
+    it('should set the value to the default one because of attrs.defaultRequired', () => {
+      radio.attrs.defaultRequired = true;
+      assert.isOk(radio.el.querySelector("input[value='radio-1']").checked, 'check radio-1');
+      assert.isNotOk(radio.el.querySelector("input[value='radio-2']").checked, 'check radio-2');
+    });
+
+    it('should set the value to the default one because of a null', () => {
+      component.scope.cRadioValue = 'radio-2';
+      component.scope.cRadioValue = null;
+      assert.isOk(radio.el.querySelector("input[value='radio-1']").checked, 'check radio-1');
       assert.isNotOk(radio.el.querySelector("input[value='radio-2']").checked, 'check radio-2');
     });
   });

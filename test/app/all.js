@@ -115,9 +115,9 @@ export default class All extends Component {
         name="radio"
         value="\${this.cRadioValue}"
         on-radio="\${this.cRadioValue = event.detail}"
-      >
-        <radio-button value="radio-1"></radio-button>
-        <input type="radio" value="radio-2"/>
+      >        
+        <input type="radio" value="radio-1"/>
+        <radio-button value="radio-2"></radio-button>
       </radio>
       <radio
         name="radio2"
