@@ -227,7 +227,7 @@ Akili.getAkiliParents = function (el, tree = true) {
  * @example
  * // returns "<i>Hello</i><b>World</b>"
  * el.innerHTML = "<b>World</b>";
- * Akili.setTemplate(el, "<i>Hello</i>${this.__children}");
+ * Akili.setTemplate(el, "<i>Hello</i>${this.__content}");
  *
  * @param {Element} el
  * @param {string} template
