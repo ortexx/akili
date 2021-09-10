@@ -33,7 +33,7 @@ module.exports = function(config) {
             include: [
               path.resolve('src')
             ],
-            loader: 'istanbul-instrumenter-loader',
+            loader: '@jsdevtools/coverage-istanbul-loader',
             options: {
               esModules: true
             }

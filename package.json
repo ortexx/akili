@@ -1,6 +1,6 @@
 {
   "name": "akili",
-  "version": "1.2.17",
+  "version": "1.2.18",
   "description": "Akili - javascript framework",
   "main": "./src/akili.js",
   "author": {
@@ -30,6 +30,7 @@
   "devDependencies": {
     "@babel/core": "^7.13.15",
     "@babel/eslint-parser": "^7.13.14",
+    "@jsdevtools/coverage-istanbul-loader": "^3.0.5",
     "babel-loader": "^8.2.2",
     "babel-preset-akili": "^2.0.6",
     "chai": "^4.3.4",
@@ -38,7 +39,6 @@
     "eslint": "^7.0.0",
     "eslint-webpack-plugin": "^2.0.0",
     "husky": "^4.3.8",
-    "istanbul-instrumenter-loader": "^3.0.1",
     "karma": "^6.3.2",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.2.0",
@@ -57,6 +57,6 @@
     "url": "https://github.com/ortexx/akili"
   },
   "engines": {
-    "node": ">=10.12.0"
+    "node": ">=10.13.0"
   }
 }
