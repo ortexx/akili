@@ -15,7 +15,6 @@ describe('components/', () => {
 
     before(() => {
       let ei = component.children('else-if');
-
       _if = component.child('if');
       _elseIfOne = ei[0];
       _elseIfTwo = ei[1];
@@ -31,7 +30,6 @@ describe('components/', () => {
 
     it('should fill only "if"', () => {
       component.scope.cIfData = 0;
-
       assert.equal(_if.el.innerHTML, '0', 'check if');
       assert.equal(_elseIfOne.el.innerHTML, '', 'check else-if 1');
       assert.equal(_elseIfTwo.el.innerHTML, '', 'check else-if 2');
@@ -40,7 +38,6 @@ describe('components/', () => {
 
     it('should fill only the first "else-if"', () => {
       component.scope.cIfData = 1;
-
       assert.equal(_if.el.innerHTML, '', 'check if');
       assert.equal(_elseIfOne.el.innerHTML, '1', 'check else-if 1');
       assert.equal(_elseIfTwo.el.innerHTML, '', 'check else-if 2');
@@ -49,7 +46,6 @@ describe('components/', () => {
 
     it('should fill only the second "else-if"', () => {
       component.scope.cIfData = 2;
-
       assert.equal(_if.el.innerHTML, '', 'check if');
       assert.equal(_elseIfOne.el.innerHTML, '', 'check else-if 1');
       assert.equal(_elseIfTwo.el.innerHTML, '2', 'check else-if 2');
@@ -102,11 +98,9 @@ describe('components/', () => {
       include.setAttribute('on-load', '${ this.cIncludeOnLoad() }');
       include.innerHTML = '1';
       component.el.appendChild(include);
-
       component.scope.cIncludeOnLoad = () => {
         html = include.innerHTML;
       };
-
       return Akili.compile(component.el, { recompile: true }).then(() => {
         assert.equal(html, '11');
       });
@@ -316,27 +310,64 @@ describe('components/', () => {
   });
 
   describe('Url, Object, Image', () => {
-    let object;
-    let img;
-    let imgOne;
-    let imgTwo;
+    let object, img, imgUrlOne, imgUrlTwo, imgTimeout, imgGroup;
 
     before(() => {
+      component.scope.imageTimeoutCounter = 0;
       object = component.child('object');
-      img = component.child('img');      
+      img = component.child('img.viewport');   
+      imgTimeout = component.child('img.timeout');
+      imgGroup = component.child('.img-chunk');
       component.scope.cObjectValue = '/fake';    
       component.scope.imageLoading = "viewport";
-      imgOne = `base/test/img/logo.svg`;
-      imgTwo = `base/test/img/logo.png`;
+      imgUrlOne = `base/test/img/logo.svg`;
+      imgUrlTwo = `base/test/img/logo.png`;
     });
 
-    it('should set attrbure data to object', () => {
+    it('should start only 2 requests for chunk images', () => {
+      component.scope.imageGroupLoading = 'chunk';
+      component.scope.imageGroupUrl = imgUrlOne;
+      let count = 0;
+      imgGroup.children('img').forEach(img => img.el.src && count++);
+      assert.equal(count, 3);
+    });
+
+    it('should end for all 3 requests for chunk images', done => {
+      let count = 0;
+      const fn = (event) => {
+        event.srcElement.removeEventListener('load', fn);
+        count++;
+        count == 4 && done();
+      }
+      imgGroup.children('img').forEach((img) => {
+        img.el.addEventListener('load', fn);
+      });
+    });
+
+    it('should abort an image loading with timeout attribute', done => {
+      component.scope.imageTimeoutUrl = imgUrlTwo;
+      let counter = 0;
+      const fn = () => {
+        counter++;
+
+        if(component.scope.imageTimeoutCounter == 2 && counter == 3) {
+          imgTimeout.el.removeEventListener('error', fn);
+          imgTimeout.el.removeEventListener('timeout', fn);
+          imgTimeout.el.removeEventListener('abort', fn); 
+          done();   
+        }           
+      }
+      imgTimeout.el.addEventListener('error', fn);
+      imgTimeout.el.addEventListener('timeout', fn);
+      imgTimeout.el.addEventListener('abort', fn);
+    });  
+
+    it('should set attribure data to object', () => {
       assert.isOk(object.el.data.includes('/fake'));
     });
   
     it('should set image src', done => {
       img.observer.disconnect();
-
       const fn = () => {
         img.el.removeEventListener('load', fn);
         assert.equal(getComputedStyle(img.el).opacity, '1');
@@ -345,7 +376,7 @@ describe('components/', () => {
 
       img.el.addEventListener('load', fn);
       img.isIntersecting = true;
-      component.scope.imageUrl = imgOne;
+      component.scope.imageUrl = imgUrlOne;
     });
 
     it('should handle the wrong url', done => {
@@ -354,7 +385,6 @@ describe('components/', () => {
         assert.equal(getComputedStyle(img.el).opacity, '0');
         done();
       }
-
       img.el.addEventListener('error', fn);
       img.isIntersecting = true;
       component.scope.imageUrl = "unexistent.jpg";
@@ -365,10 +395,9 @@ describe('components/', () => {
         img.el.removeEventListener('error', fn);
         done();
       }
-
       img.el.addEventListener('error', fn); 
       img.isIntersecting = true;    
-      component.scope.imageUrl = imgTwo;
+      component.scope.imageUrl = imgUrlTwo;
       img.intersectionHandler([{ isIntersecting: false }]);
     });
 
@@ -377,10 +406,15 @@ describe('components/', () => {
         img.el.removeEventListener('load', fn);
         done();
       }
-
       img.el.addEventListener('load', fn);
       component.scope.imageLoading = '';
-      component.scope.imageUrl = imgOne;
+      component.scope.imageUrl = imgUrlOne;
+    });
+
+    it('should remove all image components', () => {
+      img.remove();
+      imgTimeout.remove();
+      imgGroup.remove();
     });
   });
 
@@ -390,7 +424,6 @@ describe('components/', () => {
         window.removeEventListener('state-changed', fn);
         callback(e);
       };
-
       window.addEventListener('state-changed', fn);
     }
 
@@ -399,14 +432,12 @@ describe('components/', () => {
         assert.equal(location.pathname + location.search, '/3');
         done();
       });
-
       component.child('a[url]').el.click();
     });
 
     it('should set right url to a link', () => {
       let a = document.createElement('a');
       let route = document.createElement('route');
-
       a.setAttribute('state', '1');
       a.setAttribute('params', '${ ({}) }');
       a.setAttribute('query', '${ ({}) }');
@@ -438,13 +469,10 @@ describe('components/', () => {
           assert.equal(route.el.querySelector('y').innerHTML, '1-1');
           done();
         });
-
         let state = router.getState('1.1');
-
         state.handler = transition => {
           assert.equal(transition.path.state.name, '1.1', 'check transition');
         };
-
         router.state('1.1');
       });
 
@@ -453,7 +481,6 @@ describe('components/', () => {
           assert.equal(route.el.querySelector('z').innerHTML, '1-2');
           done();
         });
-
         router.state('1.2');
       });
 
@@ -462,7 +489,6 @@ describe('components/', () => {
           assert.equal(route.el.querySelector('w').innerHTML, '2');
           done();
         });
-
         router.state('2');
       });
     });

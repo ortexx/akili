@@ -27,9 +27,33 @@ export default class All extends Component {
 
     this.el.innerHTML += `
       <img 
+        class="viewport"
         url="\${ this.imageUrl }"
         loading="\${ this.imageLoading }"
         hidden-error="true"
+      />
+    `;
+
+    this.el.innerHTML += `
+      <div component="for" in="\${ [1, 2, 3, 4] }" class="img-chunk">
+        <loop>
+          <img
+            url="\${ this.imageGroupUrl }"
+            loading="\${ this.imageGroupLoading }"
+            chunk-size="2"
+            chunk-name="\${ this.loopIndex == 3? 'main': 'test' }"
+          />
+        </loop>
+      </div>
+    `;
+
+    this.el.innerHTML += `
+      <img 
+        class="timeout"
+        url="\${ this.imageTimeoutUrl }"
+        timeout="1",
+        on-timeout="\${ this.imageTimeoutCounter++ }"
+        on-abort="\${ this.imageTimeoutCounter++ }"
       />
     `;
 
