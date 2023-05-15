@@ -200,6 +200,7 @@ export default class Url extends Component {
 
   setUrl(url) {    
     this.abort();
+    this.removeChunkFromQueue();
     this.finished = false;
     
     if((this.viewport && !this.isIntersecting)) {
