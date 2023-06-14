@@ -1015,11 +1015,12 @@ router.changeState = function (options = {}) {
 
       return Promise.resolve(load? state.handler(transition): prevData).then(data => {
         transition.path.data = data;
-        state.title && (document.title = typeof state.title == 'function'? state.title(transition): state.title);
 
         if (transition.__cancelled) {
           return;
         }
+
+        state.title !== undefined && (document.title = typeof state.title == 'function'? state.title(transition): state.title);
 
         if (state.abstract) {
           return;

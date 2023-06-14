@@ -173,6 +173,10 @@ export default class For extends Component {
   }
 
   drawChunk(index) {
+    if(this.__isRemoved) {
+      return Promise.resolve();
+    }
+
     const keys = Object.keys(this.data);
     const length = keys.length;
 
@@ -205,6 +209,8 @@ export default class For extends Component {
 
       return Promise.all(promises).then(() => finisher(n));
     }
+
+    return Promise.resolve(this.__completeDrawing());
   }
 
   draw(data) {
