@@ -86,11 +86,13 @@ export default class For extends Component {
 
   __createIterator() {
     let el;
+    this.iteratorIndex = 0;    
 
     for (let i = 0, l = this.el.children.length; i < l; i++) {
       let child = this.el.children[i];
+      this.iteratorIndex = i;
 
-      if (child.getAttribute('component') == 'loop') {
+      if (child.getAttribute('component') == 'loop') {        
         el = child;
         break;
       }
@@ -165,10 +167,10 @@ export default class For extends Component {
     }
     
     let el = this.iteratorEl.cloneNode();
-    el.innerHTML = this.html;
-    this.el.appendChild(el);
+    el.innerHTML = this.html;    
+    this.el.insertBefore(el, this.el.children[this.iteratorIndex + this.iterators.length]);    
     promise = Akili.compile(el); 
-    this.iterators.push(el.__akili);
+    this.iterators.push(el.__akili);  
     return { promise, iterator: el.__akili};
   }
 
