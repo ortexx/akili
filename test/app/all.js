@@ -35,6 +35,10 @@ export default class All extends Component {
     `;
 
     this.el.innerHTML += `
+      <include html="<test>\${ 1 }</test>"></include>
+    `;
+
+    this.el.innerHTML += `
       <div component="for" in="\${ [1, 2, 3, 4] }" class="img-chunk">
         <loop>
           <img

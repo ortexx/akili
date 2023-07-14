@@ -8,15 +8,16 @@ import request from '../services/request.js';
  * {@link https://akilijs.com/docs/components#docs_html_templates}
  * 
  * @tag include
- * @selector include[url]
- * @attr {string} url - template path
+ * @selector include[url]:not([html]),[html]:not([url])
+ * @attr {string} [url] - template path
+ * @attr {string} [html] - html to append
  * @attr {number|function|boolean} [cache] - request cache {@link https://akilijs.com/docs/requests#docs_cache}
  * @message {void} load - sent on the template load
  * @message {Error} error - sent on error
  */
 export default class Include extends Component {
   static transparent = true; 
-  static matches = '[url]';
+  static matches = '[url]:not([html]),[html]:not([url])';
   static events = ['load', 'error'];
 
   static define() {
@@ -32,11 +33,18 @@ export default class Include extends Component {
 
   compiled() {
     this.attr('cache', this.setCache);
+    this.attr('html', this.setHtml);
     return this.attr('url', this.setTemplate);
   }
 
   setCache(cache) {
     this.cache = cache;
+  }
+
+  setHtml(html) {
+    this.empty();
+    this.el.innerHTML = html;
+    return Akili.compile(this.el, { recompile: true });
   }
 
   setTemplate(url) {

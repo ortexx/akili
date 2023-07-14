@@ -105,6 +105,10 @@ describe('components/', () => {
         assert.equal(html, '11');
       });
     });
+
+    it('should load an html', () => {
+      assert.equal(component.child('include').el.querySelector('test').textContent, '1');
+    });
   });
 
   describe('Text, Input, Textarea, Content', () => {
