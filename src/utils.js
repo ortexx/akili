@@ -1,4 +1,5 @@
 import EventEmitter from './event-emitter.js'
+import Component from './component.js'
 
 /**
  * The object with a lot of useful functions
@@ -542,9 +543,9 @@ utils.createHash = function(source, options = {}) {
   }
 
   const loop = obj => {
-    if(!obj || typeof obj != 'object' || !this.isPlainObject(obj)) {
+    if(!obj || typeof obj != 'object') {
       return String(obj);
-    }    
+    }
 
     if(this.isScopeProxy(obj)) {
       if(obj !== source && obj.__hash) {
@@ -554,13 +555,17 @@ utils.createHash = function(source, options = {}) {
       obj = obj.__target;
     }
 
+    if(obj instanceof Component) {
+      return `${ obj.constructor.name }:;${ obj.scope.__name }`;
+    }
+
     const keys = Object.keys(obj);
     const length = keys.length;
     let str = '';
 
     for(let i = 0; i < length; i++) {
       const key = keys[i];
-      str += `"${key}"::"${loop(obj[key])}";;`;
+      str += `"${ key }"::"${ loop(obj[key]) }";;`;
     }
 
     return str;
