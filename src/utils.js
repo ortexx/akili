@@ -542,7 +542,7 @@ utils.createHash = function(source, options = {}) {
   }
 
   const loop = obj => {
-    if(!obj || typeof obj != 'object') {
+    if(!obj || typeof obj != 'object' || !this.isPlainObject(obj)) {
       return String(obj);
     }    
 
