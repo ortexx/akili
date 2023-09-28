@@ -1027,7 +1027,7 @@ router.changeState = function (options = {}) {
         }
 
         const prevRoute = transition.previous && transition.previous.getRoute(state);
-        (prevRoute && !prevRoute.loaded) && (load = true);
+        ((prevRoute && !prevRoute.loaded) || options.reload === true) && (load = true);
         return route.setTransition(transition, load).then(() => transition.path.loaded = true);
       }).then(() => {
         return next(state.children);
