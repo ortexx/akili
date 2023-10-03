@@ -57,7 +57,7 @@ export default class If extends Component {
     let result;
 
     if (!next || !next.matches('else-if,else')) {
-      return;
+      return Promise.resolve();
     }
 
     next.__akili.setActivity(this.active || this.state);

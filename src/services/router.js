@@ -1057,7 +1057,11 @@ router.changeState = function (options = {}) {
         }
       }
 
-      if(this.hashMode || !transition.path || !transition.path.hash) {
+      if(
+        (this.hashMode || !transition.path || !transition.path.hash) && 
+        (options.reload !== false || options.saveScrollPosition !== undefined) &&
+        options.saveScrollPosition !== null
+      ) {
         window.scrollTo({ ...options.saveScrollPosition? this.__info.scrollPos: { top: 0, left: 0 } });
       }
 
