@@ -46,7 +46,12 @@ export default class A extends Component {
         return;
       }
 
-      router.state(this.state.name, this.params, this.query, this.hash,  this.options);
+      if(this.attrs.state) {
+        router.state(this.state.name, this.params, this.query, this.hash, this.options);
+        return;
+      }
+      
+      router.reload(this.params, this.query, this.hash, this.options);
     });
 
     this.onStateChanged = () => this.state && this.setActivity();
@@ -117,6 +122,7 @@ export default class A extends Component {
   }
 
   getState(name) {
+    !name && (name = router.transition.path.state.name);
     let state = router.getState(name);
 
     if (!state) {
