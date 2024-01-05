@@ -202,10 +202,10 @@ export default class Component {
         });
       }
     }
-    else {
+    else if(!this.__compiling.route || this.parents('route')[0] === this.__compiling.route) {
       res = Akili.isolate(() => {
-        this.attrs.onRecompiled && this.attrs.onRecompiled.trigger(undefined, { bubbles: false });
-        this.recompiled();
+        this.attrs.onRecompiled && this.attrs.onRecompiled.trigger(this.__compiling, { bubbles: false });
+        this.recompiled(this.__compiling);
       });
     }
     

@@ -58,7 +58,7 @@ export class Request {
            
       let hash = null;
       let cache = typeof options.cache == 'function'? options.cache(options): options.cache;
-      (!window.AKILI_SSR && !Akili.__init) && (cache = true);
+      (!window.AKILI_SSR && Akili.__init === null) && (cache = true);
 
       if(options.method.toUpperCase() == 'GET' && (!options.body || typeof options.body == 'string')) {
         hash = this.createCacheHash({ 

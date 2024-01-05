@@ -375,16 +375,20 @@ Akili.unisolate = function (fn) {
  * Initialize the element
  *
  * @param {Element} el
+ * @param {Element} root
  * @param {object} [options={}]
  * @returns {*}
  */
-Akili.initialize = function (el, options = {}) {
+Akili.initialize = function (el, root, options = {}) {
   let recompile = options.recompile;
   let component = el.__akili;
 
   if (component) {
     if (recompile) {
-      component.__recompile(recompile === true? {}: recompile);
+      const info = recompile === true? {}: recompile;
+      info.root = root;
+      info.initiator = root.__akili;
+      component.__recompile(info);
       return component;
     }
 
@@ -463,7 +467,7 @@ Akili.compile = function (root, options = { recompile: false }) {
   }
 
   const nestedInitializing = el => {
-    let component = this.initialize(el, options);
+    let component = this.initialize(el, root, options);
     let children = el.children;
     component && elements.push(component);
 
