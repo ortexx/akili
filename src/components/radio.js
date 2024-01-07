@@ -30,23 +30,8 @@ export default class Radio extends For {
   }
 
   created() {
-    this.el.addEventListener('change', () => { 
-      if(this._disableInternalEvents) {
-        return;
-      }
-      
-      let value = this.getRadioValue();
-
-      if (value === this.prevValue) {
-        return;
-      }
-
-      this.prevValue = value;
-
-      if(this.attrs.value === undefined || this.__isResolved) {
-        this.attrs.onRadio.trigger(value, { bubbles: true });
-      }      
-    });
+    this.onChangeListener = this.onChange.bind(this);    
+    this.el.addEventListener('change', this.onChangeListener);
 
     if(this.iterable) {
       return super.created.apply(this, arguments);
@@ -66,6 +51,29 @@ export default class Radio extends For {
     this.attr('name', this.setNames);
     this.attr('defaultRequired', this.setDefaultRequired, { callOnStart: false });
     return this.attr('in', this.setIn, { callOnStart: false });
+  }
+
+  removed() {
+    this.el.removeEventListener('change', this.onChangeListener);
+    return super.removed.apply(this, arguments);
+  }
+
+  onChange() { 
+    if(this._disableInternalEvents) {
+      return;
+    }
+    
+    let value = this.getRadioValue();
+
+    if (value === this.prevValue) {
+      return;
+    }
+
+    this.prevValue = value;
+
+    if(this.attrs.value === undefined || this.__isResolved) {
+      this.attrs.onRadio.trigger(value, { bubbles: true });
+    }      
   }
 
   setIn(data) {

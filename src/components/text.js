@@ -23,9 +23,10 @@ export default class Text extends Component {
 
   created() {
     if(this.el.hasAttribute('on-debounce')) {
-      this.el.addEventListener('input', utils.debounce(() => {
-        this.attrs.onDebounce.trigger(undefined, { bubbles: true });
-      }, this.debounceInterval));
+      this.onInputListener = utils.debounce(() => {
+        !this.isRemoved && this.attrs.onDebounce.trigger(undefined, { bubbles: true });
+      }, this.debounceInterval).bind(this);
+      this.el.addEventListener('input', this.onInputListener);
     }
   }
 
@@ -33,6 +34,10 @@ export default class Text extends Component {
     this.attr('focus', this.setFocus);
     this.attr('value', this.setValue);
     this.attr('debounce', this.setDebounce);
+  }
+
+  removed() {
+    this.el.removeEventListener('input', this.onInputListener);
   }
 
   setDebounce(interval) {

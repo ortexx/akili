@@ -38,23 +38,9 @@ export default class A extends Component {
   }
 
   compiled() {
-    this.el.addEventListener('click', e => {
-      e.preventDefault();
-
-      if (this.isUrl) {
-        router.location(this.attrs.url, this.options);
-        return;
-      }
-
-      if(this.attrs.state) {
-        router.state(this.state.name, this.params, this.query, this.hash, this.options);
-        return;
-      }
-      
-      router.reload(this.params, this.query, this.hash, this.options);
-    });
-
-    this.onStateChanged = () => this.state && this.setActivity();
+    this.onClickListener = this.onClick.bind(this);
+    this.onStateChanged = () => this.state && this.setActivity();    
+    this.el.addEventListener('click', this.onClickListener);
     window.addEventListener('state-changed', this.onStateChanged);
 
     this.attr('state', this.setState);
@@ -73,6 +59,23 @@ export default class A extends Component {
 
   removed() {
     window.removeEventListener('state-changed', this.onStateChanged);
+    this.el.removeEventListener('click', this.onClickListener);
+  }
+
+  onClick(e) {
+    e.preventDefault();
+
+    if (this.isUrl) {
+      router.location(this.attrs.url, this.options);
+      return;
+    }
+
+    if(this.attrs.state) {
+      router.state(this.state.name, this.params, this.query, this.hash, this.options);
+      return;
+    }
+    
+    router.reload(this.params, this.query, this.hash, this.options);
   }
 
   setUrl(url) {

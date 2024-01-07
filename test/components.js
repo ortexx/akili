@@ -107,7 +107,11 @@ describe('components/', () => {
     });
 
     it('should load an html', () => {
-      assert.equal(component.child('include').el.querySelector('test').textContent, '1');
+      assert.equal(component.child('include[html]').el.querySelector('test').textContent, '1');
+    });
+
+    it('should inject a component', () => {
+      assert.equal(component.child('include[inject]').child().data[0], '1');
     });
   });
 

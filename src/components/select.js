@@ -28,7 +28,8 @@ export default class Select extends For {
   }
 
   created() {
-    this.el.addEventListener('change', () => this.el.content = this.getContent());
+    this.onChangeListener = this.onChange.bind(this);    
+    this.el.addEventListener('change', this.onChangeListener);
 
     if(this.iterable) {
       return super.created.apply(this, arguments);
@@ -41,6 +42,15 @@ export default class Select extends For {
     this.attr('value', this.setValue);
     this.unattr('in', this.draw);
     return this.attr('in', this.setIn);
+  }
+
+  removed() {
+    this.el.removeEventListener('change', this.onChangeListener);
+    return super.removed.apply(this, arguments);
+  }
+
+  onChange() {
+    this.el.content = this.getContent()
   }
 
   setIn(data) {

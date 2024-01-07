@@ -8,16 +8,17 @@ import request from '../services/request.js';
  * {@link https://akilijs.com/docs/components#docs_html_templates}
  * 
  * @tag include
- * @selector include[url]:not([html]),[html]:not([url])
+ * @selector [url],[html],[inject]
  * @attr {string} [url] - template path
  * @attr {string} [html] - html to append
+ * @attr {string} [inject] - inject component by name
  * @attr {number|function|boolean} [cache] - request cache {@link https://akilijs.com/docs/requests#docs_cache}
  * @message {void} load - sent on the template load
  * @message {Error} error - sent on error
  */
 export default class Include extends Component {
   static transparent = true; 
-  static matches = '[url]:not([html]),[html]:not([url])';
+  static matches = '[url],[html],[inject]';
   static events = ['load', 'error'];
 
   static define() {
@@ -26,15 +27,31 @@ export default class Include extends Component {
 
   constructor(...args) {
     super(...args);
+  }
+
+  created() {    
     this.html = this.el.innerHTML;
+
+    if(this.el.getAttribute('inject')) {
+      this.injected = this.el.querySelector('*');
+    }    
+   
     this.el.innerHTML = '';
     this.connection = null;
   }
 
   compiled() {
     this.attr('cache', this.setCache);
+    this.attr('inject', this.setInject);
     this.attr('html', this.setHtml);
     return this.attr('url', this.setTemplate);
+  }
+
+  setInject(name) {
+    this.injected.setAttribute('component', name);
+    this.empty();
+    this.el.innerHTML = this.injected.outerHTML;
+    return Akili.compile(this.el, { recompile: true });
   }
 
   setCache(cache) {
