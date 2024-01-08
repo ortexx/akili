@@ -474,6 +474,10 @@ export default class Component {
    * @protected
    */
   __createExceptionMessage(node, err) {
+    if(!node.__component || !node.__component.el) {
+      return err.stack;
+    }
+
     let tagName = node.__component.el.tagName;
     let attrName = node.__component.el.getAttribute('component');
     let componentName = (attrName || tagName).toLowerCase();
@@ -497,6 +501,15 @@ export default class Component {
     let attributeValue;
     let expression;
     const evalComponent = node.__attributeOf || node.__component;
+
+    if(!evalComponent || !evalComponent.__evaluationComponent) {
+      if (Akili.options.debug) {
+        // eslint-disable-next-line no-console
+        console.warn(`Evaluation component not found`);      
+      }
+
+      return { res: node.__expression };
+    }
 
     if (node.__component.parents(com => com.__prevent).length) {
       return { res: node.__expression };
