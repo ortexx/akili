@@ -984,6 +984,7 @@ router.changeState = function (options = {}) {
       }
 
       let state = content.state;
+      let route = state.abstract? null: this.getRoute(level);
       transition.setPath({ state, component: route });
       params = { ...params, ...content.params };
       hash = hash || emptyHash;
@@ -992,7 +993,6 @@ router.changeState = function (options = {}) {
       hash = hash || '';
       let realUrl = this.createStateUrl(state, params, query, hash, options, false); 
       this.isolate(() => this.replaceUrl(realUrl)); 
-      let route = state.abstract? null: this.getRoute(level);
       
       if (!route && !state.abstract) {      
         throw new Error (`Not found route component for state "${state.name}"`);
