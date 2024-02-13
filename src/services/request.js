@@ -41,14 +41,13 @@ export class Request {
       (typeof options.onStart == 'function') && options.onStart(xhr);  
       options.headers = options.headers || {};
       
-      if (options.json) {
+      if (options.form) {
+        options.body = this.createFormData(options.form);
+      }
+      else if (options.json) {
         options.json !== true && (options.body = JSON.stringify(options.json));
         options.headers['content-type'] = 'application/json';
         options.responseType = options.responseType || 'json';
-      }
-      else if (options.form) {
-        options.body = this.createFormData(options.form);
-        options.headers['content-type'] = 'multipart/form-data';
       }
 
       if (options.params) {
@@ -282,7 +281,7 @@ export class Request {
         if (obj[k] instanceof Date) {
           fd.append(key, obj[k].toISOString());
         }
-        else if (utils.isPlainObject(obj[k])) {
+        else if (utils.isPlainObject(obj[k]) || obj[k] instanceof FileList) {
           this.createFormData(obj[k], fd, key);
         }
         else {
